@@ -132,9 +132,3 @@ pnpm start
 
 ### ⚖️ ソフトウェアライセンス
 このプロジェクトのプログラムコード自体は [MIT License](LICENSE) の下で公開されています。
-
-### 追加
-
-<img width="762" height="1316" alt="image" src="https://github.com/user-attachments/assets/321ce5b0-8c23-4914-bc4d-6562abac94b7" />
-
-<img width="405" height="273" alt="image" src="https://github.com/user-attachments/assets/c21de931-b4ed-491b-a8e7-cc4df198695a" />
