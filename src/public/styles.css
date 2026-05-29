@@ -1907,7 +1907,7 @@ a:not(.menu-item):not(.btn):hover {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background-color: var(--bg-primary);
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1932,13 +1932,13 @@ a:not(.menu-item):not(.btn):hover {
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.15em;
-  color: var(--color-white);
+  color: #1a2740;
   animation: splash-text-in 0.4s 0.25s ease both;
 }
 
 #splash-sub {
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: #6687a8;
   letter-spacing: 0.05em;
   animation: splash-text-in 0.4s 0.35s ease both;
 }
