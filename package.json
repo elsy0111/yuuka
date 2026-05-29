@@ -2,6 +2,7 @@
   "name": "yuuka",
   "version": "1.0.0",
   "description": "Discord Gemini 秘書ボット",
+  "private": true,
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
