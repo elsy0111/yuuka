@@ -157,9 +157,9 @@ yarn start
 # pm2 のインストール (未インストールの場合)
 npm install -g pm2
 
-# ビルドして起動
+# 初回ビルド & 登録（初めて起動する場合）
 yarn build
-pm2 start dist/index.js --name yuuka
+PORT=7854 pm2 start yarn --name yuuka -- start
 
 # OS起動時に自動起動を設定
 pm2 startup
