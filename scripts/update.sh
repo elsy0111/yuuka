@@ -19,7 +19,7 @@ pm2 start yuuka
 pm2 flush yuuka
 
 echo -n "起動待機中"
-for i in 1 2 3; do sleep 1; echo -n "."; done
+for i in 1 2 3 4 5; do sleep 1; echo -n "."; done
 echo ""
 pm2 logs yuuka --lines 10 --nostream
 
