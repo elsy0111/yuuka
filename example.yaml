@@ -20,6 +20,9 @@ GEMINI_MODEL: "gemini-3.1-flash-lite"
 # 未設定の場合はすべてのユーザーに反応します
 ALLOWED_USER_ID: ""
 
+# メンションなしでも全メッセージに反応するか (true / false, デフォルト: false)
+RESPOND_WITHOUT_MENTION: "false"
+
 # データベースファイルの保存パス
 DB_PATH: "./data/yuuka.db"
 

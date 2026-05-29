@@ -53,8 +53,8 @@ client.on("messageCreate", async (message: Message) => {
   // DMかどうか
   const isDM = !message.guild;
 
-  // メンションもDMも、ボットへの返信でもなければ無視
-  if (!isMentioned && !isDM && !isReplyToBot) return;
+  // メンションもDMも、ボットへの返信でもなければ無視（RESPOND_WITHOUT_MENTION=true で全メッセージに反応）
+  if (!config.respondWithoutMention && !isMentioned && !isDM && !isReplyToBot) return;
 
   // 「入力中...」を維持するためのタイマー
   let typingInterval: NodeJS.Timeout | null = null;

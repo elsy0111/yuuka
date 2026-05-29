@@ -47,6 +47,7 @@ export const config = {
   geminiApiKey: requireSetting("GEMINI_API_KEY"),
   geminiModel: getSetting("GEMINI_MODEL", "gemini-3.1-flash-lite"),
   allowedUserId: getSetting("ALLOWED_USER_ID"),
+  respondWithoutMention: getSetting("RESPOND_WITHOUT_MENTION", "false") === "true",
 
   /** データベースファイルのパス */
   dbPath: getSetting("DB_PATH", "./data/yuuka.db"),
