@@ -30,18 +30,21 @@ git pull
 yarn install
 
 pm2 stop yuuka 2>/dev/null || true
+pm2 delete yuuka 2>/dev/null || true
+pm2 save --force 2>/dev/null || true  # startup hook による自動復活を防ぐ
 
 # pm2のクラッシュループが落ち着くまで待機
 wait_port_stable
 
 yarn build
 
-# ビルド中に再取得された場合に備えて再度解放
+# 起動直前に最終確認・強制解放
 wait_port_stable
+fuser -k "${PORT}/tcp" 2>/dev/null || true
+sleep 1
 
-pm2 delete yuuka 2>/dev/null || true
-wait_port_stable
 pm2 start dist/index.js --name yuuka
+pm2 save 2>/dev/null || true  # 新プロセスをstartup hookに登録
 pm2 flush yuuka
 
 timeout 15 pm2 logs yuuka --lines 0 || true
