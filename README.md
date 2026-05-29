@@ -171,8 +171,10 @@ pm2 save
 `scripts/update.sh` を使うと、git pull からビルド・再起動までを一括で行えます。
 
 ```bash
-bash scripts/update.sh
+./scripts/update.sh
 ```
+
+> **注意**: systemd で `yuuka.service` を別途動かしている場合は pm2 と競合してポート競合が発生します。どちらか一方のみで管理してください。
 
 ---
 
