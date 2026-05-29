@@ -4,6 +4,19 @@
    Upgraded UI Logic: Custom Interactive Crypto Sparklines and Line Charts
    ============================================================================== */
 
+// スプラッシュスクリーン制御
+(function() {
+  const splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  const isPwa = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  const delay = isPwa ? 1800 : 0;
+  setTimeout(() => {
+    splash.classList.add('hide');
+    splash.addEventListener('animationend', () => splash.remove(), { once: true });
+  }, delay);
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
 
   // ==========================================
