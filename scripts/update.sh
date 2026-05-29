@@ -18,4 +18,7 @@ yarn build
 pm2 start yuuka
 pm2 flush yuuka
 
+sleep 3
+pm2 logs yuuka --lines 10 --nostream
+
 echo "=== 更新完了 ==="
