@@ -8,6 +8,16 @@
 (function() {
   const splash = document.getElementById('splash-screen');
   if (!splash) return;
+
+  // 保存済みテーマに合わせて背景・文字色を設定
+  const theme = localStorage.getItem('yuuka-theme') || 'dark';
+  const isBa = theme === 'blue-archive';
+  splash.style.backgroundColor = isBa ? '#FBFCFF' : '#09090b';
+  const title = document.getElementById('splash-title');
+  const sub   = document.getElementById('splash-sub');
+  if (title) title.style.color = isBa ? '#1a2740' : '#fafafa';
+  if (sub)   sub.style.color   = isBa ? '#6687a8' : '#a1a1aa';
+
   const isPwa = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
   const delay = isPwa ? 1800 : 0;
