@@ -29,7 +29,6 @@ echo "=== Yuuka 更新スクリプト ==="
 git pull
 yarn install
 
-pm2 stop yuuka 2>/dev/null || true
 pm2 delete yuuka 2>/dev/null || true
 pm2 save --force 2>/dev/null || true  # startup hook による自動復活を防ぐ
 
