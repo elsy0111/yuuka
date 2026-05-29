@@ -647,22 +647,34 @@ let server: http.Server | null = null;
 /**
  * Webサーバーの起動
  */
-export function startWebServer(): Promise<void> {
+export function startWebServer(retries = 10, retryDelayMs = 2000): Promise<void> {
   return new Promise((resolve, reject) => {
-    server = http.createServer(serverHandler);
+    const attempt = () => {
+      server = http.createServer(serverHandler);
 
-    server.on("error", (err: NodeJS.ErrnoException) => {
-      if (err.code === "EADDRINUSE") {
-        reject(new Error(`ポート ${config.port} は既に使用中です。他のプロセスを終了してから再起動してください。`));
-      } else {
-        reject(err);
-      }
-    });
+      server.on("error", (err: NodeJS.ErrnoException) => {
+        if (err.code === "EADDRINUSE") {
+          server?.removeAllListeners();
+          server = null;
+          if (retries > 0) {
+            console.log(`⏳ ポート ${config.port} 使用中。${retryDelayMs / 1000}秒後にリトライ... (残り ${retries} 回)`);
+            retries--;
+            setTimeout(attempt, retryDelayMs);
+          } else {
+            reject(new Error(`ポート ${config.port} が解放されませんでした。`));
+          }
+        } else {
+          reject(err);
+        }
+      });
 
-    server.listen(config.port, config.host, () => {
-      console.log(`🌐 Yuuka 管理画面サーバー起動完了: http://${config.host}:${config.port}`);
-      resolve();
-    });
+      server.listen(config.port, config.host, () => {
+        console.log(`🌐 Yuuka 管理画面サーバー起動完了: http://${config.host}:${config.port}`);
+        resolve();
+      });
+    };
+
+    attempt();
   });
 }
 
