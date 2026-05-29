@@ -90,10 +90,11 @@ async function main() {
   const chromiumPath =
     process.env.PUPPETEER_EXECUTABLE_PATH ||
     which("chromium") ||
-    which("chromium-browser");
-  chromiumPath && existsSync(chromiumPath)
+    which("chromium-browser") ||
+    which("google-chrome");
+  chromiumPath
     ? pass("chromium", chromiumPath)
-    : fail("chromium", "not found — yay -S chromium");
+    : fail("chromium", "not found — install chromium");
 
   // Redis
   const redisPong = run("redis-cli ping");
