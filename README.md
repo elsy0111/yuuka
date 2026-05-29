@@ -24,6 +24,10 @@
 *   **📷 レシート解析 (OCR & 自動家計簿登録)**
     *   Discord にレシートの画像を貼り付ける（または返信する）だけで、Gemini が画像を解析。
     *   購入した商品を適切なカテゴリに自動分類し、家計簿へ自動的に一括登録してくれます。
+*   **🌐 Webクロール・情報収集**
+    *   Rust 製の高速クローラー (`yuuka-crawler`) と Puppeteer を組み合わせた Web 検索・ページ取得機能。
+    *   天気・電車の運行情報・最新ニュースなど、リアルタイムな情報を取得して返答できます。
+    *   Web ページのスクリーンショット撮影にも対応。
 *   **🛠️ 自己開発・Git連携 (エージェント自己拡張用)**
     *   AIエージェントが自らコードを読み書きし、Git ブランチの作成、コミット、マージ、プッシュなどを行って自己拡張するための強力なツール（Function Calling）を内蔵しています。
 
@@ -55,6 +59,14 @@
 
 ## 🚀 セットアップ手順
 
+### 0. 必要な環境
+
+*   **Node.js** v22 以上
+*   **Yarn** v4 以上
+*   **Rust / Cargo** (Webクローラーのビルドに必要)
+*   **Redis** (チャット履歴管理に使用)
+*   **Chrome / Chromium** (Puppeteer によるページ取得に使用)
+
 ### 1. リポジトリのクローンと依存関係のインストール
 
 プロジェクトディレクトリに移動し、依存パッケージをインストールします。
@@ -74,12 +86,27 @@ cp example.yaml config.yaml
 `config.yaml` を開き、以下の必要な認証情報・トークンを設定してください。
 
 #### 主な設定項目:
+
+**Bot 基本設定**
 *   **`DISCORD_TOKEN`**: [Discord Developer Portal](https://discord.com/developers/applications) で取得したBotトークン。
 *   **`GEMINI_API_KEY`**: [Google AI Studio](https://aistudio.google.com/apikey) で発行したAPIキー。
+*   **`GEMINI_MODEL`**: 使用する Gemini モデル名（デフォルト: `gemini-3.1-flash-lite`）。
 *   **`ALLOWED_USER_ID`**: 応答を許可する特定のDiscordユーザーID（空白の場合はすべてのユーザーに応答。自身のIDを指定することで完全なプライベート化が可能）。
+*   **`RESPOND_WITHOUT_MENTION`**: `true` にするとメンションなしでも全メッセージに反応します（デフォルト: `false`）。
+
+**データ管理**
+*   **`DB_PATH`**: SQLite データベースファイルの保存パス（デフォルト: `./data/yuuka.db`）。
+*   **`REMINDER_CRON`**: リマインダーチェックの実行間隔（cron式、デフォルト: `* * * * *`）。
+
+**Google カレンダー連携**
 *   **`GOOGLE_CALENDARS`**: 同期させたいGoogleカレンダーIDの配列（管理画面からも動的に追加・削除可能です）。
-*   **`GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY`**: Google Cloud Console で作成したサービスアカウントのメールアドレスと秘密鍵（Googleカレンダー連携に必要）。
+*   **[認証方法A・推奨] サービスアカウント**: `GOOGLE_SERVICE_ACCOUNT_EMAIL` / `GOOGLE_PRIVATE_KEY` を設定。
+*   **[認証方法B・オプション] OAuth2**: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REFRESH_TOKEN` を設定。
+
+**管理画面設定**
 *   **`ADMIN_TOKEN`**: 管理画面ダッシュボードにログインするための任意のセキュアなパスコード。
+*   **`PORT`**: 管理画面サーバーがリスンするポート（デフォルト: `7854`）。
+*   **`HOST`**: サーバーがバインドするホスト名（デフォルト: `127.0.0.1`。外部公開時は `0.0.0.0`）。
 
 ---
 
@@ -92,11 +119,26 @@ cp example.yaml config.yaml
 yarn dev
 ```
 
-### プロダクションビルド & 起動
-[esbuild](https://esbuild.github.io/) でバンドル・コンパイルし、本番環境用として最適化されたビルドを起動します。
+### 環境チェック
+
+起動前に必要な設定・依存関係が揃っているかを確認します。
 
 ```bash
-# バンドル & コンパイル (dist/index.js に出力されます)
+yarn checkhealth
+```
+
+ランタイム確認（Rustクローラーバイナリ・Redisなども含めたチェック）：
+
+```bash
+yarn checkhealth:runtime
+```
+
+### プロダクションビルド & 起動
+
+[esbuild](https://esbuild.github.io/) でバンドル・コンパイルし、Rust 製クローラーもビルドして本番環境用として最適化されたビルドを起動します。
+
+```bash
+# 環境チェック → Rustクローラーのビルド → TSバンドル (dist/index.js, dist/bin/yuuka-crawler に出力)
 yarn build
 
 # 本番サーバーの起動
@@ -107,25 +149,30 @@ yarn start
 
 ---
 
-## ⚙️ systemd による常時稼働 (Linux環境)
+## ⚙️ pm2 による常時稼働 (Linux環境)
 
-同梱されている `yuuka.service` テンプレートを利用して、Linuxサーバー上でサービスとしてデーモン化できます。
+[pm2](https://pm2.keymetrics.io/) を利用してサービスとしてデーモン化できます。
 
-1.  `yuuka.service` ファイルをお使いの環境のパス (例: `WorkingDirectory` や `ExecStart` のNode.jsパスなど) に合わせて編集します。
-2.  サービスファイルを配置します：
-    ```bash
-    sudo cp yuuka.service /etc/systemd/system/yuuka.service
-    ```
-3.  デーモンをリロードしてサービスを有効化・起動します：
-    ```bash
-    sudo systemctl daemon-reload
-    sudo systemctl enable yuuka.service
-    sudo systemctl start yuuka.service
-    ```
-4.  ステータスの確認：
-    ```bash
-    sudo systemctl status yuuka.service
-    ```
+```bash
+# pm2 のインストール (未インストールの場合)
+npm install -g pm2
+
+# ビルドして起動
+yarn build
+pm2 start dist/index.js --name yuuka
+
+# OS起動時に自動起動を設定
+pm2 startup
+pm2 save
+```
+
+### 更新スクリプト
+
+`scripts/update.sh` を使うと、git pull からビルド・再起動までを一括で行えます。
+
+```bash
+bash scripts/update.sh
+```
 
 ---
 

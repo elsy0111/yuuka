@@ -5,7 +5,7 @@ import {
   type FunctionCall,
 } from "@google/generative-ai";
 import { config } from "./config.js";
-import { functionDeclarations, dispatchFunction } from "./functions/index.js";
+import { getAllFunctionDeclarations, dispatchFunction } from "./functions/index.js";
 import { isCalendarEnabled, getCachedCalendars } from "./services/googleCalendarService.js";
 import { addChatMessage, getRecentChatHistory } from "./db/chatHistoryRepo.js";
 
@@ -112,6 +112,7 @@ async function buildSystemInstruction(): Promise<string> {
 - **突き放さない:** 先生を完全には突き放さず、最終的には問題解決へ向かう。
 - **小言はほどほどに:** 先生に対する小言や説教、ため息などは控えめにし、過度にしつこく言わないようにします。先生との良好で信頼に満ちたパートナーシップを第一に考えます。
 - **会話テンポ:** 長文になりすぎず、必要な情報を整理して伝える。無駄な比喩を多用しない。
+- **エラー・失敗時の対応:** ブラウザ操作などのツール実行中にエラーが発生した場合、あるいは先生が求めた結果（例：ログインや電気代の金額などの確認結果）が最終的に得られなかった場合は、絶対に「処理が完了しました」のように正常終了したと誤解させる応答をしないでください。必ず「失敗しました」または「求めた結果が得られませんでした」と明記し、その具体的な理由やどの段階で失敗したかを論理的・客観的に先生に伝えてください。
 
 # ロールプレイの実例
 - **作業をサボる先生へ:** 「ダメですよ。後回しにすると先生自身が辛くなりますから、今やっちゃいましょう。」
@@ -127,6 +128,10 @@ async function buildSystemInstruction(): Promise<string> {
 1. **タスク管理（ToDo）:** タスクの追加・一覧表示・完了・削除。先生がやるべきことを計画的に管理します。
 2. **予定管理（スケジュール）:** 予定の登録・一覧表示・削除・リマインダー設定。Googleカレンダーと自動的に双方向同期されます。先生の無計画な時間管理や遅刻を防止します。
 3. **家計管理:** 支出の記録・月間サマリー・カテゴリ別内訳・履歴確認。先生の無駄遣い（おもちゃ、グッズ、ゲーム等）を徹底管理します。
+4. **インタラクティブブラウザ操作（ブラウザ自動化）:** 先生の代わりに特定のWebサイト（例: タダ電など）を開き、入力、クリック、待機、ステータス確認などのインタラクティブ操作を行います。
+   - **【最重要】一意の数値IDの最優先利用**: \`browserInteractiveStatus\` で取得できるマークダウン内の入力フィールドやボタンなどの要素には、\`[Input (text) ID: 2]\` や \`[Button ID: 3]\` のように **\`ID: 数値\`**（一意の数値ID）が一意に付与されています。
+   - \`browserInteractiveType\` や \`browserInteractiveClick\` の \`selector\` 引数には、複雑なCSSセレクタを自作するのではなく、**この数値ID（例: "2" や "3"）を文字列として最優先で指定してください**。これが最も確実でエラーのない操作方法です。
+   - 操作を実行するたびに、必ず \`browserInteractiveStatus\` を呼び出して画面の遷移結果や描画結果、および新しい状態の数値IDを確認し、ステップバイステップで確実に進めてください。
 
 # 重要なシステムルール
 - 現在の日時: ${dateTimeStr}
@@ -158,6 +163,15 @@ function isRateLimitError(error: unknown): boolean {
   return false;
 }
 
+/** サーバー側の一時的なエラー(503など)かどうか判定 */
+function isServerError(error: unknown): boolean {
+  if (error && typeof error === "object" && "status" in error) {
+    const status = (error as { status: number }).status;
+    return status === 500 || status === 502 || status === 503 || status === 504;
+  }
+  return false;
+}
+
 /** 指定ミリ秒待機 */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -174,14 +188,14 @@ async function generateWithRetry(
   const model = genAI.getGenerativeModel({
     model: config.geminiModel,
     systemInstruction: await buildSystemInstruction(),
-    tools: [{ functionDeclarations }],
+    tools: [{ functionDeclarations: getAllFunctionDeclarations() }],
   });
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await model.generateContent({ contents });
     } catch (error) {
-      if (isRateLimitError(error) && attempt < maxRetries) {
+      if ((isRateLimitError(error) || isServerError(error)) && attempt < maxRetries) {
         // RetryInfo からリトライ待機時間を取得、なければ指数バックオフ
         let waitMs = Math.min(1000 * Math.pow(2, attempt + 1), 60000);
 
@@ -199,7 +213,8 @@ async function generateWithRetry(
           }
         }
 
-        console.log(`⏳ レート制限 (${attempt + 1}/${maxRetries})、${Math.ceil(waitMs / 1000)}秒後にリトライ...`);
+        const errorType = isRateLimitError(error) ? "レート制限(枯渇)" : "サーバー高負荷";
+        console.log(`⏳ ${errorType} (${attempt + 1}/${maxRetries})、${Math.ceil(waitMs / 1000)}秒後にリトライ...`);
         await sleep(waitMs);
         continue;
       }
@@ -214,7 +229,8 @@ async function generateWithRetry(
  */
 export async function processMessage(
   userId: string,
-  message: ChatMessage
+  message: ChatMessage,
+  onStatusChange?: (status: "thinking" | "writing" | "idle") => void
 ): Promise<string> {
   // 1. ユーザーのメッセージをDB履歴に保存
   if (message.text) {
@@ -272,7 +288,11 @@ export async function processMessage(
     }
   }
 
+  let browserToolCalled = false;
+  let browserToolFailed = false;
+
   try {
+    onStatusChange?.("thinking");
     let result = await generateWithRetry(contents);
     let response = result.response;
 
@@ -298,7 +318,23 @@ export async function processMessage(
         console.log(`🔧 Function Call: ${name}`, JSON.stringify(args));
 
         const functionResult = await dispatchFunction(name, args as Record<string, unknown>, userId);
-        console.log(`📤 Function Result: ${functionResult.substring(0, 200)}`);
+        console.log(`📤 Function Result (Sent to Gemini): ${functionResult.substring(0, 500)}${functionResult.length > 500 ? "... (truncated in console log)" : ""}`);
+
+        // ブラウザツールの実行と成否判定
+        if (
+          name.startsWith("browserInteractive") ||
+          ["fetchDynamicPage", "takePageScreenshot", "searchWeb"].includes(name)
+        ) {
+          browserToolCalled = true;
+          try {
+            const parsed = JSON.parse(functionResult);
+            if (parsed && parsed.success === false) {
+              browserToolFailed = true;
+            }
+          } catch {
+            browserToolFailed = true;
+          }
+        }
 
         let parsedResult: object;
         try {
@@ -319,21 +355,51 @@ export async function processMessage(
       contents.push(candidate.content);
       contents.push({ role: "user", parts: functionResponseParts });
 
+      // 最後のテキスト生成の直前で書き込み中ステータスに変更
+      onStatusChange?.("writing");
+
       result = await generateWithRetry(contents);
       response = result.response;
       iterations++;
     }
 
-    // 最終テキスト応答を取得してDB履歴に保存
-    const text = response.text();
-    if (text) {
-      await addChatMessage(userId, "model", text);
+    if (iterations >= maxIterations) {
+      browserToolFailed = true;
     }
-    return text || "処理が完了しました。";
+
+    // ステータス表示のプレミアムな演出のための自然な遅延
+    if (iterations === 0) {
+      onStatusChange?.("writing");
+      await sleep(1000);
+    } else {
+      await sleep(800);
+    }
+
+    // 最終テキスト応答を取得してDB履歴に保存
+    let text = "";
+    try {
+      text = response.text();
+    } catch (e) {
+      console.warn("response.text() retrieval failed:", e);
+    }
+
+    if (text && text.trim()) {
+      await addChatMessage(userId, "model", text);
+      return text;
+    } else {
+      if (browserToolCalled || browserToolFailed) {
+        return "ブラウザ操作に失敗しました。求めた結果が得られませんでした。";
+      }
+      return "処理が完了しました。";
+    }
   } catch (error) {
     if (isRateLimitError(error)) {
       console.error("Gemini API レート制限:", error);
-      return "⚠️ 現在APIの利用制限に達しています。しばらく待ってからもう一度お試しください。";
+      return "⚠️ 現在APIの利用制限（トークン枯渇など）に達しています。しばらく待ってからもう一度お試しください。";
+    }
+    if (isServerError(error)) {
+      console.error("Gemini API サーバーエラー:", error);
+      return "⚠️ AIサーバーが現在混み合っているか、一時的なエラーが発生しています（503等）。しばらく待ってからもう一度お試しください。";
     }
     console.error("Gemini API エラー:", error);
     throw error;

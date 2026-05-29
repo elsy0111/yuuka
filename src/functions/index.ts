@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { FunctionDeclaration } from "@google/generative-ai";
 import { SchemaType } from "@google/generative-ai";
+import { config } from "../config.js";
 import * as taskFn from "./taskFunctions.js";
 import * as scheduleFn from "./scheduleFunctions.js";
 import * as expenseFn from "./expenseFunctions.js";
@@ -7,6 +10,8 @@ import * as fileFn from "./fileFunctions.js";
 import * as commandFn from "./commandFunctions.js";
 import * as browserFn from "./browserFunctions.js";
 import * as gitFn from "./gitFunctions.js";
+import * as credentialFn from "./credentialFunctions.js";
+import * as playbookFn from "./playbookFunctions.js";
 
 // ─── Function Declarations for Gemini ──────────────────────────────────
 
@@ -311,13 +316,148 @@ export const functionDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "searchWeb",
-    description: "インターネットでキーワード検索を行い、関連するウェブページのタイトル、URL、説明（スニペット）の一覧を取得します。現在の天気、最新ニュース、事実確認など、リアルタイムの情報を取得する最初のステップとして非常に有効です。必要に応じて、得られたURLから fetchDynamicPage を使って詳細なページ情報をさらに取得・巡回（クロール）し、複数回検索や巡回を繰り返して情報を比較精査することを推奨します。",
+    description: "インターネットでキーワード検索を行い、関連するウェブページのタイトル、URL、説明（スニペット）の一覧を取得します。現在の天気、最新ニュース、事実確認年など、リアルタイムの情報を取得する最初のステップとして非常に有効です。必要に応じて、得られたURLから fetchDynamicPage を使って詳細なページ情報をさらに取得・巡回（クロール）し、複数回検索や巡回を繰り返して情報を比較精査することを推奨します。",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
         query: { type: SchemaType.STRING, description: "検索に入力するキーワード（例: '東京 明日の天気', 'ブルーアーカイブ 最新ニュース'）" },
       },
       required: ["query"],
+    },
+  },
+  {
+    name: "browserInteractiveOpen",
+    description: "インタラクティブブラウザの永続セッションを開始または再利用し、指定されたURLを開きます。ログインや操作を行いたい特定のWebページの最初の手順として呼び出します。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        url: { type: SchemaType.STRING, description: "アクセスするウェブページのURL" },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "browserInteractiveClick",
+    description: "インタラクティブブラウザのアクティブなページ上で、指定された要素をクリックします。画面上の操作可能な要素には [ID: 数値] または [Button ID: 数値] のように一意の数値IDがマークダウン内に付与されているため、最優先でその数値ID（例: '3'）を selector 引数に直接指定してください。CSSセレクタやテキストでの指定も可能ですが、数値IDが最も確実で推奨されます。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        selector: { type: SchemaType.STRING, description: "クリック対象の一意の数値ID（最推奨、例: '3'）、またはCSSセレクタ/要素内のテキスト" },
+      },
+      required: ["selector"],
+    },
+  },
+  {
+    name: "browserInteractiveType",
+    description: "インタラクティブブラウザのアクティブなページ上の指定された入力フィールドにテキストを入力します。画面上の入力フィールドには [Input (text) ID: 数値] のように一意の数値IDがマークダウン内に付与されているため、最優先でその数値ID（例: '2'）を selector 引数に直接指定してください。CSSセレクタやプレースホルダー名での指定も可能ですが、数値IDが最も確実で推奨されます。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        selector: { type: SchemaType.STRING, description: "入力対象の一意の数値ID（最推奨、例: '2'）、またはCSSセレクタ/プレースホルダー名/name属性の一部" },
+        text: { type: SchemaType.STRING, description: "入力するテキスト内容" },
+      },
+      required: ["selector", "text"],
+    },
+  },
+  {
+    name: "browserInteractiveWait",
+    description: "インタラクティブブラウザのアクティブなページ上で、指定された時間（ミリ秒）待機するか、特定のCSSセレクタを持つ要素がDOM上に出現するまで待機します。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        selector: { type: SchemaType.STRING, description: "出現を待つCSSセレクタ（任意）" },
+        timeoutMs: { type: SchemaType.NUMBER, description: "待機時間（ミリ秒、デフォルト5000ms、任意）" },
+      },
+    },
+  },
+  {
+    name: "browserInteractiveStatus",
+    description: "現在のインタラクティブブラウザのアクティブな状態（現在のURL、タイトル、最新スクリーンショット画像パス、およびクリーンアップした最新マークダウンコンテンツ）を取得します。クリックやテキスト入力を行った後、画面の反応や遷移結果を確認するために必ず呼び出してください。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {},
+    },
+  },
+  {
+    name: "browserInteractiveClose",
+    description: "インタラクティブブラウザの永続セッションを終了し、ブラウザを完全にクローズしてリソースを解放します。一連の操作代行がすべて完了した際に最後に呼び出します。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {},
+    },
+  },
+  {
+    name: "getCredential",
+    description: "指定されたサービス（例: 'github', 'millennium-portal'）のユーザー名とパスワードを安全にロードして取得します。Webサイトへの自動ログインが必要な場合にのみ呼び出してください。取得したパスワードそのものを先生（ユーザー）とのチャットにそのまま出力してはいけません。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        service_name: {
+          type: SchemaType.STRING,
+          description: "サービスの名前（小文字の英数字、ハイフン推奨。例: 'github'）",
+        },
+      },
+      required: ["service_name"],
+    },
+  },
+  {
+    name: "listCredentials",
+    description: "現在登録されている資格情報のインデックス（サービス名とユーザー名）の一覧を取得します。どのようなログイン情報がすでに登録されているか、サービス名を確認したい場合にのみ呼び出してください。パスワードはここには含まれません。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {},
+    },
+  },
+  {
+    name: "reloadDynamicFunctions",
+    description: "サンドボックス内でビルドされた動的プラグイン関数を再読み込み（ホットリロード）します。新しい関数を実装して 'npm run build' または 'npx tsc' でビルドした後にこの関数を呼び出すことで、即座に新しいツールが利用可能になります。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {},
+    },
+  },
+  {
+    name: "savePlaybook",
+    description: "AIが行った一連の操作手順（Playbook）に名前やキーワードを付与してMarkdownファイルとして永続的に保存（記憶）します。ユーザーから「今の操作手順を覚えておいて」「『〜〜』という名前で保存して」と指示された際に呼び出します。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        name: {
+          type: SchemaType.STRING,
+          description: "手順書の英数字ファイル名 (例: 'example_login', 'tadaden_invoice')",
+        },
+        title: {
+          type: SchemaType.STRING,
+          description: "手順書の分かりやすい日本語タイトル (例: 'サンプルサイトのログインと請求書取得')",
+        },
+        keywords: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: "次回検索時にヒットさせたい関連キーワードのリスト (例: ['サンプル', 'ログイン', '請求書', '電気代'])",
+        },
+        description: {
+          type: SchemaType.STRING,
+          description: "この手順書が何を行うものかの簡単な説明",
+        },
+        steps: {
+          type: SchemaType.STRING,
+          description: "Markdown形式の具体的な操作手順の各ステップ記述。使用する具体的なAPIツール名や判定ロジックを含めると効果的です。",
+        },
+      },
+      required: ["name", "title", "keywords", "description", "steps"],
+    },
+  },
+  {
+    name: "findPlaybooks",
+    description: "登録されているすべての自動化手順書（Playbook）の一覧、またはキーワード部分一致に関連する手順書とその中身の詳細を検索して取得します。ユーザーからブラウザ自動化や何らかの操作自動化を指示された際、すでに対応する手順書が登録されていないか確認する目的で最初に呼び出します。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        query: {
+          type: SchemaType.STRING,
+          description: "検索したいキーワードや部分一致の文字列 (例: 'ログイン', 'でんき')。省略した場合はすべての手順書一覧を返します。",
+        },
+      },
     },
   },
 ];
@@ -332,6 +472,26 @@ export async function dispatchFunction(
   args: FunctionArgs,
   userId: string
 ): Promise<string> {
+  // 自己拡張関連ツールのガード（サンドボックスが無効な場合は呼び出しエラーを返す）
+  const sandboxTools = [
+    "readCodeFile",
+    "writeCodeFile",
+    "listCodeFiles",
+    "searchCodeFiles",
+    "verifyCodeChanges",
+    "checkoutBranch",
+    "commitLocalChanges",
+    "mergeBranch",
+    "pushChanges",
+    "reloadDynamicFunctions"
+  ];
+  if (sandboxTools.includes(functionName) && !isSandboxEnabled()) {
+    return JSON.stringify({
+      success: false,
+      message: "エラー: 自己拡張機能（サンドボックス）は現在無効化されています。必要な設定を行ってください。"
+    });
+  }
+
   switch (functionName) {
     // タスク
     case "addTask":
@@ -402,8 +562,171 @@ export async function dispatchFunction(
       return await browserFn.takePageScreenshot(userId, args as Parameters<typeof browserFn.takePageScreenshot>[1]);
     case "searchWeb":
       return await browserFn.searchWeb(userId, args as Parameters<typeof browserFn.searchWeb>[1]);
+    
+    // 永続インタラクティブブラウザ操作
+    case "browserInteractiveOpen":
+      return await browserFn.browserInteractiveOpen(userId, args as Parameters<typeof browserFn.browserInteractiveOpen>[1]);
+    case "browserInteractiveClick":
+      return await browserFn.browserInteractiveClick(userId, args as Parameters<typeof browserFn.browserInteractiveClick>[1]);
+    case "browserInteractiveType":
+      return await browserFn.browserInteractiveType(userId, args as Parameters<typeof browserFn.browserInteractiveType>[1]);
+    case "browserInteractiveWait":
+      return await browserFn.browserInteractiveWait(userId, args as Parameters<typeof browserFn.browserInteractiveWait>[1]);
+    case "browserInteractiveStatus":
+      return await browserFn.browserInteractiveStatus(userId);
+    case "browserInteractiveClose":
+      return await browserFn.browserInteractiveClose(userId);
+
+    // 資格情報
+    case "getCredential":
+      return await credentialFn.getCredential(userId, args as Parameters<typeof credentialFn.getCredential>[1]);
+    case "listCredentials":
+      return await credentialFn.listCredentials(userId, args as Parameters<typeof credentialFn.listCredentials>[1]);
+
+    // 手順書（Playbook）自動化
+    case "savePlaybook":
+      return await playbookFn.savePlaybook(userId, args as Parameters<typeof playbookFn.savePlaybook>[1]);
+    case "findPlaybooks":
+      return await playbookFn.findPlaybooks(userId, args as Parameters<typeof playbookFn.findPlaybooks>[1]);
+
+    // 動的プラグインのリロード
+    case "reloadDynamicFunctions":
+      try {
+        await initializeDynamicFunctions(true);
+        return JSON.stringify({
+          success: true,
+          message: "動的関数を正常にリロードしました。新しく追加された関数が利用可能です。",
+          loadedFunctions: dynamicFunctionDeclarations.map(d => d.name)
+        });
+      } catch (err: any) {
+        return JSON.stringify({ success: false, message: `リロード失敗: ${err.message}` });
+      }
 
     default:
+      // 動的ロードされた関数マップに存在すれば実行する
+      if (dynamicDispatchMap.has(functionName)) {
+        const fn = dynamicDispatchMap.get(functionName)!;
+        return await fn(userId, args);
+      }
       return JSON.stringify({ success: false, message: `不明な関数: ${functionName}` });
+  }
+}
+
+// ─── 動的プラグインロード機構 ───────────────────────────────────────────
+
+export const dynamicFunctionDeclarations: FunctionDeclaration[] = [];
+const dynamicDispatchMap = new Map<string, (userId: string, args: any) => Promise<string> | string>();
+
+/**
+ * 自己拡張機能（サンドボックス）が有効に設定されているかどうかを判定する
+ */
+export function isSandboxEnabled(): boolean {
+  if (!config.sandboxPath) return false;
+  try {
+    return fs.existsSync(config.sandboxPath) && fs.statSync(config.sandboxPath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 全ての関数定義（静的＋動的ロードされたもの）を返す
+ */
+export function getAllFunctionDeclarations(): FunctionDeclaration[] {
+  const allStatic = functionDeclarations;
+  
+  if (!isSandboxEnabled()) {
+    // 自己拡張機能が無効な場合、自己拡張関連ツールを除外して返す
+    const sandboxTools = [
+      "readCodeFile",
+      "writeCodeFile",
+      "listCodeFiles",
+      "searchCodeFiles",
+      "verifyCodeChanges",
+      "checkoutBranch",
+      "commitLocalChanges",
+      "mergeBranch",
+      "pushChanges",
+      "reloadDynamicFunctions"
+    ];
+    return allStatic.filter(decl => !sandboxTools.includes(decl.name));
+  }
+
+  return [...allStatic, ...dynamicFunctionDeclarations];
+}
+
+/**
+ * サンドボックス内に動的追加された関数定義・ロジックをスキャンしてロードする
+ */
+export async function initializeDynamicFunctions(clearCache = false): Promise<void> {
+  if (!isSandboxEnabled()) {
+    console.log("[Dynamic Function] サンドボックスが無効または未設定のため、動的関数のロードをスキップします。");
+    return;
+  }
+
+  const sandboxAbs = path.resolve(config.sandboxPath);
+  const selfAbs = path.resolve(process.cwd());
+  
+  // 自分自身のリポジトリの場合は重複読み込み防止のためスキップ
+  if (sandboxAbs === selfAbs) return;
+
+  const distFunctionsDir = path.join(sandboxAbs, "dist", "functions");
+  if (!fs.existsSync(distFunctionsDir)) {
+    console.log(`[Dynamic Function] ${distFunctionsDir} が存在しないため、動的関数のロードをスキップします。`);
+    return;
+  }
+
+  try {
+    const files = fs.readdirSync(distFunctionsDir);
+    const ignoreFiles = [
+      "index.js",
+      "taskFunctions.js",
+      "scheduleFunctions.js",
+      "expenseFunctions.js",
+      "fileFunctions.js",
+      "commandFunctions.js",
+      "browserFunctions.js",
+      "gitFunctions.js"
+    ];
+
+    if (clearCache) {
+      dynamicFunctionDeclarations.length = 0;
+      dynamicDispatchMap.clear();
+    }
+
+    for (const file of files) {
+      if (file.endsWith(".js") && !ignoreFiles.includes(file)) {
+        const fullPath = path.join(distFunctionsDir, file);
+        const fileUrl = clearCache ? `file://${fullPath}?t=${Date.now()}` : `file://${fullPath}`;
+        
+        try {
+          const module = await import(fileUrl);
+          
+          // 1. 宣言の登録 (規約: module.functionDeclarations 配列から取得)
+          if (module.functionDeclarations && Array.isArray(module.functionDeclarations)) {
+            for (const decl of module.functionDeclarations) {
+              // 重複登録の防止
+              if (dynamicFunctionDeclarations.some(d => d.name === decl.name)) {
+                continue;
+              }
+              dynamicFunctionDeclarations.push(decl);
+              
+              // 2. 実行関数の登録
+              const fnName = decl.name;
+              if (typeof module[fnName] === "function") {
+                dynamicDispatchMap.set(fnName, module[fnName]);
+                console.log(`[Dynamic Function] Loaded function: ${fnName} from ${file} (clearCache=${clearCache})`);
+              } else {
+                console.warn(`[Dynamic Function] Function "${fnName}" is declared in ${file} but its execution function is not exported.`);
+              }
+            }
+          }
+        } catch (importErr) {
+          console.error(`[Dynamic Function] Failed to import ${file}:`, importErr);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[Dynamic Function] Failed to load dynamic functions:", err);
   }
 }
