@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "checkhealth": "bash scripts/checkhealth.sh",
-    "prebuild": "bash scripts/checkhealth.sh",
-    "build": "cargo build --release --manifest-path src/rust_crawler/Cargo.toml && mkdir -p dist/bin && cp src/rust_crawler/target/release/yuuka-crawler dist/bin/ && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.js --external:better-sqlite3 --external:discord.js --external:@google/generative-ai --external:googleapis --external:node-cron --external:dotenv --external:puppeteer --external:redis",
+    "build": "bash scripts/checkhealth.sh && cargo build --release --manifest-path src/rust_crawler/Cargo.toml && mkdir -p dist/bin && cp src/rust_crawler/target/release/yuuka-crawler dist/bin/ && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.js --external:better-sqlite3 --external:discord.js --external:@google/generative-ai --external:googleapis --external:node-cron --external:dotenv --external:puppeteer --external:redis",
     "start": "node dist/index.js"
   },
   "dependencies": {
