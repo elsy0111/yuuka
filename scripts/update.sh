@@ -33,6 +33,6 @@ pm2 flush yuuka
 echo -n "起動待機中"
 for i in 1 2 3; do sleep 1; echo -n "."; done
 echo ""
-pm2 logs yuuka --lines 10 --nostream
+timeout 10 pm2 logs yuuka --lines 0 || true
 
 echo "=== 更新完了 ==="
