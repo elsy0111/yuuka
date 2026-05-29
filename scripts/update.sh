@@ -35,6 +35,6 @@ wait_port_free
 pm2 start yuuka
 pm2 flush yuuka
 
-timeout 10 pm2 logs yuuka --lines 0 || true
+timeout 15 bash -c 'pm2 logs yuuka --lines 0 | grep -m 1 "リマインダーサービス開始"' || true
 
 echo "=== 更新完了 ==="
