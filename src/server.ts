@@ -602,9 +602,17 @@ let server: http.Server | null = null;
  * Webサーバーの起動
  */
 export function startWebServer(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     server = http.createServer(serverHandler);
-    
+
+    server.on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        reject(new Error(`ポート ${config.port} は既に使用中です。他のプロセスを終了してから再起動してください。`));
+      } else {
+        reject(err);
+      }
+    });
+
     server.listen(config.port, config.host, () => {
       console.log(`🌐 Yuuka 管理画面サーバー起動完了: http://${config.host}:${config.port}`);
       resolve();
