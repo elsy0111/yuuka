@@ -8,11 +8,9 @@ echo "=== Yuuka 更新スクリプト ==="
 git pull
 yarn install
 
-pm2 stop yuuka 2>/dev/null || true
-
 yarn build
 
-pm2 start yuuka
+pm2 reload yuuka 2>/dev/null || pm2 start dist/index.js --name yuuka
 pm2 flush yuuka
 
 timeout 15 pm2 logs yuuka --lines 0 || true
