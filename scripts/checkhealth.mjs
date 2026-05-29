@@ -1,7 +1,15 @@
 #!/usr/bin/env node
-import { execSync, execFileSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createConnection } from "node:net";
+
+// .env をプロジェクトルートから読み込む（存在する場合のみ）
+if (existsSync(".env")) {
+  for (const line of readFileSync(".env", "utf-8").split("\n")) {
+    const m = line.match(/^\s*([^#=\s][^=]*?)\s*=\s*(.*)\s*$/);
+    if (m) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
 
 const RUNTIME_MODE = process.argv.includes("--runtime");
 
