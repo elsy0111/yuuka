@@ -14,5 +14,6 @@ PORT=$(grep -E "^PORT:" config.yaml 2>/dev/null | head -1 | sed 's/^[^:]*:[[:spa
 fuser -k "${PORT}/tcp" 2>/dev/null || true
 
 pm2 restart yuuka
+pm2 flush yuuka
 
 echo "=== 更新完了 ==="
