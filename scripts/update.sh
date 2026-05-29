@@ -35,7 +35,6 @@ wait_port_free
 pm2 start yuuka
 pm2 flush yuuka
 
-sleep 3
 timeout 10 pm2 logs yuuka --lines 0 || true
 
 echo "=== 更新完了 ==="
