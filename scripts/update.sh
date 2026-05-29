@@ -39,9 +39,11 @@ yarn build
 # ビルド中に再取得された場合に備えて再度解放
 wait_port_stable
 
-pm2 start yuuka
+pm2 delete yuuka 2>/dev/null || true
+wait_port_stable
+pm2 start dist/index.js --name yuuka
 pm2 flush yuuka
 
-timeout 10 pm2 logs yuuka --lines 0 || true
+timeout 15 pm2 logs yuuka --lines 0 || true
 
 echo "=== 更新完了 ==="
