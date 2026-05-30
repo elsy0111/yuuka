@@ -35,14 +35,15 @@ function renderDailyExpenseTotals(dailyTotals) {
   if (!list) return;
   list.replaceChildren();
 
-  const maxTotal = Math.max(...dailyTotals.map((row) => Number(row.total || 0)), 1);
-  dailyTotals.forEach((row, idx) => {
+  const reversed = [...dailyTotals].reverse();
+  const maxTotal = Math.max(...reversed.map((row) => Number(row.total || 0)), 1);
+  reversed.forEach((row, idx) => {
     const item = document.createElement("div");
     item.className = "expense-daily-item";
 
     const label = document.createElement("span");
     label.className = "expense-daily-date";
-    label.textContent = formatDailyLabel(row.date, idx, dailyTotals.length - 1);
+    label.textContent = formatDailyLabel(row.date, reversed.length - 1 - idx, dailyTotals.length - 1);
 
     const barTrack = document.createElement("div");
     barTrack.className = "expense-daily-track";
