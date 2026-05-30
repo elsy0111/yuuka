@@ -80,34 +80,40 @@
       <div id="register-tab-content" class="login-tab-pane">
         <form id="register-form">
 
-          <div class="register-section-label">— Discordアカウント情報</div>
+          <!-- 取得するもの -->
+          <div class="reg-group-label">取得するもの</div>
           <div class="form-group">
-            <label for="reg-discord-id">Discord ユーザーID <span class="field-badge field-badge-issued">Discordから取得</span></label>
+            <label for="reg-discord-id">Discord ユーザーID *
+              <button type="button" class="btn-field-info" data-info-title="Discord ユーザーID の確認方法" data-info-body="Discordアプリで自分のユーザー名を右クリック（モバイルは長押し）→「ユーザーIDをコピー」で取得できます。開発者モードが必要な場合は、設定 → 詳細設定 → 開発者モードをオンにしてください。"><span class="material-symbols-outlined">info</span></button>
+            </label>
             <input type="text" id="reg-discord-id" required placeholder="例: 123456789012345678">
-            <span class="field-sub">Discordアプリ → ユーザー名を右クリック → 「ユーザーIDをコピー」</span>
+          </div>
+          <div class="form-group">
+            <label for="reg-invite-code">招待コード *
+              <button type="button" class="btn-field-info" data-info-title="招待コードについて" data-info-body="サーバー管理者が config.yaml の INVITE_CODES に設定した文字列です。1回使い切りで、使用後は無効になります。"><span class="material-symbols-outlined">info</span></button>
+            </label>
+            <input type="text" id="reg-invite-code" required placeholder="管理者から受け取ったコード">
           </div>
 
-          <div class="register-section-label">— このシステムで使う情報（自由に決める）</div>
+          <!-- 自分で決めるもの -->
+          <div class="reg-group-label reg-group-label--free">自分で決めるもの</div>
           <div class="form-group">
-            <label for="reg-username">表示名 <span class="field-badge field-badge-free">自分で決める</span></label>
+            <label for="reg-username">表示名 *</label>
             <input type="text" id="reg-username" required placeholder="例: シャーレの先生">
-            <span class="field-sub">管理画面のヘッダーに表示される名前です</span>
           </div>
           <div class="form-group">
-            <label for="reg-password">パスワード <span class="field-badge field-badge-free">自分で決める</span></label>
+            <label for="reg-password">パスワード *</label>
             <input type="password" id="reg-password" required placeholder="••••••••••••" autocomplete="new-password">
-            <span class="field-sub">次回以降のログインに使います。今ここで新しく決めてください</span>
           </div>
 
-          <div class="register-section-label">— 管理者から発行されたもの</div>
-          <div class="form-group">
-            <label for="reg-invite-code">招待コード <span class="field-badge field-badge-issued">発行済みコード</span></label>
-            <input type="text" id="reg-invite-code" required placeholder="config.yaml の INVITE_CODES に設定した文字列">
-            <span class="field-sub">サーバー管理者が config.yaml → INVITE_CODES に設定した文字列を入力してください</span>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-block">登録してログインする</button>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top: 8px;">登録してログインする</button>
         </form>
+      </div>
+
+      <!-- info ポップオーバー -->
+      <div id="field-info-popover" class="field-info-popover hidden">
+        <div class="field-info-title" id="field-info-title"></div>
+        <div class="field-info-body" id="field-info-body"></div>
       </div>
 
       <div id="login-error" class="error-msg"></div>
