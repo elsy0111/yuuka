@@ -40,6 +40,66 @@
   white-space: nowrap;
 }
 
+.budget-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.budget-header p {
+  margin-bottom: 0;
+}
+
+.btn-budget-edit {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.btn-budget-edit:hover {
+  color: var(--text-primary);
+}
+
+.btn-budget-edit .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.budget-edit-form {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.budget-edit-form .filter-input {
+  width: 120px;
+}
+
+.budget-limit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.budget-limit-label {
+  font-size: 0.75rem;
+  color: var(--color-zinc-muted);
+}
+
+.budget-remaining {
+  font-family: var(--font-family-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .budget-progress-container {
   width: 100%;
   height: 10px;

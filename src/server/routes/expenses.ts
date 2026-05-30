@@ -8,6 +8,7 @@ import {
   listRecentExpenses,
   updateExpense,
 } from "../../db/expenseRepo.js";
+import { getMonthlyBudget, updateMonthlyBudget } from "../../db/userRepo.js";
 import { parseReceipt } from "../../services/receiptParser.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
@@ -19,10 +20,14 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
       const year = parseInt(parsedUrl.searchParams.get("year") || String(now.getFullYear()), 10);
       const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
+      const total = getMonthlyTotal(userId, year, month);
+      const budget = getMonthlyBudget(userId);
       sendJson(res, 200, {
         success: true,
         expenses: listRecentExpenses(userId, 30),
-        total: getMonthlyTotal(userId, year, month),
+        total,
+        budget,
+        remaining: budget - total,
         breakdown: getMonthlyCategoryBreakdown(userId, year, month),
         dailyTotals: getDailyExpenseTotals(userId, 7),
       });
@@ -107,6 +112,21 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       sendJson(res, 200, { success: deleteExpense(id, userId) });
     } catch {
       sendError(res, 500, "支出の削除に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/expenses/budget" && method === "POST") {
+    try {
+      const { userId, budget } = JSON.parse(await getRequestBody(req));
+      if (!userId || typeof budget !== "number" || budget < 0) {
+        sendError(res, 400, "userId と正の整数の budget が必要です。");
+        return true;
+      }
+      const ok = updateMonthlyBudget(userId, Math.round(budget));
+      sendJson(res, 200, { success: ok, budget: Math.round(budget) });
+    } catch {
+      sendError(res, 500, "予算の更新に失敗しました。");
     }
     return true;
   }

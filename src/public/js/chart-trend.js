@@ -50,7 +50,8 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   const xAxis = svg.nextElementSibling;
   xAxis.replaceChildren();
   rows.forEach((row, idx) => {
-    const svgX = PAD_X + (rows.length > 1 ? idx * DATA_WIDTH / (rows.length - 1) : DATA_WIDTH / 2);
+    const svgX =
+      PAD_X + (rows.length > 1 ? (idx * DATA_WIDTH) / (rows.length - 1) : DATA_WIDTH / 2);
     const pct = (svgX / 400) * 100;
     const span = document.createElement("span");
     span.textContent = formatDateLabel(row.date, idx, rows.length - 1);

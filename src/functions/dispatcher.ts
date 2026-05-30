@@ -212,6 +212,13 @@ export async function dispatchFunction(
     // 家計
     case "addExpense":
       return expenseFn.addExpense(userId, args as Parameters<typeof expenseFn.addExpense>[1]);
+    case "setMonthlyBudget":
+      return expenseFn.setMonthlyBudget(
+        userId,
+        args as Parameters<typeof expenseFn.setMonthlyBudget>[1],
+      );
+    case "getMonthlyBudgetInfo":
+      return expenseFn.getMonthlyBudgetInfo(userId);
     case "getMonthlySummary":
       return expenseFn.getMonthlySummary(
         userId,

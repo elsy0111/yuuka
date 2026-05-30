@@ -10,7 +10,7 @@ export async function fetchExpensesList() {
     if (!data.success) return;
 
     document.getElementById("expense-month-total").textContent = `¥${data.total.toLocaleString()}`;
-    renderBudgetBar(data.total);
+    renderBudgetBar(data.total, data.budget ?? 50000, data.remaining ?? data.budget - data.total);
     renderDailyExpenseTotals(data.dailyTotals || []);
 
     if (data.expenses?.length > 0) {
@@ -67,12 +67,22 @@ function formatDailyLabel(dateString, idx, lastIdx) {
   return `${Number(month)}/${Number(day)}`;
 }
 
-function renderBudgetBar(total) {
-  const TARGET = 50000;
-  const pct = Math.min((total / TARGET) * 100, 100);
+function renderBudgetBar(total, budget, remaining) {
+  const pct = budget > 0 ? Math.min((total / budget) * 100, 100) : 0;
   const bar = document.getElementById("expense-budget-bar");
   const pctEl = document.getElementById("expense-budget-percent");
   const statusEl = document.getElementById("expense-budget-status");
+  const limitEl = document.getElementById("expense-budget-limit");
+  const remainingEl = document.getElementById("expense-budget-remaining");
+
+  if (limitEl) limitEl.textContent = `¥${budget.toLocaleString()}`;
+  if (remainingEl) {
+    const rem = remaining ?? budget - total;
+    remainingEl.textContent =
+      rem >= 0 ? `残り ¥${rem.toLocaleString()}` : `超過 ¥${(-rem).toLocaleString()}`;
+    remainingEl.style.color =
+      rem < 0 ? "var(--color-red)" : rem < budget * 0.3 ? "#f59e0b" : "var(--text-success)";
+  }
 
   bar.style.width = `${pct}%`;
   pctEl.textContent = `${Math.round(pct)}%`;
@@ -97,6 +107,48 @@ function renderBudgetBar(total) {
     statusEl.style.color = "var(--text-success)";
   }
   statusEl.append(iconEl, textEl);
+}
+
+export function initBudgetEdit() {
+  const editBtn = document.getElementById("btn-budget-edit");
+  const form = document.getElementById("budget-edit-form");
+  const saveBtn = document.getElementById("btn-budget-save");
+  const cancelBtn = document.getElementById("btn-budget-cancel");
+  const input = document.getElementById("budget-input");
+
+  editBtn?.addEventListener("click", () => {
+    const current =
+      document.getElementById("expense-budget-limit")?.textContent?.replace(/[¥,]/g, "") || "50000";
+    input.value = current;
+    form.style.display = "flex";
+    editBtn.style.display = "none";
+    input.focus();
+  });
+
+  cancelBtn?.addEventListener("click", () => {
+    form.style.display = "none";
+    editBtn.style.display = "";
+  });
+
+  saveBtn?.addEventListener("click", async () => {
+    const budget = Number(input.value);
+    if (!budget || budget < 0) return;
+    try {
+      const res = await fetch("/api/expenses/budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: state.activeUserId, budget }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        form.style.display = "none";
+        editBtn.style.display = "";
+        fetchExpensesList();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
 }
 
 export function makeExpenseRow(exp) {

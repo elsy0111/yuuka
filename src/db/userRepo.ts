@@ -363,6 +363,30 @@ export function migrateUserId(fromId: string, toId: string): { migrated: number 
 }
 
 /**
+ * ユーザーの月次予算上限を取得する（未設定時は50000）
+ */
+export function getMonthlyBudget(discordId: string): number {
+  const db = getDb();
+  const row = db.prepare("SELECT monthly_budget FROM users WHERE discord_id = ?").get(discordId) as
+    | { monthly_budget: number | null }
+    | undefined;
+  return row?.monthly_budget ?? 50000;
+}
+
+/**
+ * ユーザーの月次予算上限を更新する
+ */
+export function updateMonthlyBudget(discordId: string, budget: number): boolean {
+  const db = getDb();
+  const result = db
+    .prepare(
+      "UPDATE users SET monthly_budget = ?, updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(budget, discordId);
+  return result.changes > 0;
+}
+
+/**
  * ユーザーの独自Discord Botおよびペルソナ設定を取得する
  */
 export function getUserDiscordBotConfig(discordId: string): DiscordBotConfig | null {

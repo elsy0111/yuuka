@@ -38,6 +38,30 @@ export const expenseDeclarations: FunctionDeclaration[] = [
     },
   },
   {
+    name: "setMonthlyBudget",
+    description:
+      "先生の月次予算上限を設定・変更する。「今月の予算を〇〇円にして」「予算を変更して」などと言われた時に呼び出す。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        budget: {
+          type: SchemaType.NUMBER,
+          description: "設定する月次予算上限（円、整数）",
+        },
+      },
+      required: ["budget"],
+    },
+  },
+  {
+    name: "getMonthlyBudgetInfo",
+    description:
+      "今月の予算・支出・残額を確認する。「今月の予算残りは？」「あとどのくらい使える？」などと聞かれた時に呼び出す。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {},
+    },
+  },
+  {
     name: "saveMemory",
     description:
       "先生から教わった事実・定型情報をDBに記憶として保存する。" +

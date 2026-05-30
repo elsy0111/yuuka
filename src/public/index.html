@@ -393,7 +393,21 @@
             </div>
             <!-- Dynamic Category Progress Bar -->
             <div class="hud-card card col-span-2">
-              <p>カテゴリー別上限進捗 (目標上限: ¥50,000)</p>
+              <div class="budget-header">
+                <p>月次予算</p>
+                <button type="button" class="btn-budget-edit" id="btn-budget-edit">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+              </div>
+              <div id="budget-edit-form" class="budget-edit-form" style="display:none;">
+                <input type="number" id="budget-input" class="filter-input" min="0" step="1000" placeholder="50000">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-budget-save">保存</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-budget-cancel">キャンセル</button>
+              </div>
+              <div class="budget-limit-row">
+                <span class="budget-limit-label">上限 <strong id="expense-budget-limit">¥50,000</strong></span>
+                <span class="budget-remaining" id="expense-budget-remaining">残り ¥50,000</span>
+              </div>
               <div class="budget-progress-container">
                 <div class="budget-progress-bar" id="expense-budget-bar"></div>
               </div>

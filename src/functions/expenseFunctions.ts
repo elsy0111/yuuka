@@ -1,4 +1,5 @@
 import * as expenseRepo from "../db/expenseRepo.js";
+import { getMonthlyBudget, updateMonthlyBudget } from "../db/userRepo.js";
 import { formatCurrency, formatDate, currentMonthLabel } from "../utils/formatters.js";
 
 export function addExpense(
@@ -103,5 +104,35 @@ export function listRecentExpenses(userId: string, args: { count?: number }): st
     success: true,
     message: `直近の支出:\n${lines.join("\n")}`,
     expenses,
+  });
+}
+
+export function setMonthlyBudget(userId: string, args: { budget: number }): string {
+  const amount = Math.round(args.budget);
+  if (amount < 0) {
+    return JSON.stringify({ success: false, message: "予算は0以上の金額で設定してください。" });
+  }
+  const ok = updateMonthlyBudget(userId, amount);
+  const current = getMonthlyBudget(userId);
+  return JSON.stringify({
+    success: ok,
+    message: ok
+      ? `月次予算を ${formatCurrency(current)} に更新しました。`
+      : "予算の更新に失敗しました。",
+    budget: current,
+  });
+}
+
+export function getMonthlyBudgetInfo(userId: string): string {
+  const budget = getMonthlyBudget(userId);
+  const now = new Date();
+  const total = expenseRepo.getMonthlyTotal(userId, now.getFullYear(), now.getMonth() + 1);
+  const remaining = budget - total;
+  return JSON.stringify({
+    success: true,
+    message: `今月の予算: ${formatCurrency(budget)} / 支出: ${formatCurrency(total)} / 残り: ${formatCurrency(remaining)}`,
+    budget,
+    total,
+    remaining,
   });
 }

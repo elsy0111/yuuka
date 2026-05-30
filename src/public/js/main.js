@@ -26,7 +26,7 @@ import { initRouter } from "./router.js";
 import { initAuth, checkSessionHandshake } from "./auth.js";
 import { initTasks } from "./tasks.js";
 import { initSchedules } from "./schedules.js";
-import { initExpenses } from "./expenses.js";
+import { initExpenses, initBudgetEdit } from "./expenses.js";
 import { initExpenseDetail } from "./expense-detail.js";
 import { initConfig } from "./config.js";
 import { initCredentials } from "./credentials.js";
@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTasks();
   initSchedules();
   initExpenses();
+  initBudgetEdit();
   initExpenseDetail();
   initConfig();
   initCredentials();

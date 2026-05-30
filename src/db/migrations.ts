@@ -36,16 +36,17 @@ export function runMigrations(): void {
   // users テーブルのマイグレーション（既存DBへのカラム追加）
   try {
     const tableInfo = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
-    const columnsToAdd = [
-      "discord_token_encrypted",
-      "discord_token_iv",
-      "discord_token_tag",
-      "persona",
+    const columnsToAdd: { name: string; def: string }[] = [
+      { name: "discord_token_encrypted", def: "TEXT" },
+      { name: "discord_token_iv", def: "TEXT" },
+      { name: "discord_token_tag", def: "TEXT" },
+      { name: "persona", def: "TEXT" },
+      { name: "monthly_budget", def: "INTEGER NOT NULL DEFAULT 50000" },
     ];
     for (const col of columnsToAdd) {
-      if (!tableInfo.some((c) => c.name === col)) {
-        db.exec(`ALTER TABLE users ADD COLUMN ${col} TEXT;`);
-        console.log(`ℹ️ users テーブルに ${col} カラムを追加しました`);
+      if (!tableInfo.some((c) => c.name === col.name)) {
+        db.exec(`ALTER TABLE users ADD COLUMN ${col.name} ${col.def};`);
+        console.log(`ℹ️ users テーブルに ${col.name} カラムを追加しました`);
       }
     }
   } catch (e) {
