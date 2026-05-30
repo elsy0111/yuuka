@@ -75,23 +75,9 @@ export function makeExpenseRow(exp) {
   tdAmt.className = "expense-amount-val";
   tdAmt.textContent = `¥${exp.amount.toLocaleString()}`;
 
-  const tdActions = document.createElement("td");
-  tdActions.style.cssText = "text-align:right; white-space:nowrap;";
-
-  const editBtn = document.createElement("button");
-  editBtn.className = "btn-trash";
-  editBtn.title = "編集";
-  editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">edit</span>';
-  editBtn.addEventListener("click", () => openEditExpenseModal(exp));
-
-  const delBtn = document.createElement("button");
-  delBtn.className = "btn-trash";
-  delBtn.title = "削除";
-  delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">delete</span>';
-  delBtn.addEventListener("click", () => handleDeleteExpense(exp.id));
-
-  tdActions.append(editBtn, delBtn);
-  tr.append(tdDate, tdCat, tdDesc, tdAmt, tdActions);
+  tr.style.cursor = "pointer";
+  tr.addEventListener("click", () => openEditExpenseModal(exp));
+  tr.append(tdDate, tdCat, tdDesc, tdAmt);
   return tr;
 }
 
@@ -105,7 +91,7 @@ function openEditExpenseModal(exp) {
   openModal(getModal("expense-edit"));
 }
 
-async function handleDeleteExpense(id) {
+export async function handleDeleteExpense(id) {
   if (!confirm("この支出記録を削除しますか？")) return;
   try {
     await fetch("/api/expenses/delete", {
@@ -172,6 +158,12 @@ export function initExpenses() {
   });
 
   document.getElementById("expense-edit-form")?.addEventListener("submit", handleEditExpenseSubmit);
+
+  document.getElementById("btn-expense-delete")?.addEventListener("click", () => {
+    const id = parseInt(document.getElementById("exp-edit-id")?.value, 10);
+    if (id) handleDeleteExpense(id);
+  });
+
   initReceiptDropzone();
 }
 

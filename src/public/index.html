@@ -478,7 +478,6 @@
                     <th>カテゴリー</th>
                     <th>詳細</th>
                     <th>金額</th>
-                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody id="expenses-table-body">
@@ -846,10 +845,15 @@
   <div id="modal-expense-edit" class="modal">
     <div class="modal-content card">
       <div class="modal-header">
-        <h3>支出の編集</h3>
-        <button class="btn-close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
+        <h3><span class="material-symbols-outlined header-icon-symbol">receipt_long</span>支出の詳細 / 編集</h3>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-expense-delete" class="btn btn-secondary btn-sm" type="button" style="color:var(--color-red);border-color:var(--color-red);">
+            <span class="material-symbols-outlined" style="font-size:0.9rem;vertical-align:middle;">delete</span> 削除
+          </button>
+          <button class="btn-close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
       <form id="expense-edit-form">
         <input type="hidden" id="exp-edit-id">
@@ -863,27 +867,29 @@
             <input type="date" id="exp-edit-date" required>
           </div>
         </div>
-        <div class="form-group">
-          <label for="exp-edit-category">カテゴリー *</label>
-          <select id="exp-edit-category" required>
-            <option value="食費">食費</option>
-            <option value="日用品">日用品</option>
-            <option value="交通費">交通費</option>
-            <option value="光熱費">光熱費</option>
-            <option value="通信費">通信費</option>
-            <option value="医療費">医療費</option>
-            <option value="娯楽">娯楽</option>
-            <option value="衣服">衣服</option>
-            <option value="その他">その他</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exp-edit-category">カテゴリー *</label>
+            <select id="exp-edit-category" required>
+              <option value="食費">食費</option>
+              <option value="日用品">日用品</option>
+              <option value="交通費">交通費</option>
+              <option value="光熱費">光熱費</option>
+              <option value="通信費">通信費</option>
+              <option value="医療費">医療費</option>
+              <option value="娯楽">娯楽</option>
+              <option value="衣服">衣服</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="exp-edit-purchase-source">購入元</label>
+            <input type="text" id="exp-edit-purchase-source" placeholder="例: セブンイレブン">
+          </div>
         </div>
         <div class="form-group">
-          <label for="exp-edit-description">詳細説明</label>
+          <label for="exp-edit-description">詳細</label>
           <input type="text" id="exp-edit-description" placeholder="例: コンビニでの買い物">
-        </div>
-        <div class="form-group">
-          <label for="exp-edit-purchase-source">購入元</label>
-          <input type="text" id="exp-edit-purchase-source" placeholder="例: セブンイレブン">
         </div>
         <button type="submit" class="btn btn-primary btn-block">更新する</button>
       </form>
