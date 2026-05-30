@@ -25,6 +25,8 @@ function storeSession(data) {
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
     token: data.sessionToken,
     expiresAt: data.expiresAt,
+    discordId: data.discordId || "",
+    username: data.username || "",
   }));
 }
 
@@ -58,57 +60,118 @@ export async function loadUserProfiles() {
     const data = await res.json();
     if (data.success) {
       state.userProfiles = data.users;
-      renderProfileDropdown();
+      if (data.discordId) state.activeUserId = data.discordId;
+      else if (data.users.length > 0) state.activeUserId = data.users[0];
+
+      const displayName = data.username || readStoredSession()?.username || state.activeUserId || "—";
+      renderProfileDropdown(displayName);
     }
   } catch (err) {
     console.error("ユーザー情報の読み込みに失敗:", err);
   }
 }
 
-function renderProfileDropdown() {
+export function renderProfileDropdown(displayName) {
   const display = document.getElementById("current-user-display");
-  if (display) display.textContent = state.activeUserId || "—";
+  if (display) display.textContent = displayName || state.activeUserId || "—";
+}
+
+function showLoginOverlay(msg = "") {
+  document.getElementById("login-overlay").classList.add("active");
+  document.getElementById("app-container").classList.add("hidden");
+  if (msg) document.getElementById("login-error").textContent = msg;
+}
+
+function onLoginSuccess(data) {
+  storeSession(data);
+  document.getElementById("login-overlay").classList.remove("active");
+  document.getElementById("app-container").classList.remove("hidden");
+  loadUserProfiles().then(() => {
+    if (state.userProfiles.length > 0 && !state.activeUserId) {
+      state.activeUserId = state.userProfiles[0];
+    }
+  });
+  switchTab("dashboard");
 }
 
 export function initAuth() {
   installAuthenticatedFetch();
 
+  // タブ切り替え
+  document.getElementById("btn-tab-login")?.addEventListener("click", () => {
+    document.getElementById("btn-tab-login").classList.add("active");
+    document.getElementById("btn-tab-register").classList.remove("active");
+    document.getElementById("login-tab-content").classList.add("active");
+    document.getElementById("register-tab-content").classList.remove("active");
+    document.getElementById("login-error").textContent = "";
+  });
+
+  document.getElementById("btn-tab-register")?.addEventListener("click", () => {
+    document.getElementById("btn-tab-register").classList.add("active");
+    document.getElementById("btn-tab-login").classList.remove("active");
+    document.getElementById("register-tab-content").classList.add("active");
+    document.getElementById("login-tab-content").classList.remove("active");
+    document.getElementById("login-error").textContent = "";
+  });
+
+  // ログインフォーム
   document.getElementById("login-form")?.addEventListener("submit", async e => {
     e.preventDefault();
-    const errorEl  = document.getElementById("login-error");
+    const errorEl = document.getElementById("login-error");
     errorEl.textContent = "";
-    const passcode = document.getElementById("passcode").value.trim();
+    const discordId = document.getElementById("login-discord-id").value.trim();
+    const password  = document.getElementById("login-password").value;
     try {
-      const res  = await fetch("/api/login", {
+      const res  = await nativeFetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode }),
+        body: JSON.stringify({ discordId, password }),
       });
       const data = await res.json();
       if (data.success) {
-        storeSession(data);
-        document.getElementById("login-overlay").classList.remove("active");
-        document.getElementById("app-container").classList.remove("hidden");
-        await loadUserProfiles();
-        if (state.userProfiles.length > 0) state.activeUserId = state.userProfiles[0];
-        switchTab("dashboard");
+        onLoginSuccess(data);
       } else {
-        errorEl.textContent = data.message;
+        errorEl.textContent = data.message || "ログインに失敗しました。";
       }
     } catch {
-      document.getElementById("login-error").textContent = "サーバー接続に失敗しました。";
+      errorEl.textContent = "サーバー接続に失敗しました。";
     }
   });
 
+  // アカウント作成フォーム
+  document.getElementById("register-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const errorEl = document.getElementById("login-error");
+    errorEl.textContent = "";
+    const discordId  = document.getElementById("reg-discord-id").value.trim();
+    const username   = document.getElementById("reg-username").value.trim();
+    const password   = document.getElementById("reg-password").value;
+    const inviteCode = document.getElementById("reg-invite-code").value.trim();
+    try {
+      const res  = await nativeFetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discordId, username, password, inviteCode }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        onLoginSuccess(data);
+      } else {
+        errorEl.textContent = data.message || "登録に失敗しました。";
+      }
+    } catch {
+      errorEl.textContent = "サーバー接続に失敗しました。";
+    }
+  });
+
+  // ログアウト
   document.getElementById("btn-logout")?.addEventListener("click", async () => {
     try { await fetch("/api/logout", { method: "POST" }); } catch {}
     clearStoredSession();
-    document.getElementById("app-container").classList.add("hidden");
-    document.getElementById("login-overlay").classList.add("active");
-    document.getElementById("passcode").value = "";
-    document.getElementById("login-error").textContent = "ログアウトしました。";
+    showLoginOverlay("ログアウトしました。");
+    document.getElementById("login-discord-id").value = "";
+    document.getElementById("login-password").value = "";
   });
-
 }
 
 export async function checkSessionHandshake() {
@@ -119,7 +182,9 @@ export async function checkSessionHandshake() {
       document.getElementById("login-overlay").classList.remove("active");
       document.getElementById("app-container").classList.remove("hidden");
       await loadUserProfiles();
-      if (state.userProfiles.length > 0) state.activeUserId = state.userProfiles[0];
+      if (state.userProfiles.length > 0 && !state.activeUserId) {
+        state.activeUserId = state.userProfiles[0];
+      }
       switchTab("dashboard");
     }
   } catch {}
