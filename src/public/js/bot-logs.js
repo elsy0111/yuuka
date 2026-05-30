@@ -3,7 +3,7 @@ import { state } from "./state.js";
 const levelLabels = { debug: "DEBUG", info: "INFO", warn: "WARN", error: "ERROR" };
 
 let allLogs = [];
-let activeLevels = new Set(["debug", "info", "warn", "error"]);
+const activeLevels = new Set(["debug", "info", "warn", "error"]);
 let searchQuery = "";
 let autoRefreshTimer = null;
 let autoRefreshActive = false;

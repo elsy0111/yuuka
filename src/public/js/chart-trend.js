@@ -13,7 +13,7 @@ function formatYen(value) {
  */
 function computeNiceScale(maxVal) {
   const rawStep = maxVal / 3 || 500;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
   const normalized = rawStep / magnitude;
   let niceFactor;
   if (normalized < 1.5) niceFactor = 1;
