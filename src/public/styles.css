@@ -2210,7 +2210,7 @@ a:not(.menu-item):not(.btn):hover {
 
 [data-theme="blue-archive"] .menu-item.active {
   background-color: rgba(2, 211, 251, 0.07);
-  color: #0E8CC8;
+  color: #0BBAD8;
   font-weight: 700;
 }
 
@@ -2338,7 +2338,7 @@ a:not(.menu-item):not(.btn):hover {
   }
 
   [data-theme="blue-archive"] .menu-item.active {
-    color: #0E8CC8;
+    color: #0BBAD8;
     background-color: rgba(2, 211, 251, 0.07);
   }
 }
