@@ -217,7 +217,7 @@ export async function serverHandler(req: http.IncomingMessage, res: http.ServerR
         // 安全な __Host- クッキーの設定 (HttpOnly, Secure, SameSite=Lax, Path=/)
         res.setHeader(
           "Set-Cookie",
-          `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax`
+          `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
         );
 
         sendJson(res, 200, { success: true, message: "ログインに成功しました！" });
