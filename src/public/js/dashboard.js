@@ -49,8 +49,12 @@ export async function fetchDashboardStats() {
       `¥${maxExp.toLocaleString()}`;
     document.getElementById("dashboard-highest-category").textContent =
       expenseData.breakdown?.[0]?.category || "なし";
-    document.getElementById("dashboard-average-expense").textContent =
-      expenses.length > 0 ? `¥${Math.round(expenseData.total / 30).toLocaleString()}` : "¥0";
+
+    const last7 = (expenseData.dailyTotals || []).slice(-7);
+    const week7Total = last7.reduce((s, d) => s + Number(d.total || 0), 0);
+    const avg7 = last7.length > 0 ? Math.round(week7Total / last7.length) : 0;
+    document.getElementById("dashboard-average-expense").textContent = `¥${avg7.toLocaleString()}`;
+    document.getElementById("dashboard-week-total").textContent = `¥${week7Total.toLocaleString()}`;
 
     renderPriceTrendChart(
       expenseData.dailyTotals || [],
