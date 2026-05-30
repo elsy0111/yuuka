@@ -1,0 +1,76 @@
+import {
+  addExpense,
+  getMonthlyCategoryBreakdown,
+  getMonthlyTotal,
+  listFilteredExpenses,
+  listRecentExpenses,
+} from "../../db/expenseRepo.js";
+import { parseReceipt } from "../../services/receiptParser.js";
+import { getRequestBody, sendError, sendJson } from "../http.js";
+import type { RouteHandler } from "../types.js";
+
+export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
+  if (pathname === "/api/expenses" && method === "GET") {
+    try {
+      const now = new Date();
+      const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
+      const year = parseInt(parsedUrl.searchParams.get("year") || String(now.getFullYear()), 10);
+      const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
+      sendJson(res, 200, {
+        success: true,
+        expenses: listRecentExpenses(userId, 30),
+        total: getMonthlyTotal(userId, year, month),
+        breakdown: getMonthlyCategoryBreakdown(userId, year, month),
+      });
+    } catch {
+      sendError(res, 500, "家計データの取得に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/expenses/all" && method === "GET") {
+    const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
+    const numberParam = (name: string) => parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
+    const expenses = listFilteredExpenses(userId, {
+      dateFrom: parsedUrl.searchParams.get("dateFrom") || undefined,
+      dateTo: parsedUrl.searchParams.get("dateTo") || undefined,
+      category: parsedUrl.searchParams.get("category") || undefined,
+      source: parsedUrl.searchParams.get("source") || undefined,
+      amountMin: numberParam("amountMin"),
+      amountMax: numberParam("amountMax"),
+      q: parsedUrl.searchParams.get("q") || undefined,
+    });
+    sendJson(res, 200, { success: true, expenses });
+    return true;
+  }
+
+  if (pathname === "/api/expenses/add" && method === "POST") {
+    try {
+      const { userId, amount, category, description, date, purchase_source } = JSON.parse(await getRequestBody(req));
+      if (!amount || !category) return sendError(res, 400, "金額とカテゴリは必須です。"), true;
+      const expense = addExpense(userId || "sensei_default", amount, category, description, date, "web", purchase_source || "不明");
+      sendJson(res, 200, { success: true, expense });
+    } catch {
+      sendError(res, 500, "支出の追加に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/expenses/upload-receipt" && method === "POST") {
+    try {
+      const { userId, imageBase64, mimeType, additionalText } = JSON.parse(await getRequestBody(req));
+      if (!imageBase64 || !mimeType) {
+        sendError(res, 400, "画像データ(base64)とMIMEタイプが必要です。");
+        return true;
+      }
+      const response = await parseReceipt(userId || "sensei_default", imageBase64, mimeType, additionalText);
+      sendJson(res, 200, { success: true, response });
+    } catch (err) {
+      console.error("WEBレシート解析エラー:", err);
+      sendError(res, 500, "レシート解析中にエラーが発生しました。");
+    }
+    return true;
+  }
+
+  return false;
+};
