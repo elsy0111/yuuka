@@ -26,6 +26,7 @@ export async function fetchBotLogs() {
     const params = new URLSearchParams({
       userId: state.activeUserId,
       limit: "200",
+      includeSystem: "1",
     });
     const level = document.getElementById("bot-log-level-filter")?.value || "";
     if (level) params.set("level", level);
@@ -89,7 +90,7 @@ function makeLogRow(log) {
   const meta = document.createElement("div");
   meta.className = "bot-log-meta";
   meta.textContent = [
-    log.username || log.user_id || "unknown-user",
+    log.username || log.user_id || "system",
     log.guild_id ? `guild:${log.guild_id}` : "DM",
     log.channel_id ? `ch:${log.channel_id}` : "",
     log.message_id ? `msg:${log.message_id}` : "",

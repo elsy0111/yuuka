@@ -30,6 +30,7 @@ export interface ListBotLogsOptions {
   limit?: number;
   level?: BotLogLevel;
   userId?: string;
+  includeSystem?: boolean;
 }
 
 export function addBotLog(input: AddBotLogInput): void {
@@ -75,8 +76,10 @@ export function listBotLogs(options: ListBotLogsOptions = {}): BotLogEntry[] {
   }
 
   if (options.userId) {
-    conditions.push("user_id = ?");
+    conditions.push(options.includeSystem ? "(user_id = ? OR user_id IS NULL)" : "user_id = ?");
     params.push(options.userId);
+  } else if (options.includeSystem) {
+    conditions.push("(user_id IS NULL OR user_id = '')");
   }
 
   const limit = Math.max(1, Math.min(options.limit ?? 200, 500));

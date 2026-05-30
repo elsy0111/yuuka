@@ -24,6 +24,7 @@ export const handleBotLogs: RouteHandler = ({ res, parsedUrl, pathname, method }
         limit,
         userId,
         level: rawLevel as BotLogLevel | undefined,
+        includeSystem: true,
       }),
     });
   } catch (error) {
