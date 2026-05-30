@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 import { switchTab, loadDataForActiveTab } from "./router.js";
+import { initConfigAfterAuth } from "./config.js";
 
 const SESSION_STORAGE_KEY = "yuuka-admin-session";
 const nativeFetch = window.fetch.bind(window);
@@ -91,6 +92,7 @@ function onLoginSuccess(data) {
       state.activeUserId = state.userProfiles[0];
     }
   });
+  initConfigAfterAuth();
   switchTab("dashboard");
 }
 
@@ -208,6 +210,7 @@ export async function checkSessionHandshake() {
       if (state.userProfiles.length > 0 && !state.activeUserId) {
         state.activeUserId = state.userProfiles[0];
       }
+      initConfigAfterAuth();
       switchTab("dashboard");
     }
   } catch {}

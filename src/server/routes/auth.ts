@@ -73,15 +73,32 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
 export const handleRegister: RouteHandler = async ({ req, res, pathname, method }) => {
   if (pathname !== "/api/register" || method !== "POST") return false;
 
+  let body = "";
   try {
-    const body = await getRequestBody(req);
-    const { discordId, username, password, inviteCode } = JSON.parse(body);
+    body = await getRequestBody(req);
+  } catch (err) {
+    console.error("[register] ボディ読み取りエラー:", err);
+    sendError(res, 400, "リクエストの読み取りに失敗しました。");
+    return true;
+  }
 
-    if (!discordId || !username || !password || !inviteCode) {
-      sendError(res, 400, "全ての項目を入力してください。");
-      return true;
-    }
+  let parsed: { discordId?: string; username?: string; password?: string; inviteCode?: string };
+  try {
+    parsed = JSON.parse(body);
+  } catch (err) {
+    console.error("[register] JSONパースエラー body=%j err:", body, err);
+    sendError(res, 400, "リクエストのフォーマットが不正です。");
+    return true;
+  }
 
+  const { discordId, username, password, inviteCode } = parsed;
+
+  if (!discordId || !username || !password || !inviteCode) {
+    sendError(res, 400, "全ての項目を入力してください。");
+    return true;
+  }
+
+  try {
     const existing = getUserByDiscordId(discordId);
     if (existing) {
       sendError(res, 400, "このDiscord IDは既に登録されています。");
@@ -107,8 +124,9 @@ export const handleRegister: RouteHandler = async ({ req, res, pathname, method 
       discordId: user.discord_id,
       username: user.username,
     });
-  } catch {
-    sendError(res, 400, "リクエストフォーマットが不正です。");
+  } catch (err) {
+    console.error("[register] ユーザー作成エラー:", err);
+    sendError(res, 500, "アカウントの作成に失敗しました。サーバーエラーです。");
   }
   return true;
 };

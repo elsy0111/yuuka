@@ -31,10 +31,13 @@ async function loadProfileForm() {
   } catch {}
 }
 
-export function initConfig() {
-  initCalendarForm(fetchConfigSettings);
+export function initConfigAfterAuth() {
   initMemories();
   loadProfileForm();
+}
+
+export function initConfig() {
+  initCalendarForm(fetchConfigSettings);
 
   document.getElementById("profile-config-form")?.addEventListener("submit", async e => {
     e.preventDefault();
