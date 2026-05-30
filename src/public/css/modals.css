@@ -36,6 +36,10 @@
   max-width: 600px;
 }
 
+.modal.modal-field-info {
+  z-index: 10001;
+}
+
 .modal.active .modal-content {
   transform: translateY(0);
 }

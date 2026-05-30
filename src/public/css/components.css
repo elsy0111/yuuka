@@ -100,20 +100,14 @@
 }
 
 .reg-group-label {
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
   border-left: 2px solid var(--border-matte);
   padding-left: 8px;
-  margin: 20px 0 12px;
+  margin: 22px 0 12px;
   text-align: left;
-}
-
-.reg-group-label--free {
-  border-left-color: var(--color-white);
-  color: var(--color-white);
 }
 
 .btn-field-info {
@@ -134,10 +128,6 @@
 
 .btn-field-info .material-symbols-outlined {
   font-size: 0.95rem;
-}
-
-.modal-field-info {
-  z-index: 10001;
 }
 
 /* ==============================================================================
