@@ -6,7 +6,13 @@ import type http from "node:http";
 export const SESSION_TTL = 24 * 60 * 60 * 1000;
 
 const SESSION_STORE_PATH = path.resolve(process.cwd(), "data", "admin-sessions.json");
-const activeSessions = new Map<string, number>();
+
+interface SessionEntry {
+  createdAt: number;
+  discordId: string;
+}
+
+const activeSessions = new Map<string, SessionEntry>();
 
 export const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 export const MAX_LOGIN_ATTEMPTS = 5;
@@ -34,10 +40,15 @@ function loadStoredSessions(): void {
   try {
     if (!fs.existsSync(SESSION_STORE_PATH)) return;
     const raw = fs.readFileSync(SESSION_STORE_PATH, "utf-8");
-    const sessions = JSON.parse(raw) as Record<string, number>;
+    const sessions = JSON.parse(raw) as Record<string, number | SessionEntry>;
     const now = Date.now();
-    for (const [tokenHash, createdAt] of Object.entries(sessions)) {
-      if (now - createdAt <= SESSION_TTL) activeSessions.set(tokenHash, createdAt);
+    for (const [tokenHash, entry] of Object.entries(sessions)) {
+      if (typeof entry === "number") {
+        // 旧フォーマット（createdAt のみ）の互換処理
+        if (now - entry <= SESSION_TTL) activeSessions.set(tokenHash, { createdAt: entry, discordId: "" });
+      } else if (now - entry.createdAt <= SESSION_TTL) {
+        activeSessions.set(tokenHash, entry);
+      }
     }
   } catch (err) {
     console.error("セッションストアの読み込みに失敗しました:", err);
@@ -63,11 +74,18 @@ export function getBearerSessionToken(req: http.IncomingMessage): string | undef
   return auth.slice("Bearer ".length).trim() || undefined;
 }
 
-export function createSession(): string {
+export function createSession(discordId: string): string {
   const sessionToken = crypto.randomBytes(32).toString("hex");
-  activeSessions.set(hashSessionToken(sessionToken), Date.now());
+  activeSessions.set(hashSessionToken(sessionToken), { createdAt: Date.now(), discordId });
   persistSessions();
   return sessionToken;
+}
+
+export function getSessionDiscordId(req: http.IncomingMessage): string | undefined {
+  const sessionToken = getCookieSessionToken(req) || getBearerSessionToken(req);
+  if (!sessionToken) return undefined;
+  const entry = activeSessions.get(hashSessionToken(sessionToken));
+  return entry?.discordId || undefined;
 }
 
 export function deleteSessionToken(sessionToken?: string): void {
@@ -84,10 +102,10 @@ export function isAuthenticated(req: http.IncomingMessage): boolean {
   if (!sessionToken) return false;
 
   const sessionHash = hashSessionToken(sessionToken);
-  if (!activeSessions.has(sessionHash)) return false;
+  const entry = activeSessions.get(sessionHash);
+  if (!entry) return false;
 
-  const createdAt = activeSessions.get(sessionHash)!;
-  if (Date.now() - createdAt > SESSION_TTL) {
+  if (Date.now() - entry.createdAt > SESSION_TTL) {
     activeSessions.delete(sessionHash);
     persistSessions();
     return false;
