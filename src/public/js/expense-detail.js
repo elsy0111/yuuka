@@ -2,6 +2,12 @@ import { state } from "./state.js";
 
 let currentExpenses = [];
 let sortState = { key: "date", dir: "desc" };
+let fetchTimer = null;
+
+function debouncedFetch() {
+  clearTimeout(fetchTimer);
+  fetchTimer = setTimeout(fetchDetailExpenses, 400);
+}
 
 export function initExpenseDetail() {
   const modal     = document.getElementById("expense-detail-modal");
@@ -42,6 +48,15 @@ export function initExpenseDetail() {
   document.getElementById("btn-filter-reset")?.addEventListener("click", () => {
     resetFilters();
     fetchDetailExpenses();
+  });
+
+  // フィルター値変化で自動発火
+  ["filter-date-from", "filter-date-to", "filter-amount-min", "filter-amount-max",
+   "filter-q", "filter-purchase-source"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", debouncedFetch);
+  });
+  ["filter-category", "filter-source"].forEach(id => {
+    document.getElementById(id)?.addEventListener("change", fetchDetailExpenses);
   });
 
   document.querySelectorAll("#expense-detail-modal .sortable-th").forEach(th => {
@@ -125,7 +140,17 @@ function renderTable() {
   });
 
   tbody.replaceChildren();
-  sorted.forEach(exp => tbody.appendChild(makeDetailRow(exp)));
+  sorted.forEach((exp, i) => {
+    const tr = makeDetailRow(exp);
+    tr.style.opacity = "0";
+    tr.style.transform = "translateY(6px)";
+    tr.style.transition = `opacity 0.18s ease ${i * 18}ms, transform 0.18s ease ${i * 18}ms`;
+    tbody.appendChild(tr);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      tr.style.opacity = "1";
+      tr.style.transform = "translateY(0)";
+    }));
+  });
 }
 
 function makeDetailRow(exp) {
@@ -142,8 +167,6 @@ function makeDetailRow(exp) {
 
   const tdPurchase = document.createElement("td");
   tdPurchase.textContent = exp.purchase_source || "不明";
-  tdPurchase.style.color = "var(--text-secondary)";
-  tdPurchase.style.fontSize = "0.75rem";
 
   const tdSource = document.createElement("td");
   const badge     = document.createElement("span");
@@ -162,8 +185,8 @@ function makeDetailRow(exp) {
   tdAmount.textContent = `¥${exp.amount.toLocaleString()}`;
 
   const tdCreated = document.createElement("td");
-  tdCreated.style.color    = "var(--color-zinc-muted)";
-  tdCreated.style.fontSize = "0.7rem";
+  tdCreated.style.color    = "var(--text-secondary)";
+  tdCreated.style.fontSize = "0.72rem";
   tdCreated.textContent    = exp.created_at || "—";
 
   tr.append(tdDate, tdCategory, tdDescription, tdPurchase, tdSource, tdAmount, tdCreated);

@@ -122,17 +122,14 @@ export function listFilteredExpenses(userId: string, filter: ExpenseFilter = {})
   if (filter.q) {
     const like = `%${filter.q}%`;
     conditions.push(`(
-      CAST(id AS TEXT) LIKE ?
-      OR user_id LIKE ?
-      OR CAST(amount AS TEXT) LIKE ?
+      CAST(amount AS TEXT) LIKE ?
       OR category LIKE ?
       OR COALESCE(description, '') LIKE ?
       OR date LIKE ?
       OR source LIKE ?
       OR purchase_source LIKE ?
-      OR created_at LIKE ?
     )`);
-    params.push(like, like, like, like, like, like, like, like, like);
+    params.push(like, like, like, like, like, like);
   }
 
   const sql = `SELECT * FROM expenses WHERE ${conditions.join(" AND ")} ORDER BY date DESC, created_at DESC`;
