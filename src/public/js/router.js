@@ -11,7 +11,7 @@ const TAB_TITLES = {
   dashboard: "ダッシュボード",
   tasks: "タスク管理（ToDo）",
   schedules: "予定スケジュール（Googleカレンダー同期）",
-  expenses: "家計管理（レシートAI解析＆経費簿）",
+  expenses: "家計管理",
   config: "システム設定情報",
   "bot-logs": "Discord Botログ",
 };
