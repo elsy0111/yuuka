@@ -752,6 +752,23 @@ button, input, select, textarea {
   color: var(--color-zinc-muted);
 }
 
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.column-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
 .hud-tag {
   font-family: var(--font-family-mono);
   font-size: 0.65rem;
@@ -761,6 +778,8 @@ button, input, select, textarea {
   padding: 2px 6px;
   border-radius: var(--radius);
   background-color: var(--bg-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 #trend-line-path,
@@ -773,8 +792,8 @@ button, input, select, textarea {
   stroke: var(--border-matte);
 }
 
-#donut-segment {
-  stroke: var(--accent-cyan);
+.donut-bg-ring {
+  stroke: var(--border-matte);
 }
 
 .chart-sub-details {
@@ -849,10 +868,29 @@ button, input, select, textarea {
   color: var(--color-zinc-muted);
 }
 
+.chart-legend-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .chart-legend {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.chart-legend-total {
+  font-size: 0.72rem;
+  color: var(--color-zinc-muted);
+  border-top: 1px solid var(--border-matte);
+  padding-top: 8px;
+  font-family: var(--font-family-mono);
+}
+
+.chart-legend-total span {
+  color: var(--color-white);
+  font-weight: 700;
 }
 
 .legend-item {
@@ -2170,12 +2208,8 @@ a:not(.menu-item):not(.btn):hover {
   stroke: #02D3FB;
 }
 
-[data-theme="blue-archive"] .donut-chart circle:not(#donut-segment) {
+[data-theme="blue-archive"] .donut-bg-ring {
   stroke: #DDE6ED;
-}
-
-[data-theme="blue-archive"] #donut-segment {
-  stroke: #02D3FB;
 }
 
 /* ---- ドロップゾーン ---- */
@@ -2409,4 +2443,135 @@ a:not(.menu-item):not(.btn):hover {
   background-color: rgba(255, 255, 255, 0.04);
   border-color: var(--color-red);
   color: var(--color-red);
+}
+
+/* ==============================
+   支出詳細モーダル
+   ============================== */
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.72rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 40px 16px;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.modal-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-row label {
+  font-size: 0.72rem;
+  color: var(--color-zinc-muted);
+  white-space: nowrap;
+}
+
+.filter-input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 4px 8px;
+  min-width: 120px;
+}
+
+.filter-input-num {
+  min-width: 80px;
+  max-width: 100px;
+}
+
+.filter-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 4px 8px;
+}
+
+.filter-actions {
+  padding-top: 6px;
+}
+
+.filter-count {
+  font-size: 0.72rem;
+  color: var(--color-zinc-muted);
+  font-family: var(--font-family-mono);
+}
+
+.modal-table-wrap {
+  overflow-x: auto;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+[data-theme="blue-archive"] .modal-panel {
+  background: #FBFCFF;
+  border-color: #C8DCEA;
+}
+
+[data-theme="blue-archive"] .modal-filters {
+  background: #F0F5FA;
+  border-color: #C8DCEA;
+}
+
+[data-theme="blue-archive"] .filter-input,
+[data-theme="blue-archive"] .filter-select {
+  background: #FBFCFF;
+  border-color: #C8DCEA;
+  color: #1a2740;
 }

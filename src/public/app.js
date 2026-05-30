@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statPendingTasks = document.getElementById("stat-pending-tasks");
   const statUpcomingSchedules = document.getElementById("stat-upcoming-schedules");
   const statExpensesTotal = document.getElementById("stat-expenses-total");
-  const donutSegment = document.getElementById("donut-segment");
+  const donutChartSvg = document.getElementById("dashboard-donut-chart");
   const chartCenterPercentage = document.getElementById("chart-center-percentage");
   const dashboardCategoryLegend = document.getElementById("dashboard-category-legend");
   const dashboardUrgentList = document.getElementById("dashboard-urgent-list");
@@ -452,10 +452,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderDonutChart(breakdown, total) {
     dashboardCategoryLegend.replaceChildren();
 
+    // 前回の動的セグメントを削除
+    donutChartSvg.querySelectorAll(".donut-seg").forEach(el => el.remove());
+
+    const totalEl = document.getElementById("dashboard-category-total");
     if (!breakdown || breakdown.length === 0 || total === 0) {
-      donutSegment.setAttribute("stroke-dasharray", "0 251.2");
       chartCenterPercentage.textContent = "0%";
-      
+      if (totalEl) totalEl.textContent = "¥0";
       const empty = document.createElement("div");
       empty.className = "legend-item";
       empty.textContent = "今月のデータはありません。";
@@ -463,49 +466,67 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Sort categories, grab "娯楽" (Entertainment) or largest category
-    const entertainment = breakdown.find(c => c.category === "娯楽");
-    const entPct = entertainment ? Math.round((entertainment.total / total) * 100) : 0;
-    
-    // Animate donut segment using pure-CSS stroke dash arrays (radius=40 -> perimeter=251.2)
-    const strokeDash = (entPct * 251.2) / 100;
-    donutSegment.setAttribute("stroke-dasharray", `${strokeDash} 251.2`);
-    chartCenterPercentage.textContent = `${entPct}%`;
-
-    // Colors mapping for legend dots (BA テーマ時は配色を切り替え)
+    const C = 251.2; // 円周 (r=40, 2πr ≈ 251.2)
     const isBATheme = currentTheme() === "blue-archive";
-    const colors = isBATheme ? {
-      食費: "#02D3FB",   // BAシアン
-      日用品: "#A3BAFF", // ラベンダー
-      交通費: "#FB90A4", // MomoTalk ピンク
-      娯楽: "#FFD966",   // ウォームイエロー
-      その他: "#7A9BB0"  // ミュートグレー
+    const colorMap = isBATheme ? {
+      食費: "#02D3FB",
+      日用品: "#A3BAFF",
+      交通費: "#FB90A4",
+      娯楽: "#FFD966",
+      その他: "#7A9BB0"
     } : {
-      食費: "#00e676", // neon-green
-      日用品: "#3b82f6", // blue
-      交通費: "#ef4444", // red
-      娯楽: "#ff5376", // pink
-      その他: "#8e87ad" // gray
+      食費: "#00e676",
+      日用品: "#3b82f6",
+      交通費: "#ef4444",
+      娯楽: "#ff5376",
+      その他: "#8e87ad"
     };
+    const fallbackColors = ["#a78bfa", "#f59e0b", "#10b981", "#6366f1", "#ec4899"];
 
-    breakdown.slice(0, 4).forEach(cat => {
-      const pct = Math.round((cat.total / total) * 100);
-      const dotColor = colors[cat.category] || "#a78bfa";
+    const top4 = breakdown.slice(0, 4);
+    let cumulativeOffset = 0;
 
+    top4.forEach((cat, i) => {
+      const ratio = cat.total / total;
+      const segLen = ratio * C;
+      const color = colorMap[cat.category] || fallbackColors[i % fallbackColors.length];
+
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("class", "donut-seg");
+      circle.setAttribute("cx", "50");
+      circle.setAttribute("cy", "50");
+      circle.setAttribute("r", "40");
+      circle.setAttribute("fill", "transparent");
+      circle.setAttribute("stroke", color);
+      circle.setAttribute("stroke-width", "9");
+      circle.setAttribute("stroke-dasharray", `${segLen} ${C - segLen}`);
+      circle.setAttribute("stroke-dashoffset", `-${cumulativeOffset}`);
+      circle.setAttribute("stroke-linecap", "butt");
+      donutChartSvg.appendChild(circle);
+
+      cumulativeOffset += segLen;
+
+      // 凡例アイテム
+      const pct = Math.round(ratio * 100);
       const item = document.createElement("div");
       item.className = "legend-item";
-
       const colorBox = document.createElement("span");
       colorBox.className = "legend-color";
-      colorBox.style.backgroundColor = dotColor;
-
+      colorBox.style.backgroundColor = color;
       const label = document.createElement("span");
       label.textContent = `${cat.category}: ¥${cat.total.toLocaleString()} (${pct}%)`;
-
       item.appendChild(colorBox);
       item.appendChild(label);
       dashboardCategoryLegend.appendChild(item);
     });
+
+    // 中央ラベル: 娯楽カテゴリの比率を表示
+    const entertainment = breakdown.find(c => c.category === "娯楽");
+    const entPct = entertainment ? Math.round((entertainment.total / total) * 100) : 0;
+    chartCenterPercentage.textContent = `${entPct}%`;
+
+    // 合計表示
+    if (totalEl) totalEl.textContent = `¥${total.toLocaleString()}`;
   }
 
   /**
@@ -1099,6 +1120,124 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error(e);
     }
   }
+
+  // H. 支出詳細モーダル
+  const expenseDetailModal   = document.getElementById("expense-detail-modal");
+  const btnExpenseDetail     = document.getElementById("btn-expense-detail");
+  const btnExpenseDetailClose = document.getElementById("btn-expense-detail-close");
+  const detailTableBody      = document.getElementById("detail-expenses-table-body");
+  const filterResultCount    = document.getElementById("filter-result-count");
+
+  function buildDetailRow(exp) {
+    const tr = document.createElement("tr");
+
+    const tdId = document.createElement("td");
+    tdId.style.color = "var(--color-zinc-muted)";
+    tdId.style.fontFamily = "var(--font-family-mono)";
+    tdId.textContent = exp.id;
+
+    const tdDate = document.createElement("td");
+    tdDate.textContent = exp.date;
+
+    const tdCat = document.createElement("td");
+    tdCat.textContent = exp.category;
+
+    const tdDesc = document.createElement("td");
+    tdDesc.textContent = exp.description || "—";
+    tdDesc.style.maxWidth = "200px";
+    tdDesc.style.overflow = "hidden";
+    tdDesc.style.textOverflow = "ellipsis";
+    tdDesc.style.whiteSpace = "nowrap";
+
+    const tdSource = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = `expense-source-badge source-${exp.source}`;
+    const badgeIcon = document.createElement("span");
+    badgeIcon.className = "material-symbols-outlined source-icon";
+    let sourceText = "";
+    if (exp.source === "web") { badgeIcon.textContent = "language"; sourceText = " Web"; }
+    else if (exp.source === "manual") { badgeIcon.textContent = "edit"; sourceText = " 手動"; }
+    else { badgeIcon.textContent = "chat"; sourceText = " Discord"; }
+    badge.appendChild(badgeIcon);
+    badge.appendChild(document.createTextNode(sourceText));
+    tdSource.appendChild(badge);
+
+    const tdAmount = document.createElement("td");
+    tdAmount.className = "expense-amount-val";
+    tdAmount.textContent = `¥${exp.amount.toLocaleString()}`;
+
+    const tdCreated = document.createElement("td");
+    tdCreated.style.color = "var(--color-zinc-muted)";
+    tdCreated.style.fontSize = "0.7rem";
+    tdCreated.textContent = exp.created_at || "—";
+
+    tr.append(tdId, tdDate, tdCat, tdDesc, tdSource, tdAmount, tdCreated);
+    return tr;
+  }
+
+  async function fetchDetailExpenses() {
+    const params = new URLSearchParams({ userId: activeUserId });
+    const dateFrom  = document.getElementById("filter-date-from").value;
+    const dateTo    = document.getElementById("filter-date-to").value;
+    const category  = document.getElementById("filter-category").value;
+    const source    = document.getElementById("filter-source").value;
+    const amountMin = document.getElementById("filter-amount-min").value;
+    const amountMax = document.getElementById("filter-amount-max").value;
+    const q         = document.getElementById("filter-q").value.trim();
+
+    if (dateFrom)  params.set("dateFrom", dateFrom);
+    if (dateTo)    params.set("dateTo", dateTo);
+    if (category)  params.set("category", category);
+    if (source)    params.set("source", source);
+    if (amountMin) params.set("amountMin", amountMin);
+    if (amountMax) params.set("amountMax", amountMax);
+    if (q)         params.set("q", q);
+
+    detailTableBody.replaceChildren();
+    filterResultCount.textContent = "読込中…";
+
+    try {
+      const res = await fetch(`/api/expenses/all?${params}`);
+      const data = await res.json();
+      if (data.success) {
+        data.expenses.forEach(exp => detailTableBody.appendChild(buildDetailRow(exp)));
+        filterResultCount.textContent = `${data.expenses.length} 件`;
+      }
+    } catch (e) {
+      console.error(e);
+      filterResultCount.textContent = "取得失敗";
+    }
+  }
+
+  function resetFilters() {
+    document.getElementById("filter-date-from").value = "";
+    document.getElementById("filter-date-to").value = "";
+    document.getElementById("filter-category").value = "";
+    document.getElementById("filter-source").value = "";
+    document.getElementById("filter-amount-min").value = "";
+    document.getElementById("filter-amount-max").value = "";
+    document.getElementById("filter-q").value = "";
+  }
+
+  btnExpenseDetail.addEventListener("click", () => {
+    expenseDetailModal.classList.remove("hidden");
+    fetchDetailExpenses();
+  });
+
+  btnExpenseDetailClose.addEventListener("click", () => {
+    expenseDetailModal.classList.add("hidden");
+  });
+
+  expenseDetailModal.addEventListener("click", (e) => {
+    if (e.target === expenseDetailModal) expenseDetailModal.classList.add("hidden");
+  });
+
+  document.getElementById("btn-filter-apply").addEventListener("click", fetchDetailExpenses);
+
+  document.getElementById("btn-filter-reset").addEventListener("click", () => {
+    resetFilters();
+    fetchDetailExpenses();
+  });
 
   // Manual expense submission
   expenseForm.addEventListener("submit", async (e) => {
