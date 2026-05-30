@@ -2,7 +2,7 @@ const CACHE = 'yuuka-v2';
 const PRECACHE = [
   '/',
   '/styles.css',
-  '/app.js',
+  '/js/main.js',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
