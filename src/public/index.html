@@ -79,23 +79,33 @@
       <!-- アカウント作成用フォーム -->
       <div id="register-tab-content" class="login-tab-pane">
         <form id="register-form">
+
+          <div class="register-section-label">— Discordアカウント情報</div>
           <div class="form-group">
-            <label for="reg-discord-id">Discord ユーザーID *</label>
+            <label for="reg-discord-id">Discord ユーザーID <span class="field-badge field-badge-issued">Discordから取得</span></label>
             <input type="text" id="reg-discord-id" required placeholder="例: 123456789012345678">
-            <span class="field-sub">※Discord上で右クリックしてコピーしたID</span>
+            <span class="field-sub">Discordアプリ → ユーザー名を右クリック → 「ユーザーIDをコピー」</span>
           </div>
+
+          <div class="register-section-label">— このシステムで使う情報（自由に決める）</div>
           <div class="form-group">
-            <label for="reg-username">ユーザーネーム（表示名） *</label>
+            <label for="reg-username">表示名 <span class="field-badge field-badge-free">自分で決める</span></label>
             <input type="text" id="reg-username" required placeholder="例: シャーレの先生">
+            <span class="field-sub">管理画面のヘッダーに表示される名前です</span>
           </div>
           <div class="form-group">
-            <label for="reg-password">パスワード *</label>
+            <label for="reg-password">パスワード <span class="field-badge field-badge-free">自分で決める</span></label>
             <input type="password" id="reg-password" required placeholder="••••••••••••" autocomplete="new-password">
+            <span class="field-sub">次回以降のログインに使います。今ここで新しく決めてください</span>
           </div>
+
+          <div class="register-section-label">— 管理者から発行されたもの</div>
           <div class="form-group">
-            <label for="reg-invite-code">招待コード *</label>
-            <input type="text" id="reg-invite-code" required placeholder="管理者から配布されたコード">
+            <label for="reg-invite-code">招待コード <span class="field-badge field-badge-issued">発行済みコード</span></label>
+            <input type="text" id="reg-invite-code" required placeholder="config.yaml の INVITE_CODES に設定した文字列">
+            <span class="field-sub">サーバー管理者が config.yaml → INVITE_CODES に設定した文字列を入力してください</span>
           </div>
+
           <button type="submit" class="btn btn-primary btn-block">登録してログインする</button>
         </form>
       </div>
