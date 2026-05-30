@@ -21,6 +21,7 @@ import {
   listRecentExpenses,
   getMonthlyTotal,
   getMonthlyCategoryBreakdown,
+  listFilteredExpenses,
 } from "./db/expenseRepo.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import * as secretService from "./services/secretService.js";
@@ -598,6 +599,26 @@ export async function serverHandler(req: http.IncomingMessage, res: http.ServerR
       }
       return;
     }
+  }
+
+  if (pathname === "/api/expenses/all" && method === "GET") {
+    const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
+    try {
+      const filter = {
+        dateFrom:  parsedUrl.searchParams.get("dateFrom")  || undefined,
+        dateTo:    parsedUrl.searchParams.get("dateTo")    || undefined,
+        category:  parsedUrl.searchParams.get("category")  || undefined,
+        source:    parsedUrl.searchParams.get("source")    || undefined,
+        amountMin: parsedUrl.searchParams.get("amountMin") ? Number(parsedUrl.searchParams.get("amountMin")) : undefined,
+        amountMax: parsedUrl.searchParams.get("amountMax") ? Number(parsedUrl.searchParams.get("amountMax")) : undefined,
+        q:         parsedUrl.searchParams.get("q")         || undefined,
+      };
+      const expenses = listFilteredExpenses(userId, filter);
+      sendJson(res, 200, { success: true, expenses });
+    } catch (err: any) {
+      sendError(res, 500, "家計データの取得に失敗しました。");
+    }
+    return;
   }
 
   if (pathname === "/api/expenses/add" && method === "POST") {

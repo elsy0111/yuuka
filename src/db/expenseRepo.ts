@@ -95,3 +95,30 @@ export function listRecentExpenses(userId: string, count: number = 10): Expense[
     .prepare("SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC, created_at DESC LIMIT ?")
     .all(userId, count) as Expense[];
 }
+
+export interface ExpenseFilter {
+  dateFrom?: string;
+  dateTo?: string;
+  category?: string;
+  source?: string;
+  amountMin?: number;
+  amountMax?: number;
+  q?: string;
+}
+
+export function listFilteredExpenses(userId: string, filter: ExpenseFilter = {}): Expense[] {
+  const db = getDb();
+  const conditions: string[] = ["user_id = ?"];
+  const params: unknown[] = [userId];
+
+  if (filter.dateFrom) { conditions.push("date >= ?"); params.push(filter.dateFrom); }
+  if (filter.dateTo)   { conditions.push("date <= ?"); params.push(filter.dateTo); }
+  if (filter.category) { conditions.push("category = ?"); params.push(filter.category); }
+  if (filter.source)   { conditions.push("source = ?"); params.push(filter.source); }
+  if (filter.amountMin != null) { conditions.push("amount >= ?"); params.push(filter.amountMin); }
+  if (filter.amountMax != null) { conditions.push("amount <= ?"); params.push(filter.amountMax); }
+  if (filter.q) { conditions.push("description LIKE ?"); params.push(`%${filter.q}%`); }
+
+  const sql = `SELECT * FROM expenses WHERE ${conditions.join(" AND ")} ORDER BY date DESC, created_at DESC`;
+  return db.prepare(sql).all(...params) as Expense[];
+}
