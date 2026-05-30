@@ -4,7 +4,7 @@ import { addChatMessage, getRecentChatHistory } from "../db/chatHistoryRepo.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
 import type { ChatMessage } from "./types.js";
 
-export { ChatMessage } from "./types.js";
+export type { ChatMessage } from "./types.js";
 
 /**
  * メッセージを処理し、Function Callingループを含む完全な応答を返す
