@@ -258,14 +258,11 @@ async function sendSplitResponse(message: Message, response: string): Promise<vo
   }
 
   for (let i = 0; i < chunks.length; i++) {
-    if (i === 0) {
-      await message.reply(chunks[i]);
-    } else {
-      // 前のチャンクの長さに応じて自然な間隔を設ける（最小300ms、最大1200ms）
+    if (i > 0) {
       const delay = Math.min(300 + chunks[i - 1].length * 1.5, 1200);
       await new Promise(resolve => setTimeout(resolve, delay));
-      await (message.channel as any).send(chunks[i]);
     }
+    await (message.channel as any).send(chunks[i]);
   }
 }
 
