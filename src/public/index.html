@@ -766,17 +766,26 @@
             <p class="description-text">Discord で受信したメッセージ、無視した理由、リアクションや返信の失敗を確認できます。</p>
 
             <div class="bot-log-toolbar">
-              <select id="bot-log-level-filter" class="filter-select">
-                <option value="">すべてのレベル</option>
-                <option value="debug">DEBUG</option>
-                <option value="info">INFO</option>
-                <option value="warn">WARN</option>
-                <option value="error">ERROR</option>
+              <div class="bot-log-level-filters">
+                <button type="button" class="btn-log-level active" data-level="debug">DEBUG</button>
+                <button type="button" class="btn-log-level active" data-level="info">INFO</button>
+                <button type="button" class="btn-log-level active" data-level="warn">WARN</button>
+                <button type="button" class="btn-log-level active" data-level="error">ERROR</button>
+              </div>
+              <input type="search" id="bot-log-search" class="filter-input" placeholder="検索...">
+              <select id="bot-log-limit" class="filter-select">
+                <option value="100">100件</option>
+                <option value="200" selected>200件</option>
+                <option value="500">500件</option>
               </select>
+              <button type="button" id="btn-bot-logs-autorefresh" class="btn btn-secondary btn-sm">
+                <span class="material-symbols-outlined">autorenew</span>自動更新
+              </button>
               <button type="button" id="btn-bot-logs-reload" class="btn btn-secondary btn-sm">
                 <span class="material-symbols-outlined">refresh</span>更新
               </button>
             </div>
+            <div id="bot-log-status" class="bot-log-status"></div>
 
             <div id="bot-logs-list" class="bot-logs-list">
               <!-- Generated dynamically -->

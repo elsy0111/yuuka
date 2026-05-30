@@ -1,62 +1,119 @@
 import { state } from "./state.js";
 
-const levelLabels = {
-  debug: "DEBUG",
-  info: "INFO",
-  warn: "WARN",
-  error: "ERROR",
-};
+const levelLabels = { debug: "DEBUG", info: "INFO", warn: "WARN", error: "ERROR" };
+
+let allLogs = [];
+let activeLevels = new Set(["debug", "info", "warn", "error"]);
+let searchQuery = "";
+let autoRefreshTimer = null;
+let autoRefreshActive = false;
 
 export function initBotLogs() {
+  document.querySelectorAll(".btn-log-level").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const level = btn.dataset.level;
+      if (activeLevels.has(level)) {
+        activeLevels.delete(level);
+        btn.classList.remove("active");
+      } else {
+        activeLevels.add(level);
+        btn.classList.add("active");
+      }
+      renderFiltered();
+    });
+  });
+
+  document.getElementById("bot-log-search")?.addEventListener("input", (e) => {
+    searchQuery = e.target.value.trim().toLowerCase();
+    renderFiltered();
+  });
+
+  document.getElementById("bot-log-limit")?.addEventListener("change", fetchBotLogs);
+
+  document.getElementById("btn-bot-logs-autorefresh")?.addEventListener("click", toggleAutoRefresh);
+
   document.getElementById("btn-bot-logs-reload")?.addEventListener("click", fetchBotLogs);
-  document.getElementById("bot-log-level-filter")?.addEventListener("change", fetchBotLogs);
+}
+
+function toggleAutoRefresh() {
+  const btn = document.getElementById("btn-bot-logs-autorefresh");
+  if (autoRefreshActive) {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+    autoRefreshActive = false;
+    btn?.classList.remove("active");
+  } else {
+    autoRefreshActive = true;
+    btn?.classList.add("active");
+    fetchBotLogs();
+    autoRefreshTimer = setInterval(fetchBotLogs, 10000);
+  }
 }
 
 export async function fetchBotLogs() {
   const list = document.getElementById("bot-logs-list");
   if (!list) return;
 
-  list.replaceChildren();
-  const loading = document.createElement("div");
-  loading.className = "bot-log-empty";
-  loading.textContent = "ログを読み込み中...";
-  list.appendChild(loading);
-
   try {
+    const limitEl = document.getElementById("bot-log-limit");
+    const limit = limitEl ? limitEl.value : "200";
+
     const params = new URLSearchParams({
       userId: state.activeUserId,
-      limit: "200",
+      limit,
       includeSystem: "1",
     });
-    const level = document.getElementById("bot-log-level-filter")?.value || "";
-    if (level) params.set("level", level);
 
     const res = await fetch(`/api/bot-logs?${params}`);
     const data = await res.json();
-    list.replaceChildren();
 
     if (!data.success) {
-      renderEmpty(list, data.message || "Botログを取得できませんでした。");
+      allLogs = [];
+      renderFiltered();
       return;
     }
 
-    renderBotLogs(list, data.logs || []);
+    allLogs = data.logs || [];
+    renderFiltered();
   } catch (error) {
     console.error(error);
-    list.replaceChildren();
+    allLogs = [];
     renderEmpty(list, "通信エラーでBotログを取得できませんでした。");
+    updateStatus(0, 0);
   }
 }
 
-function renderBotLogs(list, logs) {
-  if (logs.length === 0) {
-    renderEmpty(list, "対象ユーザーのBotログはまだありません。");
-    return;
+function renderFiltered() {
+  const list = document.getElementById("bot-logs-list");
+  if (!list) return;
+
+  const filtered = allLogs.filter((log) => {
+    if (!activeLevels.has(log.level)) return false;
+    if (searchQuery) {
+      const inEvent = (log.event || "").toLowerCase().includes(searchQuery);
+      const inDetails = (log.details || "").toLowerCase().includes(searchQuery);
+      const inUser = (log.username || log.user_id || "").toLowerCase().includes(searchQuery);
+      if (!inEvent && !inDetails && !inUser) return false;
+    }
+    return true;
+  });
+
+  list.replaceChildren();
+  if (filtered.length === 0) {
+    renderEmpty(list, allLogs.length === 0 ? "Botログはまだありません。" : "条件に一致するログがありません。");
+  } else {
+    for (const log of filtered) {
+      list.appendChild(makeLogRow(log));
+    }
   }
 
-  logs.forEach((log) => {
-    list.appendChild(makeLogRow(log));
-  });
+  updateStatus(filtered.length, allLogs.length);
+}
+
+function updateStatus(shown, total) {
+  const el = document.getElementById("bot-log-status");
+  if (!el) return;
+  el.textContent = total > 0 ? `${shown} / ${total} 件` : "";
 }
 
 function renderEmpty(list, message) {

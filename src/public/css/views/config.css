@@ -182,11 +182,95 @@
 /* Discord Bot logs */
 .bot-log-toolbar {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   justify-content: flex-end;
   margin: 16px 0;
   flex-wrap: wrap;
+}
+
+.bot-log-level-filters {
+  display: flex;
+  gap: 4px;
+  margin-right: 4px;
+}
+
+.btn-log-level {
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-matte);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  opacity: 0.4;
+}
+
+.btn-log-level.active {
+  opacity: 1;
+}
+
+.btn-log-level[data-level="debug"].active {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+}
+
+.btn-log-level[data-level="info"].active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+}
+
+.btn-log-level[data-level="warn"].active {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 12%, transparent);
+}
+
+.btn-log-level[data-level="error"].active {
+  border-color: var(--color-red);
+  color: var(--color-red);
+  background: color-mix(in srgb, var(--color-red) 12%, transparent);
+}
+
+#btn-bot-logs-autorefresh.active {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+#btn-bot-logs-autorefresh.active .material-symbols-outlined {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.filter-input {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  width: 160px;
+}
+
+.filter-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.bot-log-status {
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-family-mono);
+  margin-bottom: 10px;
+  min-height: 1em;
 }
 
 .bot-logs-list {
