@@ -311,6 +311,24 @@ export function updateDiscordBotSettings(
 }
 
 /**
+ * 全テーブルの user_id を fromId から toId に移行する
+ */
+export function migrateUserId(fromId: string, toId: string): { migrated: number } {
+  const db = getDb();
+  let total = 0;
+  const tables = ["tasks", "schedules", "expenses", "memories"];
+  for (const table of tables) {
+    try {
+      const result = db.prepare(`UPDATE ${table} SET user_id = ? WHERE user_id = ?`).run(toId, fromId);
+      total += result.changes;
+    } catch {
+      // テーブルが存在しない場合はスキップ
+    }
+  }
+  return { migrated: total };
+}
+
+/**
  * ユーザーの独自Discord Botおよびペルソナ設定を取得する
  */
 export function getUserDiscordBotConfig(discordId: string): DiscordBotConfig | null {

@@ -8,6 +8,7 @@ import { handleExpenses } from "./server/routes/expenses.js";
 import { handleMemories } from "./server/routes/memories.js";
 import { handleSchedules } from "./server/routes/schedules.js";
 import { handleStatus, handleUsers } from "./server/routes/status.js";
+import { handleUserMigrate } from "./server/routes/userMigrate.js";
 import { handleTasks } from "./server/routes/tasks.js";
 import { isAuthenticated } from "./server/session.js";
 import { serveStaticFile } from "./server/static.js";
@@ -25,6 +26,7 @@ const privateRoutes: RouteHandler[] = [
   handleSchedules,
   handleExpenses,
   handleMemories,
+  handleUserMigrate,
 ];
 
 export async function serverHandler(req: http.IncomingMessage, res: http.ServerResponse) {
