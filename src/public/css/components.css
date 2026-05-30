@@ -26,8 +26,8 @@
   background-color: var(--card-matte);
   border: 1px solid var(--border-matte);
   width: 100%;
-  max-width: 420px;
-  padding: 40px 32px;
+  max-width: 560px;
+  padding: 36px 40px;
   border-radius: var(--radius);
   text-align: center;
   transform: scale(0.95);
