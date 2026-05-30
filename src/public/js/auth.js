@@ -66,25 +66,12 @@ export async function loadUserProfiles() {
 }
 
 function renderProfileDropdown() {
-  const select = document.getElementById("user-select");
-  select.replaceChildren();
-  state.userProfiles.forEach(uid => {
-    const opt       = document.createElement("option");
-    opt.value       = uid;
-    opt.textContent = uid.length > 15 ? `${uid.substring(0, 8)}...` : uid;
-    opt.selected    = uid === state.activeUserId;
-    select.appendChild(opt);
-  });
+  const display = document.getElementById("current-user-display");
+  if (display) display.textContent = state.activeUserId || "—";
 }
 
 export function initAuth() {
   installAuthenticatedFetch();
-
-  document.getElementById("user-select")?.addEventListener("change", e => {
-    state.activeUserId = e.target.value;
-    document.getElementById("modal-profile")?.classList.remove("active");
-    loadDataForActiveTab();
-  });
 
   document.getElementById("login-form")?.addEventListener("submit", async e => {
     e.preventDefault();
@@ -122,17 +109,6 @@ export function initAuth() {
     document.getElementById("login-error").textContent = "ログアウトしました。";
   });
 
-  document.getElementById("profile-form")?.addEventListener("submit", e => {
-    e.preventDefault();
-    const newUid = document.getElementById("profile-user-id").value.trim();
-    if (!newUid) return;
-    if (!state.userProfiles.includes(newUid)) state.userProfiles.push(newUid);
-    state.activeUserId = newUid;
-    renderProfileDropdown();
-    document.getElementById("modal-profile").classList.remove("active");
-    document.getElementById("profile-user-id").value = "";
-    loadDataForActiveTab();
-  });
 }
 
 export async function checkSessionHandshake() {
