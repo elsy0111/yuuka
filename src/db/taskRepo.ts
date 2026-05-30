@@ -61,6 +61,23 @@ export function reopenTask(id: number, userId: string): Task | undefined {
   return db.prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?").get(id, userId) as Task | undefined;
 }
 
+export function updateTask(
+  id: number,
+  userId: string,
+  fields: { title?: string; description?: string | null; dueDate?: string | null; priority?: number }
+): Task | undefined {
+  const db = getDb();
+  const sets: string[] = ["updated_at = datetime('now', 'localtime')"];
+  const params: unknown[] = [];
+  if (fields.title !== undefined) { sets.push("title = ?"); params.push(fields.title); }
+  if ("description" in fields)   { sets.push("description = ?"); params.push(fields.description ?? null); }
+  if ("dueDate" in fields)       { sets.push("due_date = ?"); params.push(fields.dueDate ?? null); }
+  if (fields.priority !== undefined) { sets.push("priority = ?"); params.push(fields.priority); }
+  params.push(id, userId);
+  db.prepare(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
+  return getTaskById(id);
+}
+
 export function deleteTask(id: number, userId: string): boolean {
   const db = getDb();
   const result = db.prepare("DELETE FROM tasks WHERE id = ? AND user_id = ?").run(id, userId);

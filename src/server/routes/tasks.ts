@@ -1,4 +1,4 @@
-import { addTask, completeTask, deleteTask, listTasks, reopenTask } from "../../db/taskRepo.js";
+import { addTask, completeTask, deleteTask, listTasks, reopenTask, updateTask } from "../../db/taskRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -22,6 +22,18 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
       sendJson(res, 200, { success: true, task });
     } catch {
       sendError(res, 500, "タスクの追加に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/tasks/update" && method === "POST") {
+    try {
+      const { id, userId, title, description, dueDate, priority } = JSON.parse(await getRequestBody(req));
+      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      const task = updateTask(id, userId, { title, description, dueDate, priority });
+      sendJson(res, 200, { success: true, task });
+    } catch {
+      sendError(res, 500, "タスクの更新に失敗しました。");
     }
     return true;
   }
