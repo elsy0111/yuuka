@@ -21,7 +21,17 @@ export function initModals() {
     btn.addEventListener("click", () => Object.values(modals).forEach(closeModal));
   });
 
-  document.getElementById("btn-add-profile")
+  Object.values(modals).forEach(modal => {
+    modal?.addEventListener("click", e => {
+      if (e.target === modal) closeModal(modal);
+    });
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") Object.values(modals).forEach(closeModal);
+  });
+
+  document.getElementById("btn-profile")
     ?.addEventListener("click", () => openModal(modals.profile));
   document.getElementById("btn-new-task")
     ?.addEventListener("click", () => openModal(modals.task));
