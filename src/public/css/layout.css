@@ -1,0 +1,181 @@
+/* ==============================================================================
+   APP SHELL LAYOUT (Sidebar & Main Workspace)
+   ============================================================================= */
+#app-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Sidebar Shell */
+.sidebar {
+  width: max-content;
+  min-width: max-content;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-matte);
+  padding: 30px 16px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  padding-left: 8px;
+}
+
+.brand-icon {
+  font-size: 1.4rem;
+}
+
+.brand-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--color-white);
+}
+
+/* Navigation Links */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.menu-item:hover {
+  color: var(--text-primary);
+  background-color: var(--accent-cyan-faint);
+}
+
+.menu-item.active {
+  color: var(--accent-cyan);
+  background-color: var(--accent-cyan-faint);
+  font-weight: 600;
+}
+
+/* Workspace Frame */
+.main-content {
+  flex-grow: 1;
+  min-width: 0;
+  width: 100%;
+  background-color: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+/* Header Area */
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-matte);
+  padding: 20px 40px;
+}
+
+.content-view-container {
+  width: 100%;
+  min-width: 0;
+  padding: 32px 40px;
+  flex: 1 1 auto;
+}
+
+.header-title h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.header-title {
+  min-width: 0;
+}
+
+.header-title p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Integrated Header Controls */
+.header-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.profile-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--card-matte);
+  border: 1px solid var(--border-matte);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+}
+
+.profile-switch label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user-select-dropdown {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-family-mono);
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-matte);
+  padding: 6px 12px;
+  border-radius: 50px;
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-zinc-light);
+}
+
+.status-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}

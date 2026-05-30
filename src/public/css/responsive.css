@@ -1,0 +1,428 @@
+/* ==============================================================================
+   RESPONSIVE SMARTPHONE UI (Adaptive Layouts)
+   ============================================================================= */
+
+/* Tablet adjustments (between 768 and 1024) */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .main-content {
+    padding: 0;
+  }
+
+  .top-header {
+    padding: 16px 24px;
+  }
+
+  .content-view-container {
+    padding: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .dashboard-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .stat-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Sidebar transforms into Bottom Nav Bar */
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 64px;
+    flex-direction: row;
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-matte);
+    border-right: none;
+    padding: 0 12px;
+    justify-content: space-around;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+  }
+
+  .sidebar-brand {
+    display: none; /* Hide brand/logo on mobile bottom nav */
+  }
+
+  .sidebar-menu {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0;
+  }
+
+  .menu-item {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px;
+    font-size: 0.65rem;
+    text-align: center;
+    border: none !important;
+    border-radius: var(--radius);
+    color: var(--color-zinc-muted);
+  }
+
+  .menu-item .menu-icon {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+
+  .menu-item:hover {
+    background-color: transparent;
+    padding-left: 6px;
+  }
+
+  .menu-item.active {
+    color: var(--color-white);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Main Workspace adjustments */
+  .main-content {
+    padding: 0 0 88px 0; /* bottom padding to prevent overlap with bottom nav bar */
+    height: auto;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* Stacking Top Header */
+  .top-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-matte);
+  }
+
+  .content-view-container {
+    padding: 20px 16px;
+  }
+
+  .header-title {
+    min-width: 0;
+  }
+
+  .header-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .profile-switch {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: space-between;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .profile-switch label {
+    flex-shrink: 0;
+  }
+
+  .user-select-dropdown {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 0;
+  }
+
+  #btn-logout {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* モバイルではログアウトボタンのアイコンを非表示にしてテキストのみ */
+  #btn-logout .icon-button-left {
+    display: none;
+  }
+
+  /* Layout Grids Stacking to 1 Column */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    min-height: 130px;
+  }
+
+  .dashboard-columns,
+  .expense-actions-columns {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .expense-hud-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .hud-card h2 {
+    font-size: 1.9rem;
+  }
+
+  .col-span-2 {
+    grid-column: span 1;
+  }
+
+  .hud-card {
+    padding: 16px;
+  }
+
+  .config-items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .welcome-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .speech-bubble-container {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .speech-bubble::before {
+    display: none; /* Hide side arrow of speech bubble */
+  }
+
+  .pie-chart-wrapper {
+    width: 110px;
+    height: 110px;
+  }
+
+  .chart-container-flex {
+    flex-direction: column;
+    gap: 16px;
+    padding: 10px 0;
+  }
+
+  /* Table responsiveness and clean details */
+  .expense-table th:nth-child(3),
+  .expense-table td:nth-child(3),
+  .expense-table th:nth-child(4),
+  .expense-table td:nth-child(4) {
+    display: none; /* Hide Description & Source on small mobile devices to prevent overflow */
+  }
+
+  .expense-table th, .expense-table td {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* 詳細モーダル内のテーブルをモバイルで小さく */
+  #expense-detail-modal .expense-table th,
+  #expense-detail-modal .expense-table td {
+    font-size: 0.65rem;
+    padding: 6px 4px;
+    white-space: nowrap;
+  }
+
+  #expense-detail-modal .modal-panel {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  #expense-detail-modal.modal-overlay {
+    padding: 16px;
+  }
+
+  #expense-detail-modal .modal-filters {
+    padding: 10px;
+  }
+
+  /* Card paddings tightened */
+  .card {
+    padding: 16px;
+  }
+
+  /* Header title scaling */
+  .header-title h2 {
+    font-size: 1.3rem;
+  }
+
+  .header-title p {
+    font-size: 0.72rem;
+  }
+
+  .column-header h3 {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  /* Stat values shrink slightly */
+  .stat-card .stat-value {
+    font-size: 1.7rem;
+  }
+
+  .hud-card h2 {
+    font-size: 1.7rem;
+  }
+
+  /* View actions card may overflow with many filter buttons */
+  .view-actions-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .filters-group {
+    flex-wrap: wrap;
+  }
+
+  /* Card item content stack to prevent action button overflow */
+  .card-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .card-actions-right {
+    justify-content: flex-end;
+  }
+
+  /* Form row to single column to prevent narrow inputs */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Calendar form: stack input + button */
+  #config-calendar-form {
+    flex-direction: column;
+    gap: 10px !important;
+  }
+
+  /* Sub-details under chart wrap nicely */
+  .chart-sub-details {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Profile switch & header controls - allow shrink (handled above) */
+
+  /* Modal padding/width adjustments */
+  .modal {
+    padding: 16px;
+  }
+
+  .modal-content {
+    max-width: 100%;
+  }
+
+  .wide-modal {
+    max-width: 100%;
+  }
+
+  /* Theme options - allow wrapping & full width */
+  .theme-option {
+    flex: 1 1 130px;
+  }
+}
+
+@media (max-width: 420px) {
+  .main-content {
+    padding: 0 0 88px 0;
+  }
+
+  .top-header {
+    padding: 12px;
+  }
+
+  .content-view-container {
+    padding: 16px 12px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .header-title h2 {
+    font-size: 1.2rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-card-badge-trend {
+    top: 14px;
+    right: 14px;
+    font-size: 0.6rem;
+  }
+
+  .welcome-card {
+    padding: 14px;
+  }
+
+  .menu-item {
+    font-size: 0.6rem;
+  }
+
+  .column-header h3 {
+    font-size: 0.88rem;
+  }
+}
+
+/* 360px 以下: ボトムナビはアイコンのみ・ラベル非表示でナビ高さを抑える */
+@media (max-width: 360px) {
+  .menu-text {
+    display: none;
+  }
+
+  .menu-item {
+    padding: 8px 4px;
+  }
+
+  .sidebar {
+    height: 54px;
+  }
+
+  .main-content {
+    padding: 0 0 74px 0;
+  }
+
+  .top-header {
+    padding: 10px;
+  }
+
+  .content-view-container {
+    padding: 14px 10px;
+  }
+
+  .login-card {
+    padding: 28px 20px;
+  }
+
+  .header-title h2 {
+    font-size: 1.1rem;
+  }
+
+  .header-title p {
+    font-size: 0.7rem;
+  }
+}

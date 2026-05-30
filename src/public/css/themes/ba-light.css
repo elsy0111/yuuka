@@ -1,0 +1,313 @@
+/* ==============================================================================
+   BLUE ARCHIVE LIGHT THEME
+   実際のゲームUI配色を再現
+   Sources: Blue Archive Wiki (#02D3FB), MomoTalk Discord theme
+            (#F2F7F8 sidebar / #E7F0F7 header / #DDE6ED border)
+   ============================================================================== */
+
+/* BA共通アクセントカラー変数 */
+[data-theme="blue-archive"] {
+  /* BA公式シアン (#02D3FB は wiki confirmed, #00AED8 は hover用) */
+  --ba-cyan:       #02D3FB;
+  --ba-cyan-hover: #00AED8;
+  --ba-cyan-dim:   rgba(2, 211, 251, 0.12);
+  --ba-cyan-faint: rgba(2, 211, 251, 0.06);
+
+  /* 追加アクセント — ゲーム本編の MomoTalk / 優先度 / 警告色を再現 */
+  --ba-pink:     #FB90A4;  /* MomoTalk バナー・優先度高 */
+  --ba-pink-dim: rgba(251, 144, 164, 0.15);
+  --ba-lavender: #A3BAFF;  /* ゲーム内リンク色 */
+  --ba-yellow:   #FFD966;  /* 警告/注意 */
+  --ba-yellow-dim: rgba(255, 217, 102, 0.15);
+
+  --accent-cyan: var(--ba-cyan);
+  --accent-cyan-hover: var(--ba-cyan-hover);
+  --accent-cyan-dim: var(--ba-cyan-dim);
+  --accent-cyan-faint: var(--ba-cyan-faint);
+  --accent-pink: var(--ba-pink);
+  --accent-pink-dim: var(--ba-pink-dim);
+  --accent-lavender: var(--ba-lavender);
+  --accent-yellow: var(--ba-yellow);
+  --accent-yellow-dim: var(--ba-yellow-dim);
+
+  /* 背景 — 公式ゲーム画面に近い色 */
+  --bg-primary:       #FBFCFF; /* ほぼ白・微青みがかった main content */
+  --bg-secondary:     #F2F7F8; /* MomoTalkソース sidebar 値そのまま */
+  --bg-sidebar:       #F2F7F8; /* サイドバー */
+  --card-matte:       #FFFFFF;
+  --card-matte-hover: #F5FAFE;
+
+  /* ボーダー */
+  --border-matte: #DDE6ED; /* MomoTalkソース値そのまま */
+  --border-focus: #02D3FB;
+
+  --radius: 2px;
+
+  /* テキスト */
+  --color-white:      #1B2B3A; /* ダークネイビー（heading/icon用） */
+  --color-zinc-light: #2E4A62;
+  --color-zinc-muted: #3A6070;
+  --color-green: #16a34a;
+  --color-red:   #dc2626;
+
+  --text-primary:   #1B2B3A;
+  --text-secondary: #2A4E66;
+}
+
+/* ---- ヘッダーエリア: ゲームのパネル上部の薄青を再現 ---- */
+[data-theme="blue-archive"] .top-header {
+  background-color: #E7F0F7;
+  border-bottom-color: #C8DCEA;
+}
+
+@media (max-width: 768px) {
+  [data-theme="blue-archive"] .top-header {
+    background-color: #E7F0F7;
+  }
+}
+
+/* ---- サイドバー ---- */
+[data-theme="blue-archive"] .sidebar {
+  background-color: #F2F7F8;
+  border-right-color: #DDE6ED;
+}
+
+/* ---- ナビメニュー ---- */
+[data-theme="blue-archive"] .menu-item:hover {
+  background-color: var(--ba-cyan-faint);
+  color: #1B2B3A;
+}
+
+[data-theme="blue-archive"] .menu-item.active {
+  background-color: rgba(2, 211, 251, 0.07);
+  color: #0BBAD8;
+  font-weight: 700;
+}
+
+/* ---- ボタン ---- */
+[data-theme="blue-archive"] .btn-primary {
+  background-color: #02D3FB;
+  color: #ffffff;
+}
+
+[data-theme="blue-archive"] .btn-primary:hover {
+  background-color: #00AED8;
+}
+
+[data-theme="blue-archive"] .btn-filter.active {
+  background-color: #02D3FB;
+  border-color: #02D3FB;
+  color: #ffffff;
+}
+
+[data-theme="blue-archive"] .btn-secondary:hover {
+  background-color: var(--ba-cyan-faint);
+}
+
+[data-theme="blue-archive"] .btn-icon:hover {
+  background-color: var(--ba-cyan-faint);
+  border-color: #02D3FB;
+}
+
+/* ---- フォームコントロール ---- */
+[data-theme="blue-archive"] .form-group input:focus,
+[data-theme="blue-archive"] .form-group select:focus,
+[data-theme="blue-archive"] .form-group textarea:focus {
+  border-color: #02D3FB;
+  box-shadow: 0 0 0 2px rgba(2, 211, 251, 0.15);
+}
+
+[data-theme="blue-archive"] .checkbox-custom:checked {
+  background-color: #02D3FB;
+  border-color: #02D3FB;
+}
+
+/* ---- 各種パーツ ---- */
+[data-theme="blue-archive"] .budget-progress-bar {
+  background-color: #02D3FB;
+}
+
+[data-theme="blue-archive"] .hud-pulse-dot {
+  background-color: #02D3FB;
+}
+
+[data-theme="blue-archive"] .avatar-badge {
+  background-color: #02D3FB;
+  color: #ffffff;
+}
+
+[data-theme="blue-archive"] .badge-accent {
+  color: #02D3FB;
+  border-color: #02D3FB;
+}
+
+[data-theme="blue-archive"] .hud-tag {
+  color: #02D3FB;
+  border-color: #C8DCEA;
+}
+
+[data-theme="blue-archive"] .spinner {
+  border-color: rgba(2, 211, 251, 0.18);
+  border-top-color: #02D3FB;
+}
+
+[data-theme="blue-archive"] .alert-box {
+  border-left-color: #02D3FB;
+  background-color: #F0FAFF;
+}
+
+/* ---- SVG チャート ---- */
+[data-theme="blue-archive"] #trend-line-path {
+  stroke: #02D3FB;
+}
+
+[data-theme="blue-archive"] #dashboard-trend-chart line {
+  stroke: #C8DCEA;
+}
+
+[data-theme="blue-archive"] #schedules-sparkline-path,
+[data-theme="blue-archive"] #expenses-sparkline-path {
+  stroke: #02D3FB;
+}
+
+[data-theme="blue-archive"] .donut-bg-ring {
+  stroke: #DDE6ED;
+}
+
+/* ---- ドロップゾーン ---- */
+[data-theme="blue-archive"] .dropzone:hover,
+[data-theme="blue-archive"] .dropzone.dragover {
+  border-color: #02D3FB;
+  background-color: var(--ba-cyan-faint);
+}
+
+[data-theme="blue-archive"] .text-highlight {
+  color: #02D3FB;
+}
+
+/* ---- モーダルオーバーレイ ---- */
+[data-theme="blue-archive"] .modal {
+  background-color: rgba(211, 232, 245, 0.8);
+}
+
+/* ---- スクロールバー ---- */
+[data-theme="blue-archive"] ::-webkit-scrollbar-thumb {
+  background: #C8DCEA;
+}
+
+[data-theme="blue-archive"] ::-webkit-scrollbar-thumb:hover {
+  background: #02D3FB;
+}
+
+/* ---- モバイル ---- */
+@media (max-width: 768px) {
+  [data-theme="blue-archive"] .sidebar {
+    background-color: #F2F7F8;
+    border-top-color: #DDE6ED;
+    box-shadow: 0 -2px 12px rgba(2, 211, 251, 0.1);
+  }
+
+  [data-theme="blue-archive"] .menu-item.active {
+    color: #0BBAD8;
+    background-color: rgba(2, 211, 251, 0.07);
+  }
+}
+
+/* ==============================================================================
+   BA — マルチアクセントカラー（ピンク / ラベンダー / イエロー）
+   ============================================================================== */
+
+/* リンク色：ゲーム内リンク色 (ラベンダー) */
+[data-theme="blue-archive"] a:not(.menu-item):not(.btn) {
+  color: var(--ba-lavender);
+}
+
+[data-theme="blue-archive"] a:not(.menu-item):not(.btn):hover {
+  color: var(--ba-cyan);
+}
+
+/* 緊急/期限切れバッジ — ピンク */
+[data-theme="blue-archive"] .badge-urgent {
+  background-color: var(--ba-pink-dim);
+  color: var(--ba-pink);
+  border: 1px solid var(--ba-pink);
+}
+
+/* 通常バッジは control 色のまま */
+[data-theme="blue-archive"] .badge-normal {
+  color: var(--ba-lavender);
+  border-color: #C8DCEA;
+}
+
+/* 優先度: タスクカード左ボーダー (動的クラス付与時用) */
+[data-theme="blue-archive"] .card-item.priority-high {
+  border-left: 3px solid var(--ba-pink);
+}
+
+[data-theme="blue-archive"] .card-item.priority-medium {
+  border-left: 3px solid var(--ba-yellow);
+}
+
+[data-theme="blue-archive"] .card-item.priority-low {
+  border-left: 3px solid var(--ba-lavender);
+}
+
+/* メタ情報内の "priority" マーカー */
+[data-theme="blue-archive"] .meta-item .priority-high { color: var(--ba-pink); }
+[data-theme="blue-archive"] .meta-item .priority-medium { color: var(--ba-yellow); }
+[data-theme="blue-archive"] .meta-item .priority-low { color: var(--ba-lavender); }
+
+/* ステータスバッジ — シアン枠 */
+[data-theme="blue-archive"] .stat-card-badge-trend {
+  color: var(--ba-cyan);
+  border-color: #C8DCEA;
+}
+
+/* アクセントバッジ — シアン (既存上書きで明示) */
+[data-theme="blue-archive"] .badge-accent {
+  color: var(--ba-cyan);
+  border-color: var(--ba-cyan);
+  background-color: var(--ba-cyan-faint);
+}
+
+/* 警告アイコン — ウォームイエロー */
+[data-theme="blue-archive"] .alert-icon-symbol {
+  color: var(--ba-yellow) !important;
+}
+
+[data-theme="blue-archive"] .alert-box {
+  border-left-color: var(--ba-yellow);
+  background-color: #FFFBEC;
+}
+
+/* ソースバッジを色分け */
+[data-theme="blue-archive"] .source-discord { color: var(--ba-lavender); }
+[data-theme="blue-archive"] .source-manual  { color: var(--ba-cyan); }
+[data-theme="blue-archive"] .source-web     { color: var(--ba-pink); }
+
+/* ---- テーマセレクター ---- */
+[data-theme="blue-archive"] .theme-option.active {
+  border-color: #02D3FB;
+}
+
+/* ---- 支出詳細モーダル ---- */
+[data-theme="blue-archive"] .modal-overlay {
+  background-color: rgba(211, 232, 245, 0.8);
+}
+
+[data-theme="blue-archive"] .modal-panel {
+  background: #FBFCFF;
+  border-color: #C8DCEA;
+}
+
+[data-theme="blue-archive"] .modal-filters {
+  background: #F0F5FA;
+  border-color: #C8DCEA;
+}
+
+[data-theme="blue-archive"] .filter-input,
+[data-theme="blue-archive"] .filter-select {
+  background: #FBFCFF;
+  border-color: #C8DCEA;
+  color: #1a2740;
+}

@@ -1,0 +1,174 @@
+/* ==============================================================================
+   2. TASKS & SCHEDULES LIST CARDS & FILTERS
+   ============================================================================== */
+.view-actions-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+}
+
+.filters-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.label-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.btn-filter {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.btn-filter:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.btn-filter.active {
+  background-color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
+/* Lists grid containers */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  animation: item-fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  background-color: var(--card-matte);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-content-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.checkbox-custom {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-matte);
+  border-radius: var(--radius);
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: var(--transition-smooth);
+}
+
+.checkbox-custom:checked {
+  background-color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.checkbox-custom:checked::after {
+  content: '✓';
+  color: var(--bg-primary);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-wrap: anywhere;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.card-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.card-meta-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.meta-item {
+  font-size: 0.7rem;
+  color: var(--color-zinc-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-family-mono);
+}
+
+.card-actions-right {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-trash {
+  background-color: transparent;
+  border: 1px solid var(--border-matte);
+  color: var(--text-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-trash:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-red);
+  color: var(--color-red);
+}
+
+/* Checked state */
+.card-item.done .card-title {
+  text-decoration: line-through;
+  color: var(--color-zinc-muted);
+}
+
+.card-item.done {
+  opacity: 0.55;
+}

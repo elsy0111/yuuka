@@ -1,0 +1,225 @@
+/* ==============================================================================
+   OVERLAY & LOGIN WINDOW (Sleek Matte HUD)
+   ============================================================================== */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition-smooth);
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.login-card {
+  background-color: var(--card-matte);
+  border: 1px solid var(--border-matte);
+  width: 100%;
+  max-width: 420px;
+  padding: 40px 32px;
+  border-radius: var(--radius);
+  text-align: center;
+  transform: scale(0.95);
+  transition: var(--transition-smooth);
+}
+
+.overlay.active .login-card {
+  transform: scale(1);
+}
+
+.logo-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.login-avatar-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+.login-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-white);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.login-header p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+/* ==============================================================================
+   FORM CONTROLS & INPUTS (Minimal Matte Styling)
+   ============================================================================== */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  outline: none;
+  font-size: 0.9rem;
+  color: var(--color-zinc-light);
+  transition: var(--transition-smooth);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-cyan-dim);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.field-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-zinc-muted);
+  margin-top: 4px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.btn-icon-symbol {
+  font-size: 1rem !important;
+  line-height: 1;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--accent-cyan);
+  color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-cyan-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--border-matte);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--accent-cyan-faint);
+}
+
+.btn-icon {
+  background-color: transparent;
+  border: 1px solid var(--border-matte);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: bold;
+  transition: var(--transition-smooth);
+}
+
+.btn-icon:hover {
+  background-color: var(--accent-cyan-faint);
+  border-color: var(--border-focus);
+}
+
+.error-msg {
+  color: var(--color-red);
+  font-size: 0.8rem;
+  margin-top: 12px;
+  min-height: 20px;
+}
+
+/* Badge */
+.badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+}
+
+.badge-accent {
+  background-color: var(--accent-cyan-faint);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+
+.description-text {
+  font-size: 0.75rem;
+  color: var(--color-zinc-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+a:not(.menu-item):not(.btn) {
+  color: var(--accent-lavender);
+}
+
+a:not(.menu-item):not(.btn):hover {
+  color: var(--accent-cyan);
+}
