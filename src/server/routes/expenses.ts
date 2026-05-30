@@ -1,9 +1,11 @@
 import {
   addExpense,
+  deleteExpense,
   getMonthlyCategoryBreakdown,
   getMonthlyTotal,
   listFilteredExpenses,
   listRecentExpenses,
+  updateExpense,
 } from "../../db/expenseRepo.js";
 import { parseReceipt } from "../../services/receiptParser.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
@@ -52,6 +54,29 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       sendJson(res, 200, { success: true, expense });
     } catch {
       sendError(res, 500, "支出の追加に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/expenses/update" && method === "POST") {
+    try {
+      const { id, userId, amount, category, description, date, purchase_source } = JSON.parse(await getRequestBody(req));
+      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      const expense = updateExpense(id, userId, { amount, category, description, date, purchase_source });
+      sendJson(res, 200, { success: true, expense });
+    } catch {
+      sendError(res, 500, "支出の更新に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/expenses/delete" && method === "POST") {
+    try {
+      const { id, userId } = JSON.parse(await getRequestBody(req));
+      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      sendJson(res, 200, { success: deleteExpense(id, userId) });
+    } catch {
+      sendError(res, 500, "支出の削除に失敗しました。");
     }
     return true;
   }

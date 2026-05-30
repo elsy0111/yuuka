@@ -108,6 +108,31 @@ export interface ExpenseFilter {
   q?: string;
 }
 
+export function updateExpense(
+  id: number,
+  userId: string,
+  fields: { amount?: number; category?: string; description?: string | null; date?: string; purchase_source?: string }
+): Expense | undefined {
+  const db = getDb();
+  const sets: string[] = [];
+  const params: unknown[] = [];
+  if (fields.amount !== undefined)           { sets.push("amount = ?");           params.push(fields.amount); }
+  if (fields.category !== undefined)         { sets.push("category = ?");         params.push(fields.category); }
+  if ("description" in fields)               { sets.push("description = ?");      params.push(fields.description ?? null); }
+  if (fields.date !== undefined)             { sets.push("date = ?");             params.push(fields.date); }
+  if (fields.purchase_source !== undefined)  { sets.push("purchase_source = ?");  params.push(fields.purchase_source); }
+  if (sets.length === 0) return getExpenseById(id);
+  params.push(id, userId);
+  db.prepare(`UPDATE expenses SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
+  return getExpenseById(id);
+}
+
+export function deleteExpense(id: number, userId: string): boolean {
+  const db = getDb();
+  const result = db.prepare("DELETE FROM expenses WHERE id = ? AND user_id = ?").run(id, userId);
+  return result.changes > 0;
+}
+
 export function listFilteredExpenses(userId: string, filter: ExpenseFilter = {}): Expense[] {
   const db = getDb();
   const conditions: string[] = ["user_id = ?"];
