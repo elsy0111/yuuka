@@ -65,6 +65,40 @@
   letter-spacing: 0.02em;
 }
 
+.login-tabs {
+  display: flex;
+  gap: 0;
+  margin: 20px 0 16px;
+  border-bottom: 1px solid var(--border-matte);
+}
+
+.login-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -1px;
+}
+
+.login-tab-btn.active {
+  color: var(--color-white);
+  border-bottom-color: var(--color-white);
+}
+
+.login-tab-pane {
+  display: none;
+}
+
+.login-tab-pane.active {
+  display: block;
+}
+
 /* ==============================================================================
    FORM CONTROLS & INPUTS (Minimal Matte Styling)
    ============================================================================== */
