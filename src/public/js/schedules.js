@@ -8,7 +8,9 @@ export async function fetchSchedulesList(days = 7) {
     const res = await fetch(`/api/schedules?userId=${state.activeUserId}&days=${days}`);
     const data = await res.json();
     if (data.success && data.schedules.length > 0) {
-      data.schedules.forEach((sched) => list.appendChild(makeScheduleCard(sched)));
+      data.schedules.forEach((sched) => {
+        list.appendChild(makeScheduleCard(sched));
+      });
     } else {
       const empty = document.createElement("div");
       empty.className = "glass";
@@ -163,7 +165,9 @@ async function handleDeleteSchedule(id) {
 export function initSchedules() {
   document.querySelectorAll("[data-days]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-days]").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll("[data-days]").forEach((b) => {
+        b.classList.remove("active");
+      });
       btn.classList.add("active");
       fetchSchedulesList(parseInt(btn.getAttribute("data-days"), 10));
     });

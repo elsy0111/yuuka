@@ -17,7 +17,7 @@ export const handleUserMigrate: RouteHandler = async ({ req, res, pathname, meth
     }
     const result = migrateUserId(fromId.trim(), toId.trim());
     sendJson(res, 200, { success: true, ...result });
-  } catch (err: any) {
+  } catch {
     sendError(res, 500, "ユーザーID移行に失敗しました。");
   }
   return true;

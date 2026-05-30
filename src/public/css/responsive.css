@@ -68,7 +68,7 @@
     padding: 6px;
     font-size: 0.65rem;
     text-align: center;
-    border: none !important;
+    border: none;
     border-radius: var(--radius);
     color: var(--color-zinc-muted);
   }
@@ -314,7 +314,7 @@
   /* Calendar form: stack input + button */
   #config-calendar-form {
     flex-direction: column;
-    gap: 10px !important;
+    gap: 10px;
   }
 
   /* Sub-details under chart wrap nicely */

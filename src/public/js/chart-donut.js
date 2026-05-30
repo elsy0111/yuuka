@@ -24,7 +24,9 @@ export function renderDonutChart(breakdown, total) {
   const totalEl = document.getElementById("dashboard-category-total");
 
   legend.replaceChildren();
-  svg.querySelectorAll(".donut-seg").forEach((el) => el.remove());
+  svg.querySelectorAll(".donut-seg").forEach((el) => {
+    el.remove();
+  });
 
   if (!breakdown || breakdown.length === 0 || total === 0) {
     pctEl.textContent = "0%";

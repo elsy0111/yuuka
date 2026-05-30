@@ -5,7 +5,9 @@ export function renderPriceTrendChart(expenses, onHover, onLeave) {
   const linePath = document.getElementById("trend-line-path");
   const areaPath = document.getElementById("trend-area-path");
 
-  svg.querySelectorAll("circle").forEach((c) => c.remove());
+  svg.querySelectorAll("circle").forEach((c) => {
+    c.remove();
+  });
 
   const dateLabels = [];
   const dateStrings = [];

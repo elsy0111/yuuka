@@ -3,6 +3,18 @@ import { config, getGoogleCalendars } from "../config.js";
 import * as scheduleRepo from "../db/scheduleRepo.js";
 import { getUserGoogleConfig } from "../db/userRepo.js";
 
+function errorStatus(error: unknown): number | undefined {
+  if (typeof error === "object" && error !== null && "status" in error) {
+    const status = (error as { status?: unknown }).status;
+    return typeof status === "number" ? status : undefined;
+  }
+  return undefined;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * ユーザー別の Google Calendar API クライアントを取得
  */
@@ -61,10 +73,8 @@ export async function fetchAvailableCalendars(
         if (response.data.summary) {
           list.push({ id, summary: response.data.summary });
         }
-      } catch (err: any) {
-        console.warn(
-          `カレンダーへのアクセス不可 (${id}): ${err?.message ?? err} — 同期対象から除外`,
-        );
+      } catch (err: unknown) {
+        console.warn(`カレンダーへのアクセス不可 (${id}): ${errorMessage(err)} — 同期対象から除外`);
       }
     }
     return list;
@@ -76,23 +86,22 @@ export async function fetchAvailableCalendars(
       minAccessRole: "writer", // 書き込み権限があるもののみ（予定の追加・削除用）
     });
 
-    const list = (response.data.items || [])
-      .filter((item) => item.id && item.summary)
-      .map((item) => ({
-        id: item.id!,
-        summary: item.summary!,
-      }));
+    const list = (response.data.items || []).flatMap((item) => {
+      if (!item.id || !item.summary) return [];
+      return [{ id: item.id, summary: item.summary }];
+    });
 
     // デフォルトカレンダーが入っていなければ追加
-    if (googleConfig?.calendarId && !list.some((item) => item.id === googleConfig!.calendarId)) {
+    if (googleConfig?.calendarId && !list.some((item) => item.id === googleConfig?.calendarId)) {
+      const calendarId = googleConfig.calendarId;
       try {
-        const primaryRes = await calendar.calendars.get({ calendarId: googleConfig.calendarId! });
+        const primaryRes = await calendar.calendars.get({ calendarId });
         list.unshift({
-          id: googleConfig.calendarId!,
+          id: calendarId,
           summary: primaryRes.data.summary || "デフォルトカレンダー",
         });
       } catch {
-        list.unshift({ id: googleConfig.calendarId!, summary: "デフォルトカレンダー" });
+        list.unshift({ id: calendarId, summary: "デフォルトカレンダー" });
       }
     }
     return list;
@@ -137,7 +146,7 @@ export async function getCachedCalendars(
  */
 function formatToLocalString(isoOrDateStr: string): string {
   const d = new Date(isoOrDateStr);
-  if (isNaN(d.getTime())) {
+  if (Number.isNaN(d.getTime())) {
     throw new Error(`不正な日付フォーマットです: ${isoOrDateStr}`);
   }
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -231,8 +240,8 @@ export async function deleteCalendarEvent(
       eventId: eventId,
     });
     return true;
-  } catch (error: any) {
-    if (error.status === 404) {
+  } catch (error: unknown) {
+    if (errorStatus(error) === 404) {
       return true;
     }
     console.error(
@@ -361,7 +370,7 @@ export async function syncGoogleCalendarToLocal(
     }
 
     // 3. カレンダー側で削除されたため、マップに残ったローカル予定を削除
-    for (const [googleEventId, localEvent] of localMap.entries()) {
+    for (const [_googleEventId, localEvent] of localMap.entries()) {
       scheduleRepo.deleteSchedule(localEvent.id, userId);
       console.log(`🗑️ [同期] 削除検知: ${localEvent.title}`);
     }

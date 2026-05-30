@@ -10,7 +10,7 @@ export function formatCurrency(amount: number): string {
  */
 export function formatDateTime(isoString: string): string {
   const date = new Date(isoString);
-  if (isNaN(date.getTime())) return isoString;
+  if (Number.isNaN(date.getTime())) return isoString;
 
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -28,7 +28,8 @@ export function formatDate(dateStr: string): string {
   const parts = dateStr.split("-");
   if (parts.length !== 3) return dateStr;
   const [year, month, day] = parts;
-  return `${year}年${parseInt(month!)}月${parseInt(day!)}日`;
+  if (!year || !month || !day) return dateStr;
+  return `${year}年${parseInt(month, 10)}月${parseInt(day, 10)}日`;
 }
 
 /**

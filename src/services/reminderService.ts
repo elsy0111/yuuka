@@ -1,5 +1,4 @@
 import cron from "node-cron";
-import { Client } from "discord.js";
 import { getUnremindedSchedules, markReminded } from "../db/scheduleRepo.js";
 import { buildReminderEmbed } from "../utils/embeds.js";
 import { config } from "../config.js";

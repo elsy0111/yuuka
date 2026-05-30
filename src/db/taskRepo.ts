@@ -25,7 +25,11 @@ export function addTask(
     VALUES (?, ?, ?, ?, ?)
   `);
   const result = stmt.run(userId, title, description ?? null, dueDate ?? null, priority ?? 0);
-  return getTaskById(result.lastInsertRowid as number)!;
+  const task = getTaskById(result.lastInsertRowid as number);
+  if (!task) {
+    throw new Error("Failed to load created task");
+  }
+  return task;
 }
 
 export function listTasks(userId: string, status?: string): Task[] {

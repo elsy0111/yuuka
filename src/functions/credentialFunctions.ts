@@ -1,5 +1,9 @@
 import * as secretService from "../services/secretService.js";
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 /**
  * AIエージェントが安全に資格情報を取得するためのツール関数
  */
@@ -32,11 +36,12 @@ export async function getCredential(
       username: credential.username,
       password: credential.password,
     });
-  } catch (err: any) {
-    console.error(`[AI Tool] getCredential 実行エラー:`, err.message);
+  } catch (err: unknown) {
+    const message = errorMessage(err);
+    console.error(`[AI Tool] getCredential 実行エラー:`, message);
     return JSON.stringify({
       success: false,
-      message: `資格情報の取得中にエラーが発生しました: ${err.message}`,
+      message: `資格情報の取得中にエラーが発生しました: ${message}`,
     });
   }
 }
@@ -44,7 +49,10 @@ export async function getCredential(
 /**
  * AIエージェントが登録されている資格情報のインデックス（サービス名とユーザー名）の一覧を取得するためのツール関数
  */
-export async function listCredentials(userId: string, args: {}): Promise<string> {
+export async function listCredentials(
+  userId: string,
+  _args: Record<string, never>,
+): Promise<string> {
   try {
     console.log(`🔒 AIエージェントが資格情報インデックス一覧の取得を要求 (User: ${userId})`);
     const list = secretService.listCredentials(userId);
@@ -52,11 +60,12 @@ export async function listCredentials(userId: string, args: {}): Promise<string>
       success: true,
       credentials: list,
     });
-  } catch (err: any) {
-    console.error(`[AI Tool] listCredentials 実行エラー:`, err.message);
+  } catch (err: unknown) {
+    const message = errorMessage(err);
+    console.error(`[AI Tool] listCredentials 実行エラー:`, message);
     return JSON.stringify({
       success: false,
-      message: `資格情報一覧の取得中にエラーが発生しました: ${err.message}`,
+      message: `資格情報一覧の取得中にエラーが発生しました: ${message}`,
     });
   }
 }

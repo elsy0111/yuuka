@@ -11,7 +11,9 @@ export function renderCalendarsList(calendars, onChanged) {
     return;
   }
 
-  calendars.forEach((cal) => list.appendChild(makeCalendarRow(cal, onChanged)));
+  calendars.forEach((cal) => {
+    list.appendChild(makeCalendarRow(cal, onChanged));
+  });
 }
 
 export function initCalendarForm(onChanged) {

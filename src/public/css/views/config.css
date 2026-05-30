@@ -35,7 +35,7 @@
 }
 
 .alert-icon-symbol {
-  color: var(--accent-yellow) !important;
+  color: var(--accent-yellow);
 }
 
 .alert-header {

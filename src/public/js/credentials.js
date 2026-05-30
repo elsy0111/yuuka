@@ -10,7 +10,9 @@ export async function fetchCredentialsSettings() {
     const data = await res.json();
 
     if (data.success && data.credentials.length > 0) {
-      data.credentials.forEach((cred) => list.appendChild(makeCredentialRow(cred)));
+      data.credentials.forEach((cred) => {
+        list.appendChild(makeCredentialRow(cred));
+      });
     } else {
       const tr = document.createElement("tr");
       const td = document.createElement("td");

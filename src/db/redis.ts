@@ -76,7 +76,7 @@ export async function closeRedis(): Promise<void> {
       console.error("Redis 切断中にエラーが発生しました:", err);
       try {
         await client.disconnect();
-      } catch (e) {}
+      } catch (_e) {}
     } finally {
       client = null;
       isRedisReady = false;

@@ -1,7 +1,7 @@
 import { state } from "./state.js";
 
 let currentExpenses = [];
-let sortState = { key: "date", dir: "desc" };
+const sortState = { key: "date", dir: "desc" };
 let fetchTimer = null;
 
 function debouncedFetch() {
@@ -13,7 +13,7 @@ export function initExpenseDetail() {
   const modal = document.getElementById("expense-detail-modal");
   const btnOpen = document.getElementById("btn-expense-detail");
   const btnClose = document.getElementById("btn-expense-detail-close");
-  const panel = modal?.querySelector(".modal-panel");
+  const _panel = modal?.querySelector(".modal-panel");
 
   const openModal = () => {
     modal.classList.remove("hidden");

@@ -46,8 +46,15 @@ export function savePlaybook(
  */
 export function findPlaybooks(userId: string, query?: string): Playbook[] {
   const db = getDb();
+  type PlaybookRow = {
+    name: string;
+    title: string;
+    keywords: string | null;
+    description: string | null;
+    steps: string | null;
+  };
 
-  let rows: any[];
+  let rows: PlaybookRow[];
   if (query) {
     const likePattern = `%${query}%`;
     rows = db
@@ -59,7 +66,7 @@ export function findPlaybooks(userId: string, query?: string): Playbook[] {
       )
       ORDER BY updated_at DESC
     `)
-      .all(userId, likePattern, likePattern, likePattern, likePattern);
+      .all(userId, likePattern, likePattern, likePattern, likePattern) as PlaybookRow[];
   } else {
     rows = db
       .prepare(`
@@ -68,10 +75,10 @@ export function findPlaybooks(userId: string, query?: string): Playbook[] {
       WHERE user_id = ?
       ORDER BY updated_at DESC
     `)
-      .all(userId);
+      .all(userId) as PlaybookRow[];
   }
 
-  return rows.map((row: any) => {
+  return rows.map((row) => {
     let keywords: string[] = [];
     try {
       keywords = JSON.parse(row.keywords || "[]");

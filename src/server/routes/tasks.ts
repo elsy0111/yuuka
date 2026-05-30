@@ -26,7 +26,10 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
       const { userId, title, description, dueDate, priority } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!title) return sendError(res, 400, "タイトルは必須です。"), true;
+      if (!title) {
+        sendError(res, 400, "タイトルは必須です。");
+        return true;
+      }
       const task = addTask(userId || "sensei_default", title, description, dueDate, priority);
       sendJson(res, 200, { success: true, task });
     } catch {
@@ -40,7 +43,10 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
       const { id, userId, title, description, dueDate, priority } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      if (!id || !userId) {
+        sendError(res, 400, "IDとユーザーIDが必要です。");
+        return true;
+      }
       const task = updateTask(id, userId, { title, description, dueDate, priority });
       sendJson(res, 200, { success: true, task });
     } catch {
@@ -57,7 +63,10 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
   ) {
     try {
       const { id, userId } = JSON.parse(await getRequestBody(req));
-      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      if (!id || !userId) {
+        sendError(res, 400, "IDとユーザーIDが必要です。");
+        return true;
+      }
 
       if (pathname.endsWith("/complete")) {
         sendJson(res, 200, { success: true, task: completeTask(id, userId) });

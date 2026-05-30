@@ -19,8 +19,8 @@ export async function addSchedule(
     local_only?: boolean;
   },
 ): Promise<string> {
-  let googleEventId: string | undefined = undefined;
-  let googleCalendarId: string | undefined = undefined;
+  let googleEventId: string | undefined;
+  let googleCalendarId: string | undefined;
 
   if (isCalendarEnabled(userId) && !args.local_only) {
     try {

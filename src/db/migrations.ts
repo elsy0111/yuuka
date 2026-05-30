@@ -103,21 +103,21 @@ export function runMigrations(): void {
   try {
     db.exec("ALTER TABLE schedules ADD COLUMN google_event_id TEXT;");
     console.log("ℹ️ schedules テーブルに google_event_id カラムを追加しました");
-  } catch (e) {
+  } catch (_e) {
     // すでにカラムが存在する場合はエラーを無視
   }
 
   try {
     db.exec("ALTER TABLE schedules ADD COLUMN google_calendar_id TEXT;");
     console.log("ℹ️ schedules テーブルに google_calendar_id カラムを追加しました");
-  } catch (e) {
+  } catch (_e) {
     // すでにカラムが存在する場合はエラーを無視
   }
 
   try {
     db.exec("ALTER TABLE expenses ADD COLUMN purchase_source TEXT NOT NULL DEFAULT '不明';");
     console.log("ℹ️ expenses テーブルに purchase_source カラムを追加しました");
-  } catch (e) {
+  } catch (_e) {
     // すでにカラムが存在する場合はエラーを無視
   }
 
@@ -187,7 +187,7 @@ export function runMigrations(): void {
       `);
       console.log("ℹ️ credentials テーブルを user_id 対応にマイグレーションしました");
     }
-  } catch (e) {
+  } catch (_e) {
     // テーブルが存在しない場合など
   }
 
@@ -269,7 +269,7 @@ export function runMigrations(): void {
           if (key === "title") pbTitle = val;
           else if (key === "keywords")
             pbKeywords = val
-              .replace(/[\[\]]/g, "")
+              .replace(/[[\]]/g, "")
               .split(",")
               .map((k) => k.trim())
               .filter(Boolean);

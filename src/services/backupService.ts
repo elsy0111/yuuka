@@ -3,6 +3,7 @@ import path from "node:path";
 import cron from "node-cron";
 // @ts-expect-error @types/archiver is outdated for v8
 import { ZipArchive } from "archiver";
+import type { ArchiverError } from "archiver";
 import Database from "better-sqlite3";
 import { getDb } from "../db/database.js";
 import { getUserByDiscordId } from "../db/userRepo.js";
@@ -101,7 +102,7 @@ function exportSingleUserDb(userId: string, tempDbPath: string): void {
  */
 export async function runBackup(userId: string): Promise<string> {
   const user = getUserByDiscordId(userId);
-  if (!user || !user.google_drive_backup_enabled) {
+  if (!user?.google_drive_backup_enabled) {
     throw new Error("バックアップ設定が無効になっているか、ユーザーが存在しません。");
   }
 
@@ -126,14 +127,14 @@ export async function runBackup(userId: string): Promise<string> {
       });
 
       output.on("close", () => resolve());
-      archive.on("warning", (err: any) => {
+      archive.on("warning", (err: ArchiverError) => {
         if (err.code === "ENOENT") {
           console.warn("ZIP作成中に警告:", err);
         } else {
           reject(err);
         }
       });
-      archive.on("error", (err: any) => reject(err));
+      archive.on("error", (err: ArchiverError) => reject(err));
 
       archive.pipe(output);
 
@@ -218,7 +219,7 @@ export function initUserBackupSchedule(userId: string): void {
  */
 export function initAllBackupSchedules(userIds: string[]): void {
   // 既存のスケジュールをすべてクリア
-  for (const [userId, task] of activeCronTasks.entries()) {
+  for (const [_userId, task] of activeCronTasks.entries()) {
     task.stop();
   }
   activeCronTasks.clear();

@@ -132,19 +132,6 @@
   opacity: 1;
 }
 
-.modal-overlay .modal-panel {
-  transform: translateY(14px);
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.modal-overlay.modal-visible .modal-panel {
-  transform: translateY(0);
-}
-
-.modal-overlay.hidden {
-  display: none;
-}
-
 .modal-panel {
   background: var(--bg-secondary);
   border: 1px solid var(--border-matte);
@@ -157,6 +144,19 @@
   flex-direction: column;
   gap: 16px;
   padding: 24px;
+}
+
+.modal-overlay .modal-panel {
+  transform: translateY(14px);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.modal-visible .modal-panel {
+  transform: translateY(0);
+}
+
+.modal-overlay.hidden {
+  display: none;
 }
 
 .modal-header {

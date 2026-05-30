@@ -52,7 +52,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const { userId, amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!amount || !category) return sendError(res, 400, "金額とカテゴリは必須です。"), true;
+      if (!amount || !category) {
+        sendError(res, 400, "金額とカテゴリは必須です。");
+        return true;
+      }
       const expense = addExpense(
         userId || "sensei_default",
         amount,
@@ -74,7 +77,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const { id, userId, amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      if (!id || !userId) {
+        sendError(res, 400, "IDとユーザーIDが必要です。");
+        return true;
+      }
       const expense = updateExpense(id, userId, {
         amount,
         category,
@@ -92,7 +98,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/delete" && method === "POST") {
     try {
       const { id, userId } = JSON.parse(await getRequestBody(req));
-      if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
+      if (!id || !userId) {
+        sendError(res, 400, "IDとユーザーIDが必要です。");
+        return true;
+      }
       sendJson(res, 200, { success: deleteExpense(id, userId) });
     } catch {
       sendError(res, 500, "支出の削除に失敗しました。");

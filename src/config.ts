@@ -116,5 +116,5 @@ export function updateGoogleCalendarsInYaml(calendars: string[]): void {
     `GOOGLE_CALENDARS: ${calendars.join(",")}`,
   );
   fs.writeFileSync(CONFIG_PATH, updated, "utf-8");
-  parsedConfig["GOOGLE_CALENDARS"] = calendars;
+  parsedConfig.GOOGLE_CALENDARS = calendars;
 }

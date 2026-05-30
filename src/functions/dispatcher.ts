@@ -14,12 +14,14 @@ import { scheduleDeclarations } from "./declarations/schedules.js";
 import { expenseDeclarations } from "./declarations/expenses.js";
 import { systemDeclarations } from "./declarations/system.js";
 
+type FunctionArgs = Record<string, unknown>;
+
 // ─── 動的プラグインロード機構 ───────────────────────────────────────────
 
 export const dynamicFunctionDeclarations: FunctionDeclaration[] = [];
 const dynamicDispatchMap = new Map<
   string,
-  (userId: string, args: any) => Promise<string> | string
+  (userId: string, args: FunctionArgs) => Promise<string> | string
 >();
 
 /**
@@ -150,8 +152,6 @@ export async function initializeDynamicFunctions(clearCache = false): Promise<vo
 }
 
 // ─── Function Dispatcher ───────────────────────────────────────────────
-
-type FunctionArgs = Record<string, unknown>;
 
 export async function dispatchFunction(
   functionName: string,
@@ -311,16 +311,18 @@ export async function dispatchFunction(
           message: "動的関数を正常にリロードしました。新しく追加された関数が利用可能です。",
           loadedFunctions: dynamicFunctionDeclarations.map((d) => d.name),
         });
-      } catch (err: any) {
-        return JSON.stringify({ success: false, message: `リロード失敗: ${err.message}` });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        return JSON.stringify({ success: false, message: `リロード失敗: ${message}` });
       }
 
-    default:
+    default: {
       // 動的ロードされた関数マップに存在すれば実行する
-      if (dynamicDispatchMap.has(functionName)) {
-        const fn = dynamicDispatchMap.get(functionName)!;
-        return await fn(userId, args);
+      const fn = dynamicDispatchMap.get(functionName);
+      if (!fn) {
+        return JSON.stringify({ success: false, message: `不明な関数: ${functionName}` });
       }
-      return JSON.stringify({ success: false, message: `不明な関数: ${functionName}` });
+      return await fn(userId, args);
+    }
   }
 }

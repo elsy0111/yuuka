@@ -1,9 +1,13 @@
 import * as browserService from "../services/browserService.js";
 
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 /**
  * 動的なウェブページのテキスト内容を取得するツール関数
  */
-export async function fetchDynamicPage(userId: string, args: { url: string }): Promise<string> {
+export async function fetchDynamicPage(_userId: string, args: { url: string }): Promise<string> {
   try {
     const { title, markdown } = await browserService.fetchCleanPageContent(args.url);
     return JSON.stringify({
@@ -13,10 +17,10 @@ export async function fetchDynamicPage(userId: string, args: { url: string }): P
       markdownContent: markdown.slice(0, 30000), // より詳細な内容を読み込めるように30,000文字に拡張
       htmlContent: markdown.slice(0, 30000), // 既存プロンプトとの互換性のために同一のテキストを設定
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return JSON.stringify({
       success: false,
-      message: err.message,
+      message: getErrorMessage(err),
     });
   }
 }
@@ -24,7 +28,7 @@ export async function fetchDynamicPage(userId: string, args: { url: string }): P
 /**
  * ウェブページのスクリーンショットを撮影するツール関数
  */
-export async function takePageScreenshot(userId: string, args: { url: string }): Promise<string> {
+export async function takePageScreenshot(_userId: string, args: { url: string }): Promise<string> {
   try {
     const relativePath = await browserService.takePageScreenshot(args.url);
     return JSON.stringify({
@@ -33,10 +37,10 @@ export async function takePageScreenshot(userId: string, args: { url: string }):
       message: `スクリーンショットの撮影に成功しました。`,
       imagePath: relativePath,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return JSON.stringify({
       success: false,
-      message: err.message,
+      message: getErrorMessage(err),
     });
   }
 }
@@ -44,7 +48,7 @@ export async function takePageScreenshot(userId: string, args: { url: string }):
 /**
  * インターネット上の最新情報を検索するツール関数
  */
-export async function searchWeb(userId: string, args: { query: string }): Promise<string> {
+export async function searchWeb(_userId: string, args: { query: string }): Promise<string> {
   try {
     const results = await browserService.searchWeb(args.query);
     return JSON.stringify({
@@ -52,10 +56,10 @@ export async function searchWeb(userId: string, args: { query: string }): Promis
       query: args.query,
       results,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return JSON.stringify({
       success: false,
-      message: err.message,
+      message: getErrorMessage(err),
     });
   }
 }
@@ -70,8 +74,8 @@ export async function browserInteractiveOpen(
   try {
     const res = await browserService.browserInteractiveOpen(userId, args.url);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }
 
@@ -85,8 +89,8 @@ export async function browserInteractiveClick(
   try {
     const res = await browserService.browserInteractiveClick(userId, args.selector);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }
 
@@ -100,8 +104,8 @@ export async function browserInteractiveType(
   try {
     const res = await browserService.browserInteractiveType(userId, args.selector, args.text);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }
 
@@ -115,8 +119,8 @@ export async function browserInteractiveWait(
   try {
     const res = await browserService.browserInteractiveWait(userId, args.selector, args.timeoutMs);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }
 
@@ -127,8 +131,8 @@ export async function browserInteractiveStatus(userId: string): Promise<string> 
   try {
     const res = await browserService.browserInteractiveStatus(userId);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }
 
@@ -139,7 +143,7 @@ export async function browserInteractiveClose(userId: string): Promise<string> {
   try {
     const res = await browserService.browserInteractiveClose(userId);
     return JSON.stringify(res);
-  } catch (err: any) {
-    return JSON.stringify({ success: false, message: err.message });
+  } catch (err: unknown) {
+    return JSON.stringify({ success: false, message: getErrorMessage(err) });
   }
 }

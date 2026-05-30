@@ -56,7 +56,11 @@ export function addExpense(
     source,
     purchaseSource,
   );
-  return getExpenseById(result.lastInsertRowid as number)!;
+  const expense = getExpenseById(result.lastInsertRowid as number);
+  if (!expense) {
+    throw new Error("Failed to load created expense");
+  }
+  return expense;
 }
 
 export function getExpenseById(id: number): Expense | undefined {

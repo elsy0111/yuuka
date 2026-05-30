@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Discord Gemini 秘書ボット",
   "type": "module",
+  "packageManager": "yarn@4.15.0",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -10,7 +11,7 @@
     "start": "node dist/index.js",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "lint": "biome lint .",
+    "lint": "biome lint --error-on-warnings .",
     "check": "biome check ."
   },
   "dependencies": {

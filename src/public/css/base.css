@@ -74,61 +74,61 @@ body {
 }
 
 .menu-icon-symbol {
-  font-size: 1.25rem !important;
+  font-size: 1.25rem;
 }
 
 /* Header buttons & icons formatting */
 .icon-button-left {
   margin-right: 8px;
-  font-size: 1.15rem !important;
+  font-size: 1.15rem;
 }
 
 .icon-small {
-  font-size: 1.15rem !important;
+  font-size: 1.15rem;
 }
 
 .icon-display-large {
-  font-size: 2.8rem !important;
+  font-size: 2.8rem;
   color: var(--color-white);
 }
 
 .dropzone-icon-symbol {
-  font-size: 2.5rem !important;
+  font-size: 2.5rem;
   color: var(--color-zinc-muted);
   margin-bottom: 8px;
 }
 
 .modal-icon-symbol {
-  font-size: 2.5rem !important;
+  font-size: 2.5rem;
   color: var(--color-white);
   margin-bottom: 8px;
 }
 
 .trend-icon-symbol {
-  font-size: 0.8rem !important;
+  font-size: 0.8rem;
   vertical-align: middle;
 }
 
 .source-icon {
-  font-size: 0.85rem !important;
+  font-size: 0.85rem;
   vertical-align: middle;
   margin-right: 4px;
 }
 
 .list-card-icon {
-  font-size: 1.5rem !important;
+  font-size: 1.5rem;
   color: var(--color-zinc-muted);
 }
 
 .meta-icon {
-  font-size: 0.9rem !important;
+  font-size: 0.9rem;
   vertical-align: middle;
   margin-right: 4px;
   color: var(--color-zinc-muted);
 }
 
 .header-icon-symbol {
-  font-size: 1.35rem !important;
+  font-size: 1.35rem;
   vertical-align: middle;
   margin-right: 8px;
   color: var(--color-white);
@@ -159,7 +159,7 @@ textarea {
 }
 
 .hidden {
-  display: none !important;
+  display: none;
 }
 
 /* Custom Minimalist Scrollbar */

@@ -39,7 +39,11 @@ export function addSchedule(
     googleEventId ?? null,
     googleCalendarId ?? null,
   );
-  return getScheduleById(result.lastInsertRowid as number)!;
+  const schedule = getScheduleById(result.lastInsertRowid as number);
+  if (!schedule) {
+    throw new Error("Failed to load created schedule");
+  }
+  return schedule;
 }
 
 export function listUpcomingSchedules(userId: string, days: number = 7): Schedule[] {

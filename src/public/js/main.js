@@ -1,5 +1,5 @@
 // スプラッシュスクリーン制御（DOMContentLoaded 前に実行）
-(function () {
+(() => {
   const splash = document.getElementById("splash-screen");
   if (!splash) return;
   const theme = localStorage.getItem("yuuka-theme") || "dark";

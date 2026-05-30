@@ -1,5 +1,5 @@
 import { state } from "./state.js";
-import { switchTab, loadDataForActiveTab } from "./router.js";
+import { switchTab } from "./router.js";
 import { initConfigAfterAuth } from "./config.js";
 
 const SESSION_STORAGE_KEY = "yuuka-admin-session";
@@ -45,7 +45,7 @@ function installAuthenticatedFetch() {
 
     const url =
       typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-    if (!url.startsWith("/api/") && !url.startsWith(window.location.origin + "/api/")) {
+    if (!url.startsWith("/api/") && !url.startsWith(`${window.location.origin}/api/`)) {
       return nativeFetch(input, init);
     }
 

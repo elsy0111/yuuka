@@ -98,7 +98,11 @@ export function createUser(discordId: string, username: string, password: string
     VALUES (?, ?, ?)
   `);
   stmt.run(discordId, username, passwordHash);
-  return getUserByDiscordId(discordId)!;
+  const user = getUserByDiscordId(discordId);
+  if (!user) {
+    throw new Error("Failed to load created user");
+  }
+  return user;
 }
 
 /**

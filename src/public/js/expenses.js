@@ -13,7 +13,9 @@ export async function fetchExpensesList() {
     renderBudgetBar(data.total);
 
     if (data.expenses?.length > 0) {
-      data.expenses.forEach((exp) => tbody.appendChild(makeExpenseRow(exp)));
+      data.expenses.forEach((exp) => {
+        tbody.appendChild(makeExpenseRow(exp));
+      });
     } else {
       const tr = document.createElement("tr");
       const td = document.createElement("td");

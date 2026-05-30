@@ -59,7 +59,7 @@ export function listInviteCodes(): InviteCode[] {
  */
 export function seedInitialCodes(codes: string[]): void {
   for (const code of codes) {
-    if (code && code.trim()) {
+    if (code?.trim()) {
       createInviteCode(code.trim());
     }
   }

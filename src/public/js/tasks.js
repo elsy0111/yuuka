@@ -8,7 +8,9 @@ export async function fetchTasksList(filter = "all") {
     const res = await fetch(`/api/tasks?userId=${state.activeUserId}&status=${filter}`);
     const data = await res.json();
     if (data.success && data.tasks.length > 0) {
-      data.tasks.forEach((task) => list.appendChild(makeTaskCard(task)));
+      data.tasks.forEach((task) => {
+        list.appendChild(makeTaskCard(task));
+      });
     } else {
       const empty = document.createElement("div");
       empty.className = "glass";
@@ -164,7 +166,9 @@ async function handleEditTaskSubmit(e) {
 export function initTasks() {
   document.querySelectorAll("[data-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-filter]").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll("[data-filter]").forEach((b) => {
+        b.classList.remove("active");
+      });
       btn.classList.add("active");
       fetchTasksList(btn.getAttribute("data-filter"));
     });

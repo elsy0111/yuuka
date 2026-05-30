@@ -1,31 +1,37 @@
-import puppeteer, { Browser, Page } from "puppeteer";
-import path from "node:path";
-import fs from "node:fs";
 import { execFile } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import { promisify } from "node:util";
+import puppeteer, { type Browser, type Page } from "puppeteer";
 
 const execFileAsync = promisify(execFile);
 
 const SCREENSHOT_DIR = path.resolve(process.cwd(), "data/screenshots");
 const DEBUG_SCRAPES_DIR = path.resolve(process.cwd(), "data/debug_scrapes");
 
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 // 保存用ディレクトリの確保
-[SCREENSHOT_DIR, DEBUG_SCRAPES_DIR].forEach((dir) => {
+for (const dir of [SCREENSHOT_DIR, DEBUG_SCRAPES_DIR]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-});
+}
 
 // 1時間以上経過した不要な画像やMDファイルを削除する
 function cleanupOldFiles() {
   const ONE_HOUR = 60 * 60 * 1000;
   const now = Date.now();
 
-  [SCREENSHOT_DIR, DEBUG_SCRAPES_DIR].forEach((dir) => {
-    if (!fs.existsSync(dir)) return;
+  for (const dir of [SCREENSHOT_DIR, DEBUG_SCRAPES_DIR]) {
+    if (!fs.existsSync(dir)) {
+      continue;
+    }
     fs.readdir(dir, (err, files) => {
       if (err) return;
-      files.forEach((file) => {
+      for (const file of files) {
         const filePath = path.join(dir, file);
         fs.stat(filePath, (err, stats) => {
           if (err) return;
@@ -33,9 +39,9 @@ function cleanupOldFiles() {
             fs.unlink(filePath, () => {});
           }
         });
-      });
+      }
     });
-  });
+  }
 }
 
 // 起動時とその後1時間ごとにクリーンアップを実行
@@ -159,13 +165,14 @@ export async function closeInteractiveBrowser(userId: string): Promise<void> {
 async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<string> {
   try {
     await page.evaluate(() => {
-      (window as any).__name = (fn: any) => fn;
+      (window as Window & { __name?: <T>(fn: T) => T }).__name = <T>(fn: T): T => fn;
     });
   } catch {}
 
   const rawMarkdown = await page.evaluate((interactive: boolean) => {
-    function isVisible(el: any) {
-      if (!el || el.nodeType !== Node.ELEMENT_NODE) return true;
+    function isVisible(el: Node) {
+      if (el.nodeType !== Node.ELEMENT_NODE) return true;
+      if (!(el instanceof Element)) return true;
       const style = window.getComputedStyle(el);
       if (style.display === "none" || style.visibility === "hidden") return false;
       const rect = el.getBoundingClientRect();
@@ -174,14 +181,14 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
     }
 
     const noiseKeywords = ["footer", "nav", "sidebar", "menu", "ads"];
-    function isNoiseElement(el: any): boolean {
+    function isNoiseElement(el: Element): boolean {
       const id = el.id ? el.id.toLowerCase() : "";
       const className =
         el.className && typeof el.className === "string" ? el.className.toLowerCase() : "";
       return noiseKeywords.some((keyword) => id.includes(keyword) || className.includes(keyword));
     }
 
-    function traverse(node: any, isPre = false): string {
+    function traverse(node: Node | null, isPre = false): string {
       if (!node) return "";
 
       if (node.nodeType === Node.ELEMENT_NODE && !isVisible(node)) {
@@ -198,7 +205,8 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
         return "";
       }
 
-      const tagName = node.tagName.toLowerCase();
+      const element = node as Element;
+      const tagName = element.tagName.toLowerCase();
 
       // 基本的な不要タグの除外
       const baseUnwanted = ["script", "style", "noscript", "iframe", "svg", "img", "link", "meta"];
@@ -218,7 +226,7 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
           "input",
           "textarea",
         ];
-        if (normalUnwanted.includes(tagName) || isNoiseElement(node)) {
+        if (normalUnwanted.includes(tagName) || isNoiseElement(element)) {
           return "";
         }
       }
@@ -242,25 +250,25 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
 
       // インタラクティブ要素のカスタムレンダリング
       if (interactive) {
-        const yuukaId = node.getAttribute("data-yuuka-id") || "";
+        const yuukaId = element.getAttribute("data-yuuka-id") || "";
         const idStr = yuukaId ? ` ID: ${yuukaId}` : "";
 
-        if (tagName === "input") {
-          const type = node.getAttribute("type") || "text";
-          const name = node.getAttribute("name") || "";
-          const id = node.id || "";
-          const placeholder = node.getAttribute("placeholder") || "";
-          const val = node.value || "";
+        if (element instanceof HTMLInputElement) {
+          const type = element.getAttribute("type") || "text";
+          const name = element.getAttribute("name") || "";
+          const id = element.id || "";
+          const placeholder = element.getAttribute("placeholder") || "";
+          const val = element.value || "";
           // パスワード値はセキュリティのためマスクする（値が入っている場合のみ）
           const displayVal = type === "password" ? (val ? "********" : "") : val;
           return ` [Input (${type})${idStr} id="${id}" name="${name}" placeholder="${placeholder}" value="${displayVal}"] `;
         }
 
-        if (tagName === "textarea") {
-          const name = node.getAttribute("name") || "";
-          const id = node.id || "";
-          const placeholder = node.getAttribute("placeholder") || "";
-          const val = node.value || "";
+        if (element instanceof HTMLTextAreaElement) {
+          const name = element.getAttribute("name") || "";
+          const id = element.id || "";
+          const placeholder = element.getAttribute("placeholder") || "";
+          const val = element.value || "";
           return ` [Textarea${idStr} id="${id}" name="${name}" placeholder="${placeholder}" value="${val}"] `;
         }
 
@@ -269,16 +277,16 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
           for (const child of Array.from(node.childNodes)) {
             btnText += traverse(child, isPre);
           }
-          const id = node.id || "";
-          const name = node.getAttribute("name") || "";
+          const id = element.id || "";
+          const name = element.getAttribute("name") || "";
           return ` [Button${idStr}: "${btnText.trim()}" id="${id}" name="${name}"] `;
         }
 
-        if (tagName === "select") {
-          const name = node.getAttribute("name") || "";
-          const id = node.id || "";
-          const options = Array.from(node.querySelectorAll("option"))
-            .map((opt: any) => {
+        if (element instanceof HTMLSelectElement) {
+          const name = element.getAttribute("name") || "";
+          const id = element.id || "";
+          const options = Array.from(element.querySelectorAll("option"))
+            .map((opt) => {
               return `${opt.value}:${opt.textContent?.trim() || ""}`;
             })
             .join(", ");
@@ -309,9 +317,9 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
         case "hr":
           return "\n\n---\n\n";
         case "a": {
-          const href = node.href;
+          const href = element instanceof HTMLAnchorElement ? element.href : "";
           const text = childrenText.trim();
-          const yuukaId = interactive ? node.getAttribute("data-yuuka-id") || "" : "";
+          const yuukaId = interactive ? element.getAttribute("data-yuuka-id") || "" : "";
           const idPrefix = yuukaId ? `[ID: ${yuukaId}] ` : "";
           if (href && text && !href.startsWith("javascript:") && !href.startsWith("mailto:")) {
             return ` ${idPrefix}[${text}](${href}) `;
@@ -414,8 +422,10 @@ export async function fetchCleanPageContent(
     }
     console.log(`[Rust Crawler] Successfully fetched and parsed: ${url}`);
     result = { title, markdown };
-  } catch (err: any) {
-    console.warn(`[Rust Crawler] Fetch failed: ${err.message}. Falling back to Puppeteer...`);
+  } catch (err: unknown) {
+    console.warn(
+      `[Rust Crawler] Fetch failed: ${getErrorMessage(err)}. Falling back to Puppeteer...`,
+    );
   }
 
   if (!result) {
@@ -437,9 +447,9 @@ export async function fetchCleanPageContent(
 
       try {
         await page.goto(url, { waitUntil: "networkidle2", timeout: 15000 });
-      } catch (gotoError: any) {
+      } catch (gotoError: unknown) {
         console.warn(
-          `Navigation timeout or error for ${url}, extracting content anyway: ${gotoError.message}`,
+          `Navigation timeout or error for ${url}, extracting content anyway: ${getErrorMessage(gotoError)}`,
         );
       }
 
@@ -466,8 +476,8 @@ export async function fetchCleanPageContent(
     fs.writeFileSync(uniqueFetchPath, result.markdown, "utf-8");
 
     console.log(`[Debug] Saved scraped markdown to: ${uniqueFetchPath}`);
-  } catch (saveErr: any) {
-    console.warn(`Failed to save debug scrape file: ${saveErr.message}`);
+  } catch (saveErr: unknown) {
+    console.warn(`Failed to save debug scrape file: ${getErrorMessage(saveErr)}`);
   }
 
   return result;
@@ -513,8 +523,10 @@ export async function searchWeb(
     const results = JSON.parse(jsonOutput);
     console.log(`[Rust Crawler] Successfully searched and found ${results.length} results.`);
     return results;
-  } catch (err: any) {
-    console.warn(`[Rust Crawler] Search failed: ${err.message}. Falling back to Puppeteer...`);
+  } catch (err: unknown) {
+    console.warn(
+      `[Rust Crawler] Search failed: ${getErrorMessage(err)}. Falling back to Puppeteer...`,
+    );
   }
 
   const browser = await puppeteer.launch({
@@ -538,7 +550,7 @@ export async function searchWeb(
       const googleResults = await page.evaluate(() => {
         const items: Array<{ title: string; url: string; snippet: string }> = [];
         const elements = document.querySelectorAll("div.g");
-        elements.forEach((el: any) => {
+        elements.forEach((el) => {
           const titleEl = el.querySelector("h3");
           const anchor = el.querySelector("a");
           const snippetEl = el.querySelector("div.VwiC3b, span.aCOpbc, div.yD3zGc");
@@ -556,9 +568,9 @@ export async function searchWeb(
       if (googleResults && googleResults.length > 0) {
         return googleResults.slice(0, 8);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.warn(
-        `Google Search failed or timed out: ${e.message}. Falling back to DuckDuckGo...`,
+        `Google Search failed or timed out: ${getErrorMessage(e)}. Falling back to DuckDuckGo...`,
       );
     }
 
@@ -568,7 +580,7 @@ export async function searchWeb(
     const ddgResults = await page.evaluate(() => {
       const items: Array<{ title: string; url: string; snippet: string }> = [];
       const elements = document.querySelectorAll(".result");
-      elements.forEach((el: any) => {
+      elements.forEach((el) => {
         const titleEl = el.querySelector(".result__title a");
         const snippetEl = el.querySelector(".result__snippet");
         if (titleEl) {
@@ -597,7 +609,9 @@ export async function annotateInteractiveElements(page: Page): Promise<void> {
     await page.evaluate(() => {
       // 既存のIDを一旦クリア
       const oldElements = document.querySelectorAll("[data-yuuka-id]");
-      oldElements.forEach((el) => el.removeAttribute("data-yuuka-id"));
+      oldElements.forEach((el) => {
+        el.removeAttribute("data-yuuka-id");
+      });
 
       // 操作対象となるセレクタ
       const selectors = [
@@ -629,8 +643,8 @@ export async function annotateInteractiveElements(page: Page): Promise<void> {
         }
       });
     });
-  } catch (err: any) {
-    console.warn(`[Interactive Browser] Annotation warning: ${err.message}`);
+  } catch (err: unknown) {
+    console.warn(`[Interactive Browser] Annotation warning: ${getErrorMessage(err)}`);
   }
 }
 
@@ -647,8 +661,8 @@ export async function browserInteractiveOpen(
   try {
     console.log(`[Interactive Browser] Navigating to: ${url}`);
     await page.goto(url, { waitUntil: "networkidle2", timeout: 20000 });
-  } catch (err: any) {
-    console.warn(`[Interactive Browser] Navigation warn: ${err.message}, continuing...`);
+  } catch (err: unknown) {
+    console.warn(`[Interactive Browser] Navigation warn: ${getErrorMessage(err)}, continuing...`);
   }
   const title = await page.title();
   const currentUrl = page.url();
@@ -675,7 +689,7 @@ export async function browserInteractiveClick(
     actualSelector = `[data-yuuka-id="${selector.trim()}"]`;
   } else if (/^id:(\d+)$/i.test(selector.trim())) {
     const m = selector.trim().match(/^id:(\d+)$/i);
-    actualSelector = `[data-yuuka-id="${m![1]}"]`;
+    actualSelector = `[data-yuuka-id="${m?.[1]}"]`;
   }
 
   // jQuery style :contains or Playwright style :has-text parsing
@@ -715,7 +729,7 @@ export async function browserInteractiveClick(
           message: `テキスト "${cleanText}" に合致する要素を見つけ出し、クリックしました。`,
         };
       }
-    } catch (evalErr: any) {
+    } catch (evalErr: unknown) {
       console.error("[Interactive Browser] Smart click contains evaluation error:", evalErr);
     }
     throw new Error(
@@ -734,7 +748,7 @@ export async function browserInteractiveClick(
       success: true,
       message: `要素 "${actualSelector}" をクリックしました。`,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // スマートフォールバック: セレクタをテキストマッチ（ボタンやリンクの文言）として評価する
     try {
       const clicked = await page.evaluate((txt: string) => {
@@ -765,7 +779,9 @@ export async function browserInteractiveClick(
     } catch (evalErr) {
       console.error("[Interactive Browser] Smart click fallback evaluation error:", evalErr);
     }
-    throw new Error(`要素またはテキスト "${selector}" のクリックに失敗しました: ${err.message}`);
+    throw new Error(
+      `要素またはテキスト "${selector}" のクリックに失敗しました: ${getErrorMessage(err)}`,
+    );
   }
 }
 
@@ -785,7 +801,7 @@ export async function browserInteractiveType(
     actualSelector = `[data-yuuka-id="${selector.trim()}"]`;
   } else if (/^id:(\d+)$/i.test(selector.trim())) {
     const m = selector.trim().match(/^id:(\d+)$/i);
-    actualSelector = `[data-yuuka-id="${m![1]}"]`;
+    actualSelector = `[data-yuuka-id="${m?.[1]}"]`;
   }
 
   try {
@@ -803,7 +819,7 @@ export async function browserInteractiveType(
       success: true,
       message: `要素 "${actualSelector}" にテキストを入力しました。`,
     };
-  } catch (err: any) {
+  } catch (err: unknown) {
     // スマートフォールバック: プレースホルダー名、name属性、id、aria-labelの部分一致で入力要素を探す
     try {
       const typed = await page.evaluate(
@@ -844,7 +860,7 @@ export async function browserInteractiveType(
     } catch (evalErr) {
       console.error("[Interactive Browser] Smart type fallback evaluation error:", evalErr);
     }
-    throw new Error(`要素 "${selector}" へのテキスト入力に失敗しました: ${err.message}`);
+    throw new Error(`要素 "${selector}" へのテキスト入力に失敗しました: ${getErrorMessage(err)}`);
   }
 }
 
@@ -865,7 +881,7 @@ export async function browserInteractiveWait(
       actualSelector = `[data-yuuka-id="${selector.trim()}"]`;
     } else if (/^id:(\d+)$/i.test(selector.trim())) {
       const m = selector.trim().match(/^id:(\d+)$/i);
-      actualSelector = `[data-yuuka-id="${m![1]}"]`;
+      actualSelector = `[data-yuuka-id="${m?.[1]}"]`;
     }
 
     await page.waitForSelector(actualSelector, { timeout: timeoutMs });

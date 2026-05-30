@@ -47,7 +47,7 @@ export async function generateWithRetry(
     } catch (error) {
       if ((isRateLimitError(error) || isServerError(error)) && attempt < maxRetries) {
         // RetryInfo からリトライ待機時間を取得、なければ指数バックオフ
-        let waitMs = Math.min(1000 * Math.pow(2, attempt + 1), 60000);
+        let waitMs = Math.min(1000 * 2 ** (attempt + 1), 60000);
 
         const errorDetails = (
           error as { errorDetails?: Array<{ "@type": string; retryDelay?: string }> }
@@ -58,7 +58,7 @@ export async function generateWithRetry(
           );
           if (retryInfo?.retryDelay) {
             const seconds = parseInt(retryInfo.retryDelay.replace("s", ""), 10);
-            if (!isNaN(seconds)) {
+            if (!Number.isNaN(seconds)) {
               waitMs = (seconds + 1) * 1000;
             }
           }

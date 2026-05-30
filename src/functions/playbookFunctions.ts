@@ -1,5 +1,9 @@
 import * as playbookService from "../services/playbookService.js";
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 /**
  * 手順書（Playbook）を新しく登録・保存するツール関数
  */
@@ -23,10 +27,10 @@ export async function savePlaybook(
       args.steps,
     );
     return JSON.stringify(res);
-  } catch (err: any) {
+  } catch (err: unknown) {
     return JSON.stringify({
       success: false,
-      message: err.message,
+      message: errorMessage(err),
     });
   }
 }
@@ -42,10 +46,10 @@ export async function findPlaybooks(userId: string, args: { query?: string }): P
       query: args.query || null,
       results: playbooks,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     return JSON.stringify({
       success: false,
-      message: err.message,
+      message: errorMessage(err),
     });
   }
 }

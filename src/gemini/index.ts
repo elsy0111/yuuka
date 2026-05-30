@@ -1,4 +1,4 @@
-import { type Content, type Part, type FunctionCall } from "@google/generative-ai";
+import type { Content, Part, FunctionCall } from "@google/generative-ai";
 import { dispatchFunction } from "../functions/index.js";
 import { addChatMessage, getRecentChatHistory } from "../db/chatHistoryRepo.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
@@ -29,7 +29,7 @@ export async function processMessage(
     if (contents.length > 0 && contents[contents.length - 1].role === role) {
       const lastPart = contents[contents.length - 1].parts[0];
       if ("text" in lastPart) {
-        lastPart.text += "\n" + entry.text;
+        lastPart.text += `\n${entry.text}`;
       }
     } else {
       contents.push({
@@ -171,7 +171,7 @@ export async function processMessage(
       console.warn("response.text() retrieval failed:", e);
     }
 
-    if (text && text.trim()) {
+    if (text?.trim()) {
       await addChatMessage(userId, "model", text);
       return text;
     } else {

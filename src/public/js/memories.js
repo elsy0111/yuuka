@@ -55,7 +55,9 @@ function renderMemories(list, memories) {
     return;
   }
 
-  memories.forEach((mem) => list.appendChild(makeMemoryRow(mem)));
+  memories.forEach((mem) => {
+    list.appendChild(makeMemoryRow(mem));
+  });
 }
 
 const moduleLabels = { expenses: "家計", schedules: "予定", tasks: "タスク", general: "汎用" };
@@ -109,7 +111,7 @@ function makeMemoryRow(mem) {
   return row;
 }
 
-function startEditMemory(mem, row, contentEl) {
+function startEditMemory(mem, _row, contentEl) {
   const textarea = document.createElement("textarea");
   textarea.value = mem.content;
   textarea.style.cssText =

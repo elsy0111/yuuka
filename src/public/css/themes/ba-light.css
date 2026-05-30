@@ -278,7 +278,7 @@
 
 /* 警告アイコン — ウォームイエロー */
 [data-theme="blue-archive"] .alert-icon-symbol {
-  color: var(--ba-yellow) !important;
+  color: var(--ba-yellow);
 }
 
 [data-theme="blue-archive"] .alert-box {

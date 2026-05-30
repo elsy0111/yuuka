@@ -1,4 +1,4 @@
-import { google, drive_v3 } from "googleapis";
+import { google, type drive_v3 } from "googleapis";
 import { getUserGoogleConfig } from "../db/userRepo.js";
 import { config } from "../config.js";
 import fs from "node:fs";
@@ -72,7 +72,11 @@ export async function uploadToGoogleDrive(
 
     if (existingFiles.length > 0) {
       // 既存のファイルを上書き
-      fileId = existingFiles[0].id!;
+      const existingFile = existingFiles[0];
+      if (!existingFile?.id) {
+        throw new Error("既存のGoogle DriveファイルIDを取得できませんでした。");
+      }
+      fileId = existingFile.id;
       const updateRes = await drive.files.update({
         fileId: fileId,
         media: media,
@@ -93,7 +97,10 @@ export async function uploadToGoogleDrive(
         media: media,
         fields: "id, webViewLink",
       });
-      fileId = createRes.data.id!;
+      if (!createRes.data.id) {
+        throw new Error("作成したGoogle DriveファイルIDを取得できませんでした。");
+      }
+      fileId = createRes.data.id;
       webViewLink = createRes.data.webViewLink || "";
       console.log(`Google Driveに新規ファイル(ID: ${fileId})を作成しました。`);
     }

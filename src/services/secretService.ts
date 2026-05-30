@@ -39,8 +39,9 @@ export function getDecryptedCredential(
       username: record.username,
       password,
     };
-  } catch (error: any) {
-    console.error(`資格情報 [${serviceName}] の復号中にエラーが発生しました:`, error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`資格情報 [${serviceName}] の復号中にエラーが発生しました:`, message);
     throw new Error("資格情報の復号に失敗しました。");
   }
 }
