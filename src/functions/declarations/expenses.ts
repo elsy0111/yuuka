@@ -96,6 +96,30 @@ export const expenseDeclarations: FunctionDeclaration[] = [
     },
   },
   {
+    name: "updateMemory",
+    description:
+      "保存済みの記憶をIDを指定して内容を書き換える。" +
+      "先生が「〇〇の記憶を〇〇に変えて」「〇〇を訂正して」と言った時はこれを使う。削除→再登録はしないこと。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        id: {
+          type: SchemaType.NUMBER,
+          description: "更新する記憶のID（listMemoriesで確認できる）",
+        },
+        content: {
+          type: SchemaType.STRING,
+          description: "新しい記憶内容",
+        },
+        module: {
+          type: SchemaType.STRING,
+          description: "変更後のモジュール（任意）: expenses, schedules, tasks, general",
+        },
+      },
+      required: ["id", "content"],
+    },
+  },
+  {
     name: "deleteMemory",
     description: "保存された記憶をIDで削除する。先生が「〇〇の記憶を消して」と言った時に呼び出す。",
     parameters: {

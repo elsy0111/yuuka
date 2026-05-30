@@ -43,6 +43,21 @@ export function listMemories(userId: string, args: { module?: string }): string 
   });
 }
 
+export function updateMemory(
+  userId: string,
+  args: { id: number; content: string; module?: string },
+): string {
+  const memory = memoryRepo.updateMemory(args.id, userId, args.content, args.module);
+  if (!memory) {
+    return JSON.stringify({ success: false, message: `記憶ID:${args.id}が見つかりません。` });
+  }
+  return JSON.stringify({
+    success: true,
+    message: `記憶ID:${args.id}を更新しました。`,
+    memory,
+  });
+}
+
 export function deleteMemory(userId: string, args: { id: number }): string {
   const success = memoryRepo.deleteMemory(args.id, userId);
   return JSON.stringify({

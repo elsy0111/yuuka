@@ -287,6 +287,8 @@ export async function dispatchFunction(
       return memoryFn.searchMemories(userId, args as Parameters<typeof memoryFn.searchMemories>[1]);
     case "listMemories":
       return memoryFn.listMemories(userId, args as Parameters<typeof memoryFn.listMemories>[1]);
+    case "updateMemory":
+      return memoryFn.updateMemory(userId, args as Parameters<typeof memoryFn.updateMemory>[1]);
     case "deleteMemory":
       return memoryFn.deleteMemory(userId, args as Parameters<typeof memoryFn.deleteMemory>[1]);
 
