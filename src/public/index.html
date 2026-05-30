@@ -626,11 +626,11 @@
     </div>
   </div>
 
-  <!-- Add Credential Modal -->
+  <!-- Add/Edit Credential Modal -->
   <div id="modal-credential" class="modal">
     <div class="modal-content card">
       <div class="modal-header">
-        <h3>新規認証情報の登録</h3>
+        <h3 id="credential-modal-title">新規認証情報の登録</h3>
         <button class="btn-close">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -811,6 +811,44 @@
           <input type="number" id="sched-remind" value="30" placeholder="30">
         </div>
         <button type="submit" class="btn btn-primary btn-block">予定登録</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Schedule Modal -->
+  <div id="modal-schedule-edit" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>予定の編集</h3>
+        <button class="btn-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="schedule-edit-form">
+        <input type="hidden" id="sched-edit-id">
+        <div class="form-group">
+          <label for="sched-edit-title">タイトル *</label>
+          <input type="text" id="sched-edit-title" required>
+        </div>
+        <div class="form-group">
+          <label for="sched-edit-description">予定詳細</label>
+          <textarea id="sched-edit-description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sched-edit-start">開始日時 *</label>
+            <input type="datetime-local" id="sched-edit-start" required>
+          </div>
+          <div class="form-group">
+            <label for="sched-edit-end">終了日時</label>
+            <input type="datetime-local" id="sched-edit-end">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="sched-edit-remind">何分前にリマインドするか</label>
+          <input type="number" id="sched-edit-remind" value="30">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">更新する</button>
       </form>
     </div>
   </div>

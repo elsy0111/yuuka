@@ -1,5 +1,5 @@
 import { state } from "./state.js";
-import { closeModal, getModal } from "./modal.js";
+import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchSchedulesList(days = 7) {
   const list = document.getElementById("schedules-list");
@@ -66,6 +66,16 @@ function makeScheduleCard(sched) {
 
   const right = document.createElement("div");
   right.className = "card-actions-right";
+
+  const btnEdit = document.createElement("button");
+  btnEdit.className = "btn-trash";
+  const editIcon = document.createElement("span");
+  editIcon.className = "material-symbols-outlined";
+  editIcon.textContent = "edit";
+  btnEdit.appendChild(editIcon);
+  btnEdit.addEventListener("click", () => openEditScheduleModal(sched));
+  right.appendChild(btnEdit);
+
   const btnTrash = document.createElement("button");
   btnTrash.className = "btn-trash";
   const trashIcon = document.createElement("span");
@@ -77,6 +87,41 @@ function makeScheduleCard(sched) {
 
   card.append(left, right);
   return card;
+}
+
+function openEditScheduleModal(sched) {
+  document.getElementById("sched-edit-id").value          = sched.id;
+  document.getElementById("sched-edit-title").value       = sched.title;
+  document.getElementById("sched-edit-description").value = sched.description || "";
+  document.getElementById("sched-edit-start").value       = sched.start_at.replace(" ", "T").slice(0, 16);
+  document.getElementById("sched-edit-end").value         = sched.end_at ? sched.end_at.replace(" ", "T").slice(0, 16) : "";
+  document.getElementById("sched-edit-remind").value      = sched.remind_before_minutes ?? 30;
+  openModal(getModal("schedule-edit"));
+}
+
+async function handleEditScheduleSubmit(e) {
+  e.preventDefault();
+  const id     = parseInt(document.getElementById("sched-edit-id").value, 10);
+  const title  = document.getElementById("sched-edit-title").value.trim();
+  const desc   = document.getElementById("sched-edit-description").value.trim();
+  const startAt = document.getElementById("sched-edit-start").value;
+  const endAt   = document.getElementById("sched-edit-end").value || null;
+  const remind  = parseInt(document.getElementById("sched-edit-remind").value, 10);
+  try {
+    const res  = await fetch("/api/schedules/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, userId: state.activeUserId, title, description: desc, startAt, endAt, remindBeforeMinutes: remind }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal(getModal("schedule-edit"));
+      const d = parseInt(document.querySelector("[data-days].active")?.getAttribute("data-days") || "7", 10);
+      fetchSchedulesList(d);
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function handleDeleteSchedule(id) {
@@ -102,6 +147,8 @@ export function initSchedules() {
       fetchSchedulesList(parseInt(btn.getAttribute("data-days"), 10));
     });
   });
+
+  document.getElementById("schedule-edit-form")?.addEventListener("submit", handleEditScheduleSubmit);
 
   document.getElementById("schedule-form")?.addEventListener("submit", async e => {
     e.preventDefault();

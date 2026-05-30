@@ -1,4 +1,4 @@
-import { closeModal, getModal } from "./modal.js";
+import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchCredentialsSettings() {
   const list = document.getElementById("config-credentials-list");
@@ -46,15 +46,35 @@ function makeCredentialRow(cred) {
   );
 
   const tdAction = document.createElement("td");
-  tdAction.style.cssText = "padding:12px 10px;text-align:right;";
+  tdAction.style.cssText = "padding:12px 10px;text-align:right;display:flex;gap:6px;justify-content:flex-end;";
+
+  const btnEdit = document.createElement("button");
+  btnEdit.className = "btn-credential-delete";
+  btnEdit.type = "button";
+  btnEdit.innerHTML = `<span class="material-symbols-outlined" style="font-size:0.95rem;">edit</span> 編集`;
+  btnEdit.addEventListener("click", () => handleEditCredential(cred));
+
   const btnDelete = document.createElement("button");
   btnDelete.className = "btn-credential-delete";
   btnDelete.type = "button";
   btnDelete.innerHTML = `<span class="material-symbols-outlined" style="font-size:0.95rem;">delete</span> 削除`;
   btnDelete.addEventListener("click", () => handleDeleteCredential(cred.serviceName));
-  tdAction.appendChild(btnDelete);
+
+  tdAction.append(btnEdit, btnDelete);
   tr.appendChild(tdAction);
   return tr;
+}
+
+function handleEditCredential(cred) {
+  const titleEl = document.getElementById("credential-modal-title");
+  if (titleEl) titleEl.textContent = "認証情報の更新";
+  document.getElementById("cred-service-name").value = cred.serviceName;
+  document.getElementById("cred-service-name").readOnly = true;
+  document.getElementById("cred-username").value = cred.username;
+  document.getElementById("cred-password").value = "";
+  document.getElementById("cred-password").placeholder = "新しいパスワード（変更する場合）";
+  document.getElementById("cred-password").required = false;
+  openModal(getModal("credential"));
 }
 
 async function handleDeleteCredential(serviceName) {
@@ -75,6 +95,18 @@ async function handleDeleteCredential(serviceName) {
 }
 
 export function initCredentials() {
+  document.getElementById("btn-new-credential")?.addEventListener("click", () => {
+    const titleEl = document.getElementById("credential-modal-title");
+    if (titleEl) titleEl.textContent = "新規認証情報の登録";
+    const svcInput = document.getElementById("cred-service-name");
+    svcInput.value = "";
+    svcInput.readOnly = false;
+    document.getElementById("cred-username").value = "";
+    document.getElementById("cred-password").value = "";
+    document.getElementById("cred-password").placeholder = "••••••••••••";
+    document.getElementById("cred-password").required = true;
+  });
+
   document.getElementById("credential-form")?.addEventListener("submit", async e => {
     e.preventDefault();
     const serviceName = document.getElementById("cred-service-name").value.trim().toLowerCase();
