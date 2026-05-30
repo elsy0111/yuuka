@@ -13,6 +13,9 @@ const DATA_BOTTOM = 135;
 const DATA_RANGE = DATA_BOTTOM - DATA_TOP; // 120
 const SVG_VIEWBOX_H = 150;
 const SVG_CSS_H = 140;
+// 左右の余白 (SVG座標)
+const PAD_X = 30;
+const DATA_WIDTH = 400 - PAD_X * 2; // 340
 
 /**
  * 常に step*3 = niceMax になるよう設計。
@@ -47,7 +50,8 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   const xAxis = svg.nextElementSibling;
   xAxis.replaceChildren();
   rows.forEach((row, idx) => {
-    const pct = rows.length > 1 ? (idx / (rows.length - 1)) * 100 : 50;
+    const svgX = PAD_X + (rows.length > 1 ? idx * DATA_WIDTH / (rows.length - 1) : DATA_WIDTH / 2);
+    const pct = (svgX / 400) * 100;
     const span = document.createElement("span");
     span.textContent = formatDateLabel(row.date, idx, rows.length - 1);
     span.style.left = `${pct}%`;
@@ -56,9 +60,9 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
 
   const maxVal = Math.max(...totals, 1);
   const { step, niceMax } = computeNiceScale(maxVal);
-  const xStep = rows.length > 1 ? 400 / (rows.length - 1) : 400;
+  const xStep = rows.length > 1 ? DATA_WIDTH / (rows.length - 1) : DATA_WIDTH;
   const points = rows.map((row, idx) => ({
-    x: idx * xStep,
+    x: PAD_X + idx * xStep,
     y: DATA_BOTTOM - (Number(row.total || 0) / niceMax) * DATA_RANGE,
     amount: Number(row.total || 0),
     date: row.date,
@@ -89,9 +93,11 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
     "d",
     points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" "),
   );
+  const firstX = points[0].x;
+  const lastX = points[points.length - 1].x;
   areaPath.setAttribute(
     "d",
-    `M 0,${DATA_BOTTOM} ${points.map((p) => `L ${p.x},${p.y}`).join(" ")} L 400,${DATA_BOTTOM} Z`,
+    `M ${firstX},${DATA_BOTTOM} ${points.map((p) => `L ${p.x},${p.y}`).join(" ")} L ${lastX},${DATA_BOTTOM} Z`,
   );
 
   const isLight = currentTheme() === "blue-archive";
