@@ -249,16 +249,20 @@
               <div class="chart-container-flex">
                 <div class="pie-chart-wrapper">
                   <svg id="dashboard-donut-chart" class="donut-chart" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#27272a" stroke-width="9"/>
-                    <circle id="donut-segment" cx="50" cy="50" r="40" fill="transparent" stroke="#fafafa" stroke-width="9" stroke-dasharray="0 251.2" stroke-dashoffset="0" stroke-linecap="round"/>
+                    <circle class="donut-bg-ring" cx="50" cy="50" r="40" fill="transparent" stroke-width="9"/>
                   </svg>
                   <div class="chart-center-label">
                     <div id="chart-center-percentage">0%</div>
                     <div class="chart-center-sub">娯楽比率</div>
                   </div>
                 </div>
-                <div class="chart-legend" id="dashboard-category-legend">
-                  <!-- Generated dynamically -->
+                <div class="chart-legend-wrapper">
+                  <div class="chart-legend" id="dashboard-category-legend">
+                    <!-- Generated dynamically -->
+                  </div>
+                  <div class="chart-legend-total">
+                    合計: <span id="dashboard-category-total">¥0</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -410,7 +414,10 @@
           <div class="expense-table-card card">
             <div class="column-header">
               <h3>直近の支出履歴 (30件)</h3>
-              <span class="hud-tag">LEDGER</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="hud-tag">LEDGER</span>
+                <button id="btn-expense-detail" class="btn btn-secondary btn-sm">詳細</button>
+              </div>
             </div>
             <div class="table-responsive">
               <table class="expense-table">
@@ -693,6 +700,82 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- ==============================
+       支出詳細モーダル
+       ============================== -->
+  <div id="expense-detail-modal" class="modal-overlay hidden">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3><span class="material-symbols-outlined header-icon-symbol">table_view</span>支出履歴 詳細</h3>
+        <button id="btn-expense-detail-close" class="btn btn-secondary btn-sm">✕ 閉じる</button>
+      </div>
+
+      <!-- フィルターパネル -->
+      <div class="modal-filters">
+        <div class="filter-row">
+          <label>期間</label>
+          <input type="date" id="filter-date-from" class="filter-input">
+          <span style="color:var(--color-zinc-muted);">〜</span>
+          <input type="date" id="filter-date-to" class="filter-input">
+        </div>
+        <div class="filter-row">
+          <label>カテゴリ</label>
+          <select id="filter-category" class="filter-select">
+            <option value="">すべて</option>
+            <option>食費</option>
+            <option>日用品</option>
+            <option>交通費</option>
+            <option>光熱費</option>
+            <option>通信費</option>
+            <option>医療費</option>
+            <option>娯楽</option>
+            <option>衣服</option>
+            <option>その他</option>
+          </select>
+          <label>登録元</label>
+          <select id="filter-source" class="filter-select">
+            <option value="">すべて</option>
+            <option value="manual">手動</option>
+            <option value="web">Web</option>
+            <option value="discord">Discord</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <label>金額</label>
+          <input type="number" id="filter-amount-min" class="filter-input filter-input-num" placeholder="下限">
+          <span style="color:var(--color-zinc-muted);">〜</span>
+          <input type="number" id="filter-amount-max" class="filter-input filter-input-num" placeholder="上限">
+          <label>キーワード</label>
+          <input type="text" id="filter-q" class="filter-input" placeholder="メモで検索">
+        </div>
+        <div class="filter-row filter-actions">
+          <button id="btn-filter-apply" class="btn btn-primary btn-sm">検索</button>
+          <button id="btn-filter-reset" class="btn btn-secondary btn-sm">リセット</button>
+          <span id="filter-result-count" class="filter-count"></span>
+        </div>
+      </div>
+
+      <!-- 結果テーブル -->
+      <div class="modal-table-wrap">
+        <table class="expense-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>日付</th>
+              <th>カテゴリ</th>
+              <th>メモ/詳細</th>
+              <th>登録元</th>
+              <th>金額</th>
+              <th>登録日時</th>
+            </tr>
+          </thead>
+          <tbody id="detail-expenses-table-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
