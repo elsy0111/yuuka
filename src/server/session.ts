@@ -22,7 +22,7 @@ function parseCookies(cookieHeader?: string): Record<string, string> {
   const list: Record<string, string> = {};
   if (!cookieHeader) return list;
 
-  cookieHeader.split(";").forEach(cookie => {
+  cookieHeader.split(";").forEach((cookie) => {
     const parts = cookie.split("=");
     const name = parts[0].trim();
     const value = parts.slice(1).join("=").trim();
@@ -45,7 +45,8 @@ function loadStoredSessions(): void {
     for (const [tokenHash, entry] of Object.entries(sessions)) {
       if (typeof entry === "number") {
         // 旧フォーマット（createdAt のみ）の互換処理
-        if (now - entry <= SESSION_TTL) activeSessions.set(tokenHash, { createdAt: entry, discordId: "" });
+        if (now - entry <= SESSION_TTL)
+          activeSessions.set(tokenHash, { createdAt: entry, discordId: "" });
       } else if (now - entry.createdAt <= SESSION_TTL) {
         activeSessions.set(tokenHash, entry);
       }
@@ -61,7 +62,7 @@ export function persistSessions(): void {
     fs.writeFileSync(
       SESSION_STORE_PATH,
       JSON.stringify(Object.fromEntries(activeSessions), null, 2),
-      "utf-8"
+      "utf-8",
     );
   } catch (err) {
     console.error("セッションストアの保存に失敗しました:", err);

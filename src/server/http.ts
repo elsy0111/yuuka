@@ -9,12 +9,12 @@ const SECURITY_HEADERS = {
 
 export function getRequestBody(
   req: http.IncomingMessage,
-  maxBytes: number = 10 * 1024 * 1024
+  maxBytes: number = 10 * 1024 * 1024,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = "";
     let received = 0;
-    req.on("data", chunk => {
+    req.on("data", (chunk) => {
       received += chunk.length;
       if (received > maxBytes) {
         req.destroy();
@@ -43,7 +43,7 @@ export function sendError(res: http.ServerResponse, status: number, message: str
 export function writeStaticHeaders(
   res: http.ServerResponse,
   status: number,
-  contentType: string
+  contentType: string,
 ): void {
   res.writeHead(status, {
     "Content-Type": contentType,

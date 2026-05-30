@@ -6,14 +6,14 @@
 
 /* Base Design System Matte Dark Tokens */
 :root {
-  --bg-primary: #09090b;      /* Stark matte black-zinc */
+  --bg-primary: #09090b; /* Stark matte black-zinc */
   --bg-secondary: #0c0c0e;
   --bg-sidebar: #09090b;
-  --card-matte: #18181b;      /* Solid dark charcoal zinc card */
+  --card-matte: #18181b; /* Solid dark charcoal zinc card */
   --card-matte-hover: #202024;
-  --border-matte: #27272a;    /* Thin solid zinc outline */
+  --border-matte: #27272a; /* Thin solid zinc outline */
   --border-focus: #38d5ff;
-  --radius: 2px;              /* Minimal modern 2px rounded corners */
+  --radius: 2px; /* Minimal modern 2px rounded corners */
 
   --accent-cyan: #38d5ff;
   --accent-cyan-hover: #67e8f9;
@@ -28,15 +28,15 @@
   --color-white: #fafafa;
   --color-zinc-light: #f4f4f5;
   --color-zinc-muted: #9494a0;
-  --color-green: #22c55e;     /* Matte success green */
-  --color-red: #ef4444;       /* Matte danger red */
+  --color-green: #22c55e; /* Matte success green */
+  --color-red: #ef4444; /* Matte danger red */
 
   --text-primary: #fafafa;
   --text-secondary: #b8b8c2;
 
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-family-sans: 'Inter', sans-serif;
-  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-family-sans: "Inter", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
 }
 
 /* Base Styles & Resets */
@@ -58,10 +58,10 @@ body {
    ============================================================================== */
 .material-symbols-outlined {
   font-variation-settings:
-    'FILL' 0,
-    'wght' 300, /* Lightweight outlines matching shadcn aesthetic */
-    'GRAD' 0,
-    'opsz' 24;
+    "FILL" 0,
+    "wght" 300, /* Lightweight outlines matching shadcn aesthetic */
+    "GRAD" 0,
+    "opsz" 24;
   vertical-align: middle;
   line-height: 1;
 }
@@ -134,7 +134,12 @@ body {
   color: var(--color-white);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-white);
@@ -145,7 +150,10 @@ a {
   color: inherit;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
   color: inherit;
 }

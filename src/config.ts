@@ -11,7 +11,10 @@ if (fs.existsSync(CONFIG_PATH)) {
     const content = fs.readFileSync(CONFIG_PATH, "utf-8");
     parsedConfig = parseYaml(content);
   } catch (err) {
-    console.error("⚠️ config.yaml の読み込みに失敗しました。デフォルト設定または環境変数を使用します。:", err);
+    console.error(
+      "⚠️ config.yaml の読み込みに失敗しました。デフォルト設定または環境変数を使用します。:",
+      err,
+    );
   }
 } else {
   console.warn("⚠️ config.yaml が見つかりません。環境変数を使用します。");
@@ -31,13 +34,18 @@ function getSettingArray(key: string, defaultValue: string[] = []): string[] {
   if (Array.isArray(val)) {
     return val;
   }
-  return val.split(",").map(id => id.trim()).filter(Boolean);
+  return val
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
 }
 
 function requireSetting(key: string): string {
   const value = getSetting(key);
   if (!value) {
-    throw new Error(`設定項目 "${key}" が定義されていません。config.yaml または環境変数を確認してください。`);
+    throw new Error(
+      `設定項目 "${key}" が定義されていません。config.yaml または環境変数を確認してください。`,
+    );
   }
   return value;
 }
@@ -103,7 +111,10 @@ export function getGoogleCalendars(): string[] {
 export function updateGoogleCalendarsInYaml(calendars: string[]): void {
   if (!fs.existsSync(CONFIG_PATH)) return;
   const content = fs.readFileSync(CONFIG_PATH, "utf-8");
-  const updated = content.replace(/^GOOGLE_CALENDARS:.*$/m, `GOOGLE_CALENDARS: ${calendars.join(",")}`);
+  const updated = content.replace(
+    /^GOOGLE_CALENDARS:.*$/m,
+    `GOOGLE_CALENDARS: ${calendars.join(",")}`,
+  );
   fs.writeFileSync(CONFIG_PATH, updated, "utf-8");
   parsedConfig["GOOGLE_CALENDARS"] = calendars;
 }

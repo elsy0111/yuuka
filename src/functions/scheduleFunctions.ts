@@ -1,10 +1,10 @@
 import * as scheduleRepo from "../db/scheduleRepo.js";
 import { formatDateTime } from "../utils/formatters.js";
-import { 
-  isCalendarEnabled, 
-  createCalendarEvent, 
-  deleteCalendarEvent, 
-  syncGoogleCalendarToLocal 
+import {
+  isCalendarEnabled,
+  createCalendarEvent,
+  deleteCalendarEvent,
+  syncGoogleCalendarToLocal,
 } from "../services/googleCalendarService.js";
 
 export async function addSchedule(
@@ -17,7 +17,7 @@ export async function addSchedule(
     description?: string;
     calendar_id?: string;
     local_only?: boolean;
-  }
+  },
 ): Promise<string> {
   let googleEventId: string | undefined = undefined;
   let googleCalendarId: string | undefined = undefined;
@@ -30,7 +30,7 @@ export async function addSchedule(
         args.start_at,
         args.end_at,
         args.description,
-        args.calendar_id
+        args.calendar_id,
       );
       if (eventResult) {
         googleEventId = eventResult.eventId;
@@ -49,17 +49,17 @@ export async function addSchedule(
     args.remind_before_minutes,
     args.description,
     googleEventId,
-    googleCalendarId
+    googleCalendarId,
   );
 
   const remindLabel =
-    schedule.remind_before_minutes > 0
-      ? `、${schedule.remind_before_minutes}分前にリマインド`
-      : "";
+    schedule.remind_before_minutes > 0 ? `、${schedule.remind_before_minutes}分前にリマインド` : "";
 
   const syncMessage = googleEventId
     ? "（Googleカレンダーにも同期しました📅）"
-    : (isCalendarEnabled(userId) ? "（ローカルリマインダーとして登録しました🔔）" : "");
+    : isCalendarEnabled(userId)
+      ? "（ローカルリマインダーとして登録しました🔔）"
+      : "";
 
   return JSON.stringify({
     success: true,
@@ -68,10 +68,7 @@ export async function addSchedule(
   });
 }
 
-export async function listSchedules(
-  userId: string,
-  args: { days?: number }
-): Promise<string> {
+export async function listSchedules(userId: string, args: { days?: number }): Promise<string> {
   const days = args.days ?? 7;
 
   // Googleカレンダー同期を実行して最新情報をマージ
@@ -94,12 +91,10 @@ export async function listSchedules(
     });
   }
 
-  const lines = schedules.map(
-    (s) => {
-      const googleIcon = s.google_event_id ? "📅" : "📌";
-      return `${googleIcon} #${s.id} ${s.title} — ${formatDateTime(s.start_at)}`;
-    }
-  );
+  const lines = schedules.map((s) => {
+    const googleIcon = s.google_event_id ? "📅" : "📌";
+    return `${googleIcon} #${s.id} ${s.title} — ${formatDateTime(s.start_at)}`;
+  });
 
   return JSON.stringify({
     success: true,
@@ -110,7 +105,7 @@ export async function listSchedules(
 
 export async function deleteSchedule(
   userId: string,
-  args: { schedule_id: number }
+  args: { schedule_id: number },
 ): Promise<string> {
   const schedule = scheduleRepo.getScheduleById(args.schedule_id);
   if (!schedule || schedule.user_id !== userId) {
@@ -123,9 +118,16 @@ export async function deleteSchedule(
   // Googleカレンダーからも削除
   if (isCalendarEnabled(userId) && schedule.google_event_id) {
     try {
-      await deleteCalendarEvent(userId, schedule.google_event_id, schedule.google_calendar_id || undefined);
+      await deleteCalendarEvent(
+        userId,
+        schedule.google_event_id,
+        schedule.google_calendar_id || undefined,
+      );
     } catch (err) {
-      console.error(`予定削除時のGoogleカレンダー同期に失敗しました (EventID: ${schedule.google_event_id}):`, err);
+      console.error(
+        `予定削除時のGoogleカレンダー同期に失敗しました (EventID: ${schedule.google_event_id}):`,
+        err,
+      );
     }
   }
 

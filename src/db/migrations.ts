@@ -36,9 +36,14 @@ export function runMigrations(): void {
   // users テーブルのマイグレーション（既存DBへのカラム追加）
   try {
     const tableInfo = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
-    const columnsToAdd = ["discord_token_encrypted", "discord_token_iv", "discord_token_tag", "persona"];
+    const columnsToAdd = [
+      "discord_token_encrypted",
+      "discord_token_iv",
+      "discord_token_tag",
+      "persona",
+    ];
     for (const col of columnsToAdd) {
-      if (!tableInfo.some(c => c.name === col)) {
+      if (!tableInfo.some((c) => c.name === col)) {
         db.exec(`ALTER TABLE users ADD COLUMN ${col} TEXT;`);
         console.log(`ℹ️ users テーブルに ${col} カラムを追加しました`);
       }
@@ -161,7 +166,7 @@ export function runMigrations(): void {
   // credentials テーブルの user_id カラム追加マイグレーション（既存DBからの移行）
   try {
     const tableInfo = db.prepare("PRAGMA table_info(credentials)").all() as { name: string }[];
-    const hasUserId = tableInfo.some(col => col.name === "user_id");
+    const hasUserId = tableInfo.some((col) => col.name === "user_id");
     if (!hasUserId) {
       // 旧テーブルをリネーム→新テーブル作成→データ移行→旧テーブル削除
       db.exec(`
@@ -227,14 +232,18 @@ export function runMigrations(): void {
   // 既存の Playbook ファイルからの DB マイグレーション
   const PLAYBOOK_DIR = path.resolve(process.cwd(), "data/playbooks");
   if (fs.existsSync(PLAYBOOK_DIR)) {
-    const firstUser = db.prepare("SELECT discord_id FROM users LIMIT 1").get() as { discord_id: string } | undefined;
+    const firstUser = db.prepare("SELECT discord_id FROM users LIMIT 1").get() as
+      | { discord_id: string }
+      | undefined;
     const MIGRATE_USER_ID = firstUser?.discord_id || "default_user";
-    const mdFiles = fs.readdirSync(PLAYBOOK_DIR).filter(f => f.endsWith(".md"));
+    const mdFiles = fs.readdirSync(PLAYBOOK_DIR).filter((f) => f.endsWith(".md"));
     const insertStmt = db.prepare(`
       INSERT OR IGNORE INTO playbooks (user_id, name, title, keywords, description, steps)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
-    const checkStmt = db.prepare("SELECT COUNT(*) as count FROM playbooks WHERE user_id = ? AND name = ?");
+    const checkStmt = db.prepare(
+      "SELECT COUNT(*) as count FROM playbooks WHERE user_id = ? AND name = ?",
+    );
 
     for (const file of mdFiles) {
       try {
@@ -258,11 +267,23 @@ export function runMigrations(): void {
           const key = parts[0].trim().toLowerCase();
           const val = parts.slice(1).join(":").trim();
           if (key === "title") pbTitle = val;
-          else if (key === "keywords") pbKeywords = val.replace(/[\[\]]/g, "").split(",").map(k => k.trim()).filter(Boolean);
+          else if (key === "keywords")
+            pbKeywords = val
+              .replace(/[\[\]]/g, "")
+              .split(",")
+              .map((k) => k.trim())
+              .filter(Boolean);
           else if (key === "description") pbDescription = val;
         }
 
-        insertStmt.run(MIGRATE_USER_ID, pbName, pbTitle, JSON.stringify(pbKeywords), pbDescription, steps);
+        insertStmt.run(
+          MIGRATE_USER_ID,
+          pbName,
+          pbTitle,
+          JSON.stringify(pbKeywords),
+          pbDescription,
+          steps,
+        );
         console.log(`📦 Playbook マイグレーション: ${file} → DB (user: ${MIGRATE_USER_ID})`);
       } catch (err) {
         console.error(`Playbook マイグレーション失敗 (${file}):`, err);

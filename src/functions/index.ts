@@ -1,1 +1,6 @@
-export { getAllFunctionDeclarations, dispatchFunction, initializeDynamicFunctions, isSandboxEnabled } from "./dispatcher.js";
+export {
+  getAllFunctionDeclarations,
+  dispatchFunction,
+  initializeDynamicFunctions,
+  isSandboxEnabled,
+} from "./dispatcher.js";

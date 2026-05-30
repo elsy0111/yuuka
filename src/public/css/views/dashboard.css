@@ -60,7 +60,7 @@
 }
 
 .speech-bubble::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -6px;
   top: 15px;

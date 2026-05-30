@@ -4,7 +4,7 @@ export function initMemories() {
   fetchMemories();
   document.getElementById("memory-filter-module")?.addEventListener("change", fetchMemories);
   document.getElementById("btn-memory-reload")?.addEventListener("click", fetchMemories);
-  document.getElementById("memory-add-form")?.addEventListener("submit", async e => {
+  document.getElementById("memory-add-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const content = document.getElementById("memory-new-content")?.value.trim();
     const module = document.getElementById("memory-new-module")?.value || "general";
@@ -55,14 +55,15 @@ function renderMemories(list, memories) {
     return;
   }
 
-  memories.forEach(mem => list.appendChild(makeMemoryRow(mem)));
+  memories.forEach((mem) => list.appendChild(makeMemoryRow(mem)));
 }
 
 const moduleLabels = { expenses: "家計", schedules: "予定", tasks: "タスク", general: "汎用" };
 
 function makeMemoryRow(mem) {
   const row = document.createElement("div");
-  row.style.cssText = "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 12px;border:1px solid var(--border-matte);border-radius:var(--radius);background:var(--card-matte);gap:8px;";
+  row.style.cssText =
+    "display:flex;justify-content:space-between;align-items:flex-start;padding:8px 12px;border:1px solid var(--border-matte);border-radius:var(--radius);background:var(--card-matte);gap:8px;";
 
   const left = document.createElement("div");
   left.style.cssText = "display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;";
@@ -74,7 +75,8 @@ function makeMemoryRow(mem) {
   const meta = document.createElement("span");
   const moduleLabel = moduleLabels[mem.module] || mem.module;
   meta.textContent = `[${moduleLabel}]  ${mem.created_at}`;
-  meta.style.cssText = "font-size:0.68rem;color:var(--color-zinc-muted);font-family:var(--font-family-mono);";
+  meta.style.cssText =
+    "font-size:0.68rem;color:var(--color-zinc-muted);font-family:var(--font-family-mono);";
   left.append(content, meta);
 
   const actions = document.createElement("div");
@@ -110,11 +112,13 @@ function makeMemoryRow(mem) {
 function startEditMemory(mem, row, contentEl) {
   const textarea = document.createElement("textarea");
   textarea.value = mem.content;
-  textarea.style.cssText = "width:100%;font-size:0.85rem;background:var(--bg-primary);color:var(--color-white);border:1px solid var(--border-focus);border-radius:var(--radius);padding:6px 8px;resize:vertical;";
+  textarea.style.cssText =
+    "width:100%;font-size:0.85rem;background:var(--bg-primary);color:var(--color-white);border:1px solid var(--border-focus);border-radius:var(--radius);padding:6px 8px;resize:vertical;";
   textarea.rows = 3;
 
   const select = document.createElement("select");
-  select.style.cssText = "font-size:0.75rem;background:var(--bg-primary);color:var(--color-white);border:1px solid var(--border-matte);border-radius:var(--radius);padding:4px 6px;";
+  select.style.cssText =
+    "font-size:0.75rem;background:var(--bg-primary);color:var(--color-white);border:1px solid var(--border-matte);border-radius:var(--radius);padding:4px 6px;";
   Object.entries(moduleLabels).forEach(([val, label]) => {
     const opt = document.createElement("option");
     opt.value = val;
@@ -138,11 +142,18 @@ function startEditMemory(mem, row, contentEl) {
       const res = await fetch("/api/memories/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: mem.id, userId: state.activeUserId, content: newContent, module: select.value }),
+        body: JSON.stringify({
+          id: mem.id,
+          userId: state.activeUserId,
+          content: newContent,
+          module: select.value,
+        }),
       });
       const data = await res.json();
       if (data.success) fetchMemories();
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   });
 
   const btnCancel = document.createElement("button");

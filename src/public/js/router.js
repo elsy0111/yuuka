@@ -8,30 +8,41 @@ import { fetchMemories } from "./memories.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",
-  tasks:     "タスク管理（ToDo）",
+  tasks: "タスク管理（ToDo）",
   schedules: "予定スケジュール（Googleカレンダー同期）",
-  expenses:  "家計管理（レシートAI解析＆経費簿）",
-  config:    "システム設定情報",
+  expenses: "家計管理（レシートAI解析＆経費簿）",
+  config: "システム設定情報",
 };
 
 export function loadDataForActiveTab() {
   switch (state.activeTab) {
-    case "dashboard": fetchDashboardStats();  break;
-    case "tasks":     fetchTasksList();       break;
-    case "schedules": fetchSchedulesList();   break;
-    case "expenses":  fetchExpensesList();    break;
-    case "config":    fetchConfigSettings(); fetchMemories(); break;
+    case "dashboard":
+      fetchDashboardStats();
+      break;
+    case "tasks":
+      fetchTasksList();
+      break;
+    case "schedules":
+      fetchSchedulesList();
+      break;
+    case "expenses":
+      fetchExpensesList();
+      break;
+    case "config":
+      fetchConfigSettings();
+      fetchMemories();
+      break;
   }
 }
 
 export function switchTab(tabId) {
   state.activeTab = tabId;
 
-  document.querySelectorAll(".menu-item").forEach(item => {
+  document.querySelectorAll(".menu-item").forEach((item) => {
     item.classList.toggle("active", item.getAttribute("data-tab") === tabId);
   });
 
-  document.querySelectorAll(".tab-view").forEach(view => {
+  document.querySelectorAll(".tab-view").forEach((view) => {
     view.classList.toggle("active", view.id === `tab-${tabId}`);
   });
 
@@ -42,8 +53,8 @@ export function switchTab(tabId) {
 }
 
 export function initRouter() {
-  document.querySelectorAll(".menu-item").forEach(item => {
-    item.addEventListener("click", e => {
+  document.querySelectorAll(".menu-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
       e.preventDefault();
       switchTab(item.getAttribute("data-tab"));
     });

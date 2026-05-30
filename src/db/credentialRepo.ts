@@ -25,7 +25,7 @@ export function saveCredential(
   username: string,
   encryptedPassword: string,
   iv: string,
-  authTag: string
+  authTag: string,
 ): void {
   const db = getDb();
   const stmt = db.prepare(`
@@ -56,7 +56,9 @@ export function getCredential(userId: string, serviceName: string): CredentialRe
  */
 export function deleteCredential(userId: string, serviceName: string): boolean {
   const db = getDb();
-  const result = db.prepare("DELETE FROM credentials WHERE user_id = ? AND service_name = ?").run(userId, serviceName);
+  const result = db
+    .prepare("DELETE FROM credentials WHERE user_id = ? AND service_name = ?")
+    .run(userId, serviceName);
   return result.changes > 0;
 }
 
@@ -66,7 +68,9 @@ export function deleteCredential(userId: string, serviceName: string): boolean {
 export function listCredentials(userId: string): CredentialIndex[] {
   const db = getDb();
   const rows = db
-    .prepare("SELECT service_name, username, updated_at FROM credentials WHERE user_id = ? ORDER BY service_name ASC")
+    .prepare(
+      "SELECT service_name, username, updated_at FROM credentials WHERE user_id = ? ORDER BY service_name ASC",
+    )
     .all(userId) as { service_name: string; username: string; updated_at: string }[];
 
   return rows.map((row) => ({

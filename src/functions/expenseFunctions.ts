@@ -10,7 +10,7 @@ export function addExpense(
     date?: string;
     source?: string;
     purchase_source?: string;
-  }
+  },
 ): string {
   const expense = expenseRepo.addExpense(
     userId,
@@ -19,7 +19,7 @@ export function addExpense(
     args.description,
     args.date,
     args.source ?? "manual",
-    args.purchase_source ?? "不明"
+    args.purchase_source ?? "不明",
   );
   return JSON.stringify({
     success: true,
@@ -28,10 +28,7 @@ export function addExpense(
   });
 }
 
-export function getMonthlySummary(
-  userId: string,
-  args: { year?: number; month?: number }
-): string {
+export function getMonthlySummary(userId: string, args: { year?: number; month?: number }): string {
   const breakdown = expenseRepo.getMonthlyCategoryBreakdown(userId, args.year, args.month);
   const total = expenseRepo.getMonthlyTotal(userId, args.year, args.month);
   const label = currentMonthLabel(args.year, args.month);
@@ -45,9 +42,7 @@ export function getMonthlySummary(
     });
   }
 
-  const lines = breakdown.map(
-    (c) => `${c.category}: ${formatCurrency(c.total)} (${c.count}件)`
-  );
+  const lines = breakdown.map((c) => `${c.category}: ${formatCurrency(c.total)} (${c.count}件)`);
   lines.push(`───────────`);
   lines.push(`合計: ${formatCurrency(total)}`);
 
@@ -61,7 +56,7 @@ export function getMonthlySummary(
 
 export function getCategoryBreakdown(
   userId: string,
-  args: { year?: number; month?: number }
+  args: { year?: number; month?: number },
 ): string {
   const breakdown = expenseRepo.getMonthlyCategoryBreakdown(userId, args.year, args.month);
   const total = expenseRepo.getMonthlyTotal(userId, args.year, args.month);
@@ -89,10 +84,7 @@ export function getCategoryBreakdown(
   });
 }
 
-export function listRecentExpenses(
-  userId: string,
-  args: { count?: number }
-): string {
+export function listRecentExpenses(userId: string, args: { count?: number }): string {
   const expenses = expenseRepo.listRecentExpenses(userId, args.count ?? 10);
   if (expenses.length === 0) {
     return JSON.stringify({

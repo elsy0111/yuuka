@@ -32,7 +32,7 @@ export function sleep(ms: number): Promise<void> {
  */
 export async function generateWithRetry(
   contents: Content[],
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<import("@google/generative-ai").GenerateContentResult> {
   // 毎回最新の日時でsystem instructionを更新
   const model = genAI.getGenerativeModel({
@@ -49,11 +49,12 @@ export async function generateWithRetry(
         // RetryInfo からリトライ待機時間を取得、なければ指数バックオフ
         let waitMs = Math.min(1000 * Math.pow(2, attempt + 1), 60000);
 
-        const errorDetails = (error as { errorDetails?: Array<{ "@type": string; retryDelay?: string }> })
-          .errorDetails;
+        const errorDetails = (
+          error as { errorDetails?: Array<{ "@type": string; retryDelay?: string }> }
+        ).errorDetails;
         if (errorDetails) {
           const retryInfo = errorDetails.find(
-            (d) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo"
+            (d) => d["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
           );
           if (retryInfo?.retryDelay) {
             const seconds = parseInt(retryInfo.retryDelay.replace("s", ""), 10);
@@ -64,7 +65,9 @@ export async function generateWithRetry(
         }
 
         const errorType = isRateLimitError(error) ? "レート制限(枯渇)" : "サーバー高負荷";
-        console.log(`⏳ ${errorType} (${attempt + 1}/${maxRetries})、${Math.ceil(waitMs / 1000)}秒後にリトライ...`);
+        console.log(
+          `⏳ ${errorType} (${attempt + 1}/${maxRetries})、${Math.ceil(waitMs / 1000)}秒後にリトライ...`,
+        );
         await sleep(waitMs);
         continue;
       }

@@ -30,7 +30,8 @@ export const taskDeclarations: FunctionDeclaration[] = [
       properties: {
         status: {
           type: SchemaType.STRING,
-          description: "フィルタするステータス (pending=未完了, done=完了, all=全て、デフォルトpending)",
+          description:
+            "フィルタするステータス (pending=未完了, done=完了, all=全て、デフォルトpending)",
         },
       },
     },

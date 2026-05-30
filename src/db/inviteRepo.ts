@@ -25,9 +25,9 @@ export function createInviteCode(code: string, createdBy?: string): void {
  */
 export function isValidCode(code: string): boolean {
   const db = getDb();
-  const row = db.prepare(
-    "SELECT 1 FROM invite_codes WHERE code = ? AND used_by IS NULL LIMIT 1"
-  ).get(code);
+  const row = db
+    .prepare("SELECT 1 FROM invite_codes WHERE code = ? AND used_by IS NULL LIMIT 1")
+    .get(code);
   return !!row;
 }
 
@@ -36,11 +36,13 @@ export function isValidCode(code: string): boolean {
  */
 export function validateAndConsumeCode(code: string, usedByDiscordId: string): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE invite_codes
     SET used_by = ?, used_at = datetime('now', 'localtime')
     WHERE code = ? AND used_by IS NULL
-  `).run(usedByDiscordId, code);
+  `)
+    .run(usedByDiscordId, code);
   return result.changes > 0;
 }
 
@@ -49,9 +51,7 @@ export function validateAndConsumeCode(code: string, usedByDiscordId: string): b
  */
 export function listInviteCodes(): InviteCode[] {
   const db = getDb();
-  return db.prepare(
-    "SELECT * FROM invite_codes ORDER BY created_at DESC"
-  ).all() as InviteCode[];
+  return db.prepare("SELECT * FROM invite_codes ORDER BY created_at DESC").all() as InviteCode[];
 }
 
 /**

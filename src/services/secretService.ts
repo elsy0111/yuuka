@@ -4,7 +4,12 @@ import { encryptText, decryptText } from "../utils/crypto.js";
 /**
  * 資格情報を安全に登録または更新する
  */
-export function registerCredential(userId: string, serviceName: string, username: string, password: string): void {
+export function registerCredential(
+  userId: string,
+  serviceName: string,
+  username: string,
+  password: string,
+): void {
   const cleanServiceName = serviceName.trim().toLowerCase();
   const cleanUsername = username.trim();
 
@@ -19,7 +24,7 @@ export function registerCredential(userId: string, serviceName: string, username
  */
 export function getDecryptedCredential(
   userId: string,
-  serviceName: string
+  serviceName: string,
 ): { username: string; password: string } | null {
   const cleanServiceName = serviceName.trim().toLowerCase();
   const record = credentialRepo.getCredential(userId, cleanServiceName);

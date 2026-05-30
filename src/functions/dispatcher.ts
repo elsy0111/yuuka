@@ -17,7 +17,10 @@ import { systemDeclarations } from "./declarations/system.js";
 // ─── 動的プラグインロード機構 ───────────────────────────────────────────
 
 export const dynamicFunctionDeclarations: FunctionDeclaration[] = [];
-const dynamicDispatchMap = new Map<string, (userId: string, args: any) => Promise<string> | string>();
+const dynamicDispatchMap = new Map<
+  string,
+  (userId: string, args: any) => Promise<string> | string
+>();
 
 /**
  * 自己拡張機能（サンドボックス）が有効に設定されているかどうかを判定する
@@ -54,9 +57,9 @@ export function getAllFunctionDeclarations(): FunctionDeclaration[] {
       "commitLocalChanges",
       "mergeBranch",
       "pushChanges",
-      "reloadDynamicFunctions"
+      "reloadDynamicFunctions",
     ];
-    return allStatic.filter(decl => !sandboxTools.includes(decl.name));
+    return allStatic.filter((decl) => !sandboxTools.includes(decl.name));
   }
 
   return [...allStatic, ...dynamicFunctionDeclarations];
@@ -67,7 +70,9 @@ export function getAllFunctionDeclarations(): FunctionDeclaration[] {
  */
 export async function initializeDynamicFunctions(clearCache = false): Promise<void> {
   if (!isSandboxEnabled()) {
-    console.log("[Dynamic Function] サンドボックスが無効または未設定のため、動的関数のロードをスキップします。");
+    console.log(
+      "[Dynamic Function] サンドボックスが無効または未設定のため、動的関数のロードをスキップします。",
+    );
     return;
   }
 
@@ -79,7 +84,9 @@ export async function initializeDynamicFunctions(clearCache = false): Promise<vo
 
   const distFunctionsDir = path.join(sandboxAbs, "dist", "functions");
   if (!fs.existsSync(distFunctionsDir)) {
-    console.log(`[Dynamic Function] ${distFunctionsDir} が存在しないため、動的関数のロードをスキップします。`);
+    console.log(
+      `[Dynamic Function] ${distFunctionsDir} が存在しないため、動的関数のロードをスキップします。`,
+    );
     return;
   }
 
@@ -93,7 +100,7 @@ export async function initializeDynamicFunctions(clearCache = false): Promise<vo
       "fileFunctions.js",
       "commandFunctions.js",
       "browserFunctions.js",
-      "gitFunctions.js"
+      "gitFunctions.js",
     ];
 
     if (clearCache) {
@@ -113,7 +120,7 @@ export async function initializeDynamicFunctions(clearCache = false): Promise<vo
           if (module.functionDeclarations && Array.isArray(module.functionDeclarations)) {
             for (const decl of module.functionDeclarations) {
               // 重複登録の防止
-              if (dynamicFunctionDeclarations.some(d => d.name === decl.name)) {
+              if (dynamicFunctionDeclarations.some((d) => d.name === decl.name)) {
                 continue;
               }
               dynamicFunctionDeclarations.push(decl);
@@ -122,9 +129,13 @@ export async function initializeDynamicFunctions(clearCache = false): Promise<vo
               const fnName = decl.name;
               if (typeof module[fnName] === "function") {
                 dynamicDispatchMap.set(fnName, module[fnName]);
-                console.log(`[Dynamic Function] Loaded function: ${fnName} from ${file} (clearCache=${clearCache})`);
+                console.log(
+                  `[Dynamic Function] Loaded function: ${fnName} from ${file} (clearCache=${clearCache})`,
+                );
               } else {
-                console.warn(`[Dynamic Function] Function "${fnName}" is declared in ${file} but its execution function is not exported.`);
+                console.warn(
+                  `[Dynamic Function] Function "${fnName}" is declared in ${file} but its execution function is not exported.`,
+                );
               }
             }
           }
@@ -145,7 +156,7 @@ type FunctionArgs = Record<string, unknown>;
 export async function dispatchFunction(
   functionName: string,
   args: FunctionArgs,
-  userId: string
+  userId: string,
 ): Promise<string> {
   // 自己拡張関連ツールのガード（サンドボックスが無効な場合は呼び出しエラーを返す）
   const sandboxTools = [
@@ -158,12 +169,13 @@ export async function dispatchFunction(
     "commitLocalChanges",
     "mergeBranch",
     "pushChanges",
-    "reloadDynamicFunctions"
+    "reloadDynamicFunctions",
   ];
   if (sandboxTools.includes(functionName) && !isSandboxEnabled()) {
     return JSON.stringify({
       success: false,
-      message: "エラー: 自己拡張機能（サンドボックス）は現在無効化されています。必要な設定を行ってください。"
+      message:
+        "エラー: 自己拡張機能（サンドボックス）は現在無効化されています。必要な設定を行ってください。",
     });
   }
 
@@ -182,13 +194,19 @@ export async function dispatchFunction(
 
     // 予定
     case "addSchedule":
-      return await scheduleFn.addSchedule(userId, args as Parameters<typeof scheduleFn.addSchedule>[1]);
+      return await scheduleFn.addSchedule(
+        userId,
+        args as Parameters<typeof scheduleFn.addSchedule>[1],
+      );
     case "listSchedules":
-      return await scheduleFn.listSchedules(userId, args as Parameters<typeof scheduleFn.listSchedules>[1]);
+      return await scheduleFn.listSchedules(
+        userId,
+        args as Parameters<typeof scheduleFn.listSchedules>[1],
+      );
     case "deleteSchedule":
       return await scheduleFn.deleteSchedule(
         userId,
-        args as Parameters<typeof scheduleFn.deleteSchedule>[1]
+        args as Parameters<typeof scheduleFn.deleteSchedule>[1],
       );
 
     // 家計
@@ -197,36 +215,54 @@ export async function dispatchFunction(
     case "getMonthlySummary":
       return expenseFn.getMonthlySummary(
         userId,
-        args as Parameters<typeof expenseFn.getMonthlySummary>[1]
+        args as Parameters<typeof expenseFn.getMonthlySummary>[1],
       );
     case "getCategoryBreakdown":
       return expenseFn.getCategoryBreakdown(
         userId,
-        args as Parameters<typeof expenseFn.getCategoryBreakdown>[1]
+        args as Parameters<typeof expenseFn.getCategoryBreakdown>[1],
       );
     case "listRecentExpenses":
       return expenseFn.listRecentExpenses(
         userId,
-        args as Parameters<typeof expenseFn.listRecentExpenses>[1]
+        args as Parameters<typeof expenseFn.listRecentExpenses>[1],
       );
 
     // ヘッドレスブラウザ操作
     case "fetchDynamicPage":
-      return await browserFn.fetchDynamicPage(userId, args as Parameters<typeof browserFn.fetchDynamicPage>[1]);
+      return await browserFn.fetchDynamicPage(
+        userId,
+        args as Parameters<typeof browserFn.fetchDynamicPage>[1],
+      );
     case "takePageScreenshot":
-      return await browserFn.takePageScreenshot(userId, args as Parameters<typeof browserFn.takePageScreenshot>[1]);
+      return await browserFn.takePageScreenshot(
+        userId,
+        args as Parameters<typeof browserFn.takePageScreenshot>[1],
+      );
     case "searchWeb":
       return await browserFn.searchWeb(userId, args as Parameters<typeof browserFn.searchWeb>[1]);
 
     // 永続インタラクティブブラウザ操作
     case "browserInteractiveOpen":
-      return await browserFn.browserInteractiveOpen(userId, args as Parameters<typeof browserFn.browserInteractiveOpen>[1]);
+      return await browserFn.browserInteractiveOpen(
+        userId,
+        args as Parameters<typeof browserFn.browserInteractiveOpen>[1],
+      );
     case "browserInteractiveClick":
-      return await browserFn.browserInteractiveClick(userId, args as Parameters<typeof browserFn.browserInteractiveClick>[1]);
+      return await browserFn.browserInteractiveClick(
+        userId,
+        args as Parameters<typeof browserFn.browserInteractiveClick>[1],
+      );
     case "browserInteractiveType":
-      return await browserFn.browserInteractiveType(userId, args as Parameters<typeof browserFn.browserInteractiveType>[1]);
+      return await browserFn.browserInteractiveType(
+        userId,
+        args as Parameters<typeof browserFn.browserInteractiveType>[1],
+      );
     case "browserInteractiveWait":
-      return await browserFn.browserInteractiveWait(userId, args as Parameters<typeof browserFn.browserInteractiveWait>[1]);
+      return await browserFn.browserInteractiveWait(
+        userId,
+        args as Parameters<typeof browserFn.browserInteractiveWait>[1],
+      );
     case "browserInteractiveStatus":
       return await browserFn.browserInteractiveStatus(userId);
     case "browserInteractiveClose":
@@ -234,9 +270,15 @@ export async function dispatchFunction(
 
     // 資格情報
     case "getCredential":
-      return await credentialFn.getCredential(userId, args as Parameters<typeof credentialFn.getCredential>[1]);
+      return await credentialFn.getCredential(
+        userId,
+        args as Parameters<typeof credentialFn.getCredential>[1],
+      );
     case "listCredentials":
-      return await credentialFn.listCredentials(userId, args as Parameters<typeof credentialFn.listCredentials>[1]);
+      return await credentialFn.listCredentials(
+        userId,
+        args as Parameters<typeof credentialFn.listCredentials>[1],
+      );
 
     // 記憶管理
     case "saveMemory":
@@ -250,9 +292,15 @@ export async function dispatchFunction(
 
     // 手順書（Playbook）自動化
     case "savePlaybook":
-      return await playbookFn.savePlaybook(userId, args as Parameters<typeof playbookFn.savePlaybook>[1]);
+      return await playbookFn.savePlaybook(
+        userId,
+        args as Parameters<typeof playbookFn.savePlaybook>[1],
+      );
     case "findPlaybooks":
-      return await playbookFn.findPlaybooks(userId, args as Parameters<typeof playbookFn.findPlaybooks>[1]);
+      return await playbookFn.findPlaybooks(
+        userId,
+        args as Parameters<typeof playbookFn.findPlaybooks>[1],
+      );
 
     // 動的プラグインのリロード
     case "reloadDynamicFunctions":
@@ -261,7 +309,7 @@ export async function dispatchFunction(
         return JSON.stringify({
           success: true,
           message: "動的関数を正常にリロードしました。新しく追加された関数が利用可能です。",
-          loadedFunctions: dynamicFunctionDeclarations.map(d => d.name)
+          loadedFunctions: dynamicFunctionDeclarations.map((d) => d.name),
         });
       } catch (err: any) {
         return JSON.stringify({ success: false, message: `リロード失敗: ${err.message}` });

@@ -32,7 +32,8 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/all" && method === "GET") {
     const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
-    const numberParam = (name: string) => parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
+    const numberParam = (name: string) =>
+      parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
     const expenses = listFilteredExpenses(userId, {
       dateFrom: parsedUrl.searchParams.get("dateFrom") || undefined,
       dateTo: parsedUrl.searchParams.get("dateTo") || undefined,
@@ -48,9 +49,19 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/add" && method === "POST") {
     try {
-      const { userId, amount, category, description, date, purchase_source } = JSON.parse(await getRequestBody(req));
+      const { userId, amount, category, description, date, purchase_source } = JSON.parse(
+        await getRequestBody(req),
+      );
       if (!amount || !category) return sendError(res, 400, "金額とカテゴリは必須です。"), true;
-      const expense = addExpense(userId || "sensei_default", amount, category, description, date, "web", purchase_source || "不明");
+      const expense = addExpense(
+        userId || "sensei_default",
+        amount,
+        category,
+        description,
+        date,
+        "web",
+        purchase_source || "不明",
+      );
       sendJson(res, 200, { success: true, expense });
     } catch {
       sendError(res, 500, "支出の追加に失敗しました。");
@@ -60,9 +71,17 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/update" && method === "POST") {
     try {
-      const { id, userId, amount, category, description, date, purchase_source } = JSON.parse(await getRequestBody(req));
+      const { id, userId, amount, category, description, date, purchase_source } = JSON.parse(
+        await getRequestBody(req),
+      );
       if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
-      const expense = updateExpense(id, userId, { amount, category, description, date, purchase_source });
+      const expense = updateExpense(id, userId, {
+        amount,
+        category,
+        description,
+        date,
+        purchase_source,
+      });
       sendJson(res, 200, { success: true, expense });
     } catch {
       sendError(res, 500, "支出の更新に失敗しました。");
@@ -83,12 +102,19 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/upload-receipt" && method === "POST") {
     try {
-      const { userId, imageBase64, mimeType, additionalText } = JSON.parse(await getRequestBody(req));
+      const { userId, imageBase64, mimeType, additionalText } = JSON.parse(
+        await getRequestBody(req),
+      );
       if (!imageBase64 || !mimeType) {
         sendError(res, 400, "画像データ(base64)とMIMEタイプが必要です。");
         return true;
       }
-      const response = await parseReceipt(userId || "sensei_default", imageBase64, mimeType, additionalText);
+      const response = await parseReceipt(
+        userId || "sensei_default",
+        imageBase64,
+        mimeType,
+        additionalText,
+      );
       sendJson(res, 200, { success: true, response });
     } catch (err) {
       console.error("WEBレシート解析エラー:", err);

@@ -22,7 +22,7 @@ export function addSchedule(
   remindBeforeMinutes?: number,
   description?: string,
   googleEventId?: string,
-  googleCalendarId?: string
+  googleCalendarId?: string,
 ): Schedule {
   const db = getDb();
   const stmt = db.prepare(`
@@ -37,7 +37,7 @@ export function addSchedule(
     endAt ?? null,
     remindBeforeMinutes ?? 30,
     googleEventId ?? null,
-    googleCalendarId ?? null
+    googleCalendarId ?? null,
   );
   return getScheduleById(result.lastInsertRowid as number)!;
 }
@@ -49,7 +49,7 @@ export function listUpcomingSchedules(userId: string, days: number = 7): Schedul
       `SELECT * FROM schedules 
        WHERE user_id = ? AND start_at >= datetime('now', 'localtime')
        AND start_at <= datetime('now', 'localtime', '+' || ? || ' days')
-       ORDER BY start_at ASC`
+       ORDER BY start_at ASC`,
     )
     .all(userId, days) as Schedule[];
 }
@@ -61,20 +61,33 @@ export function getScheduleById(id: number): Schedule | undefined {
 
 export function getScheduleByGoogleId(googleEventId: string): Schedule | undefined {
   const db = getDb();
-  return db.prepare("SELECT * FROM schedules WHERE google_event_id = ?").get(googleEventId) as Schedule | undefined;
+  return db.prepare("SELECT * FROM schedules WHERE google_event_id = ?").get(googleEventId) as
+    | Schedule
+    | undefined;
 }
 
-export function getScheduleByTitleAndStart(userId: string, title: string, startAt: string): Schedule | undefined {
+export function getScheduleByTitleAndStart(
+  userId: string,
+  title: string,
+  startAt: string,
+): Schedule | undefined {
   const db = getDb();
   return db
     .prepare("SELECT * FROM schedules WHERE user_id = ? AND title = ? AND start_at = ?")
     .get(userId, title, startAt) as Schedule | undefined;
 }
 
-export function linkGoogleEventId(id: number, googleEventId: string, googleCalendarId?: string): void {
+export function linkGoogleEventId(
+  id: number,
+  googleEventId: string,
+  googleCalendarId?: string,
+): void {
   const db = getDb();
-  db.prepare("UPDATE schedules SET google_event_id = ?, google_calendar_id = ? WHERE id = ?")
-    .run(googleEventId, googleCalendarId ?? null, id);
+  db.prepare("UPDATE schedules SET google_event_id = ?, google_calendar_id = ? WHERE id = ?").run(
+    googleEventId,
+    googleCalendarId ?? null,
+    id,
+  );
 }
 
 export function updateScheduleFromGoogle(
@@ -83,7 +96,7 @@ export function updateScheduleFromGoogle(
   startAt: string,
   endAt: string | null,
   description: string | null,
-  googleCalendarId?: string
+  googleCalendarId?: string,
 ): void {
   const db = getDb();
   db.prepare(`
@@ -96,7 +109,9 @@ export function updateScheduleFromGoogle(
 export function listAllFutureSchedulesWithGoogleId(userId: string): Schedule[] {
   const db = getDb();
   return db
-    .prepare("SELECT * FROM schedules WHERE user_id = ? AND google_event_id IS NOT NULL AND start_at >= datetime('now', 'localtime')")
+    .prepare(
+      "SELECT * FROM schedules WHERE user_id = ? AND google_event_id IS NOT NULL AND start_at >= datetime('now', 'localtime')",
+    )
     .all(userId) as Schedule[];
 }
 
@@ -107,7 +122,7 @@ export function getUnremindedSchedules(): Schedule[] {
       `SELECT * FROM schedules 
        WHERE reminded = 0 
        AND datetime(start_at, '-' || remind_before_minutes || ' minutes') <= datetime('now', 'localtime')
-       AND start_at >= datetime('now', 'localtime')`
+       AND start_at >= datetime('now', 'localtime')`,
     )
     .all() as Schedule[];
 }
@@ -120,16 +135,37 @@ export function markReminded(id: number): void {
 export function updateSchedule(
   id: number,
   userId: string,
-  fields: { title?: string; description?: string | null; startAt?: string; endAt?: string | null; remindBeforeMinutes?: number }
+  fields: {
+    title?: string;
+    description?: string | null;
+    startAt?: string;
+    endAt?: string | null;
+    remindBeforeMinutes?: number;
+  },
 ): Schedule | undefined {
   const db = getDb();
   const sets: string[] = ["reminded = 0"];
   const params: unknown[] = [];
-  if (fields.title !== undefined)              { sets.push("title = ?");                  params.push(fields.title); }
-  if ("description" in fields)                 { sets.push("description = ?");            params.push(fields.description ?? null); }
-  if (fields.startAt !== undefined)            { sets.push("start_at = ?");               params.push(fields.startAt); }
-  if ("endAt" in fields)                       { sets.push("end_at = ?");                 params.push(fields.endAt ?? null); }
-  if (fields.remindBeforeMinutes !== undefined) { sets.push("remind_before_minutes = ?"); params.push(fields.remindBeforeMinutes); }
+  if (fields.title !== undefined) {
+    sets.push("title = ?");
+    params.push(fields.title);
+  }
+  if ("description" in fields) {
+    sets.push("description = ?");
+    params.push(fields.description ?? null);
+  }
+  if (fields.startAt !== undefined) {
+    sets.push("start_at = ?");
+    params.push(fields.startAt);
+  }
+  if ("endAt" in fields) {
+    sets.push("end_at = ?");
+    params.push(fields.endAt ?? null);
+  }
+  if (fields.remindBeforeMinutes !== undefined) {
+    sets.push("remind_before_minutes = ?");
+    params.push(fields.remindBeforeMinutes);
+  }
   params.push(id, userId);
   db.prepare(`UPDATE schedules SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
   return getScheduleById(id);

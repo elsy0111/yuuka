@@ -10,9 +10,7 @@ export interface Memory {
 
 export function saveMemory(userId: string, content: string, module: string = "general"): Memory {
   const db = getDb();
-  const stmt = db.prepare(
-    `INSERT INTO memories (user_id, content, module) VALUES (?, ?, ?)`
-  );
+  const stmt = db.prepare(`INSERT INTO memories (user_id, content, module) VALUES (?, ?, ?)`);
   const result = stmt.run(userId, content, module);
   return db.prepare("SELECT * FROM memories WHERE id = ?").get(result.lastInsertRowid) as Memory;
 }
@@ -43,11 +41,19 @@ export function listMemories(userId: string, module?: string): Memory[] {
     .all(userId) as Memory[];
 }
 
-export function updateMemory(id: number, userId: string, content: string, module?: string): Memory | undefined {
+export function updateMemory(
+  id: number,
+  userId: string,
+  content: string,
+  module?: string,
+): Memory | undefined {
   const db = getDb();
   const sets = ["content = ?"];
   const params: unknown[] = [content];
-  if (module !== undefined) { sets.push("module = ?"); params.push(module); }
+  if (module !== undefined) {
+    sets.push("module = ?");
+    params.push(module);
+  }
   params.push(id, userId);
   db.prepare(`UPDATE memories SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
   return db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as Memory | undefined;

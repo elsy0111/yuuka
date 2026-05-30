@@ -2,7 +2,13 @@ import * as secretService from "../../services/secretService.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
-export const handleCredentials: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
+export const handleCredentials: RouteHandler = async ({
+  req,
+  res,
+  parsedUrl,
+  pathname,
+  method,
+}) => {
   if (pathname === "/api/credentials" && method === "GET") {
     try {
       const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
@@ -39,7 +45,9 @@ export const handleCredentials: RouteHandler = async ({ req, res, parsedUrl, pat
         return true;
       }
 
-      sendJson(res, 200, { success: secretService.deleteCredential(userId || "sensei_default", serviceName) });
+      sendJson(res, 200, {
+        success: secretService.deleteCredential(userId || "sensei_default", serviceName),
+      });
     } catch {
       sendError(res, 500, "資格情報の削除に失敗しました。");
     }

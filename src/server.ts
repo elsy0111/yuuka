@@ -76,8 +76,11 @@ export function startWebServer(retries = 10, retryDelayMs = 2000): Promise<void>
         if (err.code !== "EADDRINUSE") return reject(err);
         server?.removeAllListeners();
         server = null;
-        if (retries <= 0) return reject(new Error(`ポート ${config.port} が解放されませんでした。`));
-        console.log(`⏳ ポート ${config.port} 使用中。${retryDelayMs / 1000}秒後にリトライ... (残り ${retries} 回)`);
+        if (retries <= 0)
+          return reject(new Error(`ポート ${config.port} が解放されませんでした。`));
+        console.log(
+          `⏳ ポート ${config.port} 使用中。${retryDelayMs / 1000}秒後にリトライ... (残り ${retries} 回)`,
+        );
         retries--;
         setTimeout(attempt, retryDelayMs);
       });

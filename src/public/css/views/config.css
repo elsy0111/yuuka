@@ -142,20 +142,20 @@
 
 /* Blue Archive theme preview */
 .ba-preview {
-  background-color: #FBFCFF;
+  background-color: #fbfcff;
 }
 
 .ba-preview .preview-sidebar {
-  background-color: #F2F7F8;
-  border-right: 1px solid #DDE6ED;
+  background-color: #f2f7f8;
+  border-right: 1px solid #dde6ed;
 }
 
 .ba-preview .preview-card {
-  background-color: #E7F0F7;
+  background-color: #e7f0f7;
 }
 
 .ba-preview .preview-card:first-child {
-  background-color: #02D3FB;
+  background-color: #02d3fb;
 }
 
 /* AI Credentials Action Styles */

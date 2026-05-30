@@ -24,11 +24,13 @@ export const scheduleDeclarations: FunctionDeclaration[] = [
         description: { type: SchemaType.STRING, description: "予定の詳細（任意）" },
         calendar_id: {
           type: SchemaType.STRING,
-          description: "登録先GoogleカレンダーのID（任意。目的に最も適したカレンダーIDを選択し設定します）",
+          description:
+            "登録先GoogleカレンダーのID（任意。目的に最も適したカレンダーIDを選択し設定します）",
         },
         local_only: {
           type: SchemaType.BOOLEAN,
-          description: "Googleカレンダーに同期せず、ボットのローカル通知のみに留めるか（簡易タイマーやリマインダーならtrueを設定します）",
+          description:
+            "Googleカレンダーに同期せず、ボットのローカル通知のみに留めるか（簡易タイマーやリマインダーならtrueを設定します）",
         },
       },
       required: ["title", "start_at"],

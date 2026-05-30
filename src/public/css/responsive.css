@@ -32,7 +32,6 @@
 }
 
 @media (max-width: 768px) {
-
   /* Sidebar transforms into Bottom Nav Bar */
   .sidebar {
     position: fixed;
@@ -226,7 +225,8 @@
     display: none; /* Hide Description & Source on small mobile devices to prevent overflow */
   }
 
-  .expense-table th, .expense-table td {
+  .expense-table th,
+  .expense-table td {
     padding: 10px 8px;
     font-size: 0.75rem;
   }

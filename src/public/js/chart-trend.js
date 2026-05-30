@@ -1,13 +1,13 @@
 import { currentTheme } from "./theme.js";
 
 export function renderPriceTrendChart(expenses, onHover, onLeave) {
-  const svg      = document.getElementById("dashboard-trend-chart");
+  const svg = document.getElementById("dashboard-trend-chart");
   const linePath = document.getElementById("trend-line-path");
   const areaPath = document.getElementById("trend-area-path");
 
-  svg.querySelectorAll("circle").forEach(c => c.remove());
+  svg.querySelectorAll("circle").forEach((c) => c.remove());
 
-  const dateLabels  = [];
+  const dateLabels = [];
   const dateStrings = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date();
@@ -24,9 +24,9 @@ export function renderPriceTrendChart(expenses, onHover, onLeave) {
     xAxis.appendChild(span);
   });
 
-  const dailyTotals = dateStrings.map(date => {
+  const dailyTotals = dateStrings.map((date) => {
     if (!expenses) return 0;
-    return expenses.filter(e => e.date === date).reduce((s, e) => s + e.amount, 0);
+    return expenses.filter((e) => e.date === date).reduce((s, e) => s + e.amount, 0);
   });
 
   const maxVal = Math.max(...dailyTotals, 10000);
@@ -36,14 +36,20 @@ export function renderPriceTrendChart(expenses, onHover, onLeave) {
     amount: val,
   }));
 
-  linePath.setAttribute("d", points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" "));
-  areaPath.setAttribute("d", `M 0,130 ${points.map(p => `L ${p.x},${p.y}`).join(" ")} L 400,130 Z`);
+  linePath.setAttribute(
+    "d",
+    points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x},${p.y}`).join(" "),
+  );
+  areaPath.setAttribute(
+    "d",
+    `M 0,130 ${points.map((p) => `L ${p.x},${p.y}`).join(" ")} L 400,130 Z`,
+  );
 
-  const isLight  = currentTheme() === "blue-archive";
-  const dotNorm  = isLight ? "#02D3FB" : "#fafafa";
+  const isLight = currentTheme() === "blue-archive";
+  const dotNorm = isLight ? "#02D3FB" : "#fafafa";
   const dotHover = isLight ? "#00AED8" : "#a1a1aa";
 
-  points.forEach(p => {
+  points.forEach((p) => {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", p.x);
     circle.setAttribute("cy", p.y);

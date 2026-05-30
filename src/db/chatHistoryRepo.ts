@@ -9,7 +9,11 @@ export interface ChatHistoryEntry {
 /**
  * チャット履歴に新しいメッセージを追加する
  */
-export async function addChatMessage(userId: string, role: "user" | "model", text: string): Promise<void> {
+export async function addChatMessage(
+  userId: string,
+  role: "user" | "model",
+  text: string,
+): Promise<void> {
   // 1. SQLite に永続化保存
   try {
     const db = getDb();
@@ -34,7 +38,10 @@ export async function addChatMessage(userId: string, role: "user" | "model", tex
       // 直近 30 件のみに維持し、メモリ肥大化を抑える
       await redis.lTrim(key, -30, -1);
     } catch (err) {
-      console.error("⚠️ Redis キャッシュへの書き込みに失敗しました (SQLiteにのみ保存されます):", err);
+      console.error(
+        "⚠️ Redis キャッシュへの書き込みに失敗しました (SQLiteにのみ保存されます):",
+        err,
+      );
     }
   }
 }
@@ -42,7 +49,10 @@ export async function addChatMessage(userId: string, role: "user" | "model", tex
 /**
  * 直近のチャット履歴を取得する（古い順）
  */
-export async function getRecentChatHistory(userId: string, limit: number = 20): Promise<ChatHistoryEntry[]> {
+export async function getRecentChatHistory(
+  userId: string,
+  limit: number = 20,
+): Promise<ChatHistoryEntry[]> {
   const key = `yuuka:chat_history:${userId}`;
   const redis = getRedisClient();
 
@@ -51,12 +61,15 @@ export async function getRecentChatHistory(userId: string, limit: number = 20): 
     try {
       const cachedList = await redis.lRange(key, 0, -1);
       if (cachedList && cachedList.length > 0) {
-        const parsed = cachedList.map(item => JSON.parse(item) as ChatHistoryEntry);
+        const parsed = cachedList.map((item) => JSON.parse(item) as ChatHistoryEntry);
         // 末尾（最新）から limit 件分を取得
         return parsed.slice(-limit);
       }
     } catch (err) {
-      console.error("⚠️ Redis キャッシュからの読み込みに失敗しました。SQLite から読み出します。:", err);
+      console.error(
+        "⚠️ Redis キャッシュからの読み込みに失敗しました。SQLite から読み出します。:",
+        err,
+      );
     }
   }
 
@@ -71,7 +84,7 @@ export async function getRecentChatHistory(userId: string, limit: number = 20): 
     )
     ORDER BY id ASC
   `);
-  
+
   const rows = stmt.all(userId, limit) as { role: string; text: string }[];
   const history = rows.map((row) => ({
     role: row.role as "user" | "model",
@@ -81,7 +94,7 @@ export async function getRecentChatHistory(userId: string, limit: number = 20): 
   // 3. 取得した履歴を Redis キャッシュに再構築 (非同期で実行)
   if (redis && history.length > 0) {
     try {
-      const jsonStrings = history.map(item => JSON.stringify(item));
+      const jsonStrings = history.map((item) => JSON.stringify(item));
       // キャッシュキーを一度削除して再構築
       await redis.del(key);
       await redis.rPush(key, jsonStrings);

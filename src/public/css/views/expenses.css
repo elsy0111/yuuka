@@ -99,7 +99,8 @@
   transition: var(--transition-smooth);
 }
 
-.dropzone:hover, .dropzone.dragover {
+.dropzone:hover,
+.dropzone.dragover {
   border-color: var(--border-focus);
   background-color: var(--accent-cyan-faint);
 }
@@ -213,7 +214,9 @@
   align-items: center;
 }
 
-.source-web, .source-manual, .source-discord {
+.source-web,
+.source-manual,
+.source-discord {
   color: var(--text-secondary);
 }
 

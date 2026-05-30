@@ -52,7 +52,10 @@ export const handleMemories: RouteHandler = async ({ req, res, parsedUrl, pathna
         return true;
       }
       const ok = deleteMemory(Number(id), userId || "sensei_default");
-      sendJson(res, 200, { success: ok, message: ok ? "削除しました。" : "対象が見つかりません。" });
+      sendJson(res, 200, {
+        success: ok,
+        message: ok ? "削除しました。" : "対象が見つかりません。",
+      });
     } catch {
       sendError(res, 500, "記憶の削除に失敗しました。");
     }

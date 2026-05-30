@@ -27,7 +27,11 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
   const attempt = loginAttempts.get(clientIp);
   if (attempt && attempt.count >= MAX_LOGIN_ATTEMPTS && Date.now() < attempt.resetAt) {
     const remainSec = Math.ceil((attempt.resetAt - Date.now()) / 1000);
-    sendError(res, 429, `ログイン試行回数が上限に達しました。${remainSec}秒後に再試行してください。`);
+    sendError(
+      res,
+      429,
+      `ログイン試行回数が上限に達しました。${remainSec}秒後に再試行してください。`,
+    );
     return true;
   }
 
@@ -54,7 +58,7 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
     const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
-      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
     );
     sendJson(res, 200, {
       success: true,
@@ -116,7 +120,7 @@ export const handleRegister: RouteHandler = async ({ req, res, pathname, method 
     const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
-      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
     );
     sendJson(res, 200, {
       success: true,
@@ -141,7 +145,7 @@ export const handleLogout: RouteHandler = ({ req, res, pathname, method }) => {
   persistSessions();
   res.setHeader(
     "Set-Cookie",
-    `__Host-yuuka-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+    `__Host-yuuka-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
   );
   sendJson(res, 200, { success: true, message: "ログアウトしました。" });
   return true;

@@ -18,13 +18,13 @@ const FALLBACK_COLORS = ["#a78bfa", "#f59e0b", "#10b981", "#6366f1", "#ec4899"];
 const C = 251.2; // 円周 r=40
 
 export function renderDonutChart(breakdown, total) {
-  const svg    = document.getElementById("dashboard-donut-chart");
+  const svg = document.getElementById("dashboard-donut-chart");
   const legend = document.getElementById("dashboard-category-legend");
-  const pctEl  = document.getElementById("chart-center-percentage");
+  const pctEl = document.getElementById("chart-center-percentage");
   const totalEl = document.getElementById("dashboard-category-total");
 
   legend.replaceChildren();
-  svg.querySelectorAll(".donut-seg").forEach(el => el.remove());
+  svg.querySelectorAll(".donut-seg").forEach((el) => el.remove());
 
   if (!breakdown || breakdown.length === 0 || total === 0) {
     pctEl.textContent = "0%";
@@ -40,9 +40,9 @@ export function renderDonutChart(breakdown, total) {
   let offset = 0;
 
   breakdown.slice(0, 4).forEach((cat, i) => {
-    const ratio  = cat.total / total;
+    const ratio = cat.total / total;
     const segLen = ratio * C;
-    const color  = colorMap[cat.category] || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+    const color = colorMap[cat.category] || FALLBACK_COLORS[i % FALLBACK_COLORS.length];
 
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("class", "donut-seg");
@@ -58,19 +58,19 @@ export function renderDonutChart(breakdown, total) {
     svg.appendChild(circle);
     offset += segLen;
 
-    const pct  = Math.round(ratio * 100);
+    const pct = Math.round(ratio * 100);
     const item = document.createElement("div");
     item.className = "legend-item";
-    const dot  = document.createElement("span");
+    const dot = document.createElement("span");
     dot.className = "legend-color";
     dot.style.backgroundColor = color;
-    const lbl  = document.createElement("span");
+    const lbl = document.createElement("span");
     lbl.textContent = `${cat.category}: ¥${cat.total.toLocaleString()} (${pct}%)`;
     item.append(dot, lbl);
     legend.appendChild(item);
   });
 
-  const ent    = breakdown.find(c => c.category === "娯楽");
+  const ent = breakdown.find((c) => c.category === "娯楽");
   const entPct = ent ? Math.round((ent.total / total) * 100) : 0;
   pctEl.textContent = `${entPct}%`;
   if (totalEl) totalEl.textContent = `¥${total.toLocaleString()}`;

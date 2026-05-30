@@ -20,7 +20,7 @@ const DEBUG_SCRAPES_DIR = path.resolve(process.cwd(), "data/debug_scrapes");
 function cleanupOldFiles() {
   const ONE_HOUR = 60 * 60 * 1000;
   const now = Date.now();
-  
+
   [SCREENSHOT_DIR, DEBUG_SCRAPES_DIR].forEach((dir) => {
     if (!fs.existsSync(dir)) return;
     fs.readdir(dir, (err, files) => {
@@ -122,7 +122,7 @@ async function getInteractiveBrowser(userId: string): Promise<{ browser: Browser
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
   await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   );
   await page.setExtraHTTPHeaders({
     "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
@@ -176,8 +176,9 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
     const noiseKeywords = ["footer", "nav", "sidebar", "menu", "ads"];
     function isNoiseElement(el: any): boolean {
       const id = el.id ? el.id.toLowerCase() : "";
-      const className = el.className && typeof el.className === "string" ? el.className.toLowerCase() : "";
-      return noiseKeywords.some(keyword => id.includes(keyword) || className.includes(keyword));
+      const className =
+        el.className && typeof el.className === "string" ? el.className.toLowerCase() : "";
+      return noiseKeywords.some((keyword) => id.includes(keyword) || className.includes(keyword));
     }
 
     function traverse(node: any, isPre = false): string {
@@ -207,7 +208,16 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
 
       // インタラクティブでない場合はフォームパーツなども除外
       if (!interactive) {
-        const normalUnwanted = ["header", "footer", "nav", "aside", "select", "button", "input", "textarea"];
+        const normalUnwanted = [
+          "header",
+          "footer",
+          "nav",
+          "aside",
+          "select",
+          "button",
+          "input",
+          "textarea",
+        ];
         if (normalUnwanted.includes(tagName) || isNoiseElement(node)) {
           return "";
         }
@@ -267,9 +277,11 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
         if (tagName === "select") {
           const name = node.getAttribute("name") || "";
           const id = node.id || "";
-          const options = Array.from(node.querySelectorAll("option")).map((opt: any) => {
-            return `${opt.value}:${opt.textContent?.trim() || ""}`;
-          }).join(", ");
+          const options = Array.from(node.querySelectorAll("option"))
+            .map((opt: any) => {
+              return `${opt.value}:${opt.textContent?.trim() || ""}`;
+            })
+            .join(", ");
           return ` [Select${idStr} id="${id}" name="${name}" Options: {${options}}] `;
         }
       }
@@ -299,7 +311,7 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
         case "a": {
           const href = node.href;
           const text = childrenText.trim();
-          const yuukaId = interactive ? (node.getAttribute("data-yuuka-id") || "") : "";
+          const yuukaId = interactive ? node.getAttribute("data-yuuka-id") || "" : "";
           const idPrefix = yuukaId ? `[ID: ${yuukaId}] ` : "";
           if (href && text && !href.startsWith("javascript:") && !href.startsWith("mailto:")) {
             return ` ${idPrefix}[${text}](${href}) `;
@@ -329,7 +341,14 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
           return `\n\n${childrenText}\n\n`;
         default: {
           const isBlock = [
-            "div", "section", "article", "aside", "main", "body", "blockquote", "form"
+            "div",
+            "section",
+            "article",
+            "aside",
+            "main",
+            "body",
+            "blockquote",
+            "form",
           ].includes(tagName);
           if (isBlock) {
             return `\n${childrenText}\n`;
@@ -346,7 +365,7 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
   const cleanLines: string[] = [];
   let consecutiveEmpty = 0;
   let inCodeBlock = false;
-  
+
   for (const line of rawLines) {
     const trimmedLine = line.trim();
     if (trimmedLine.startsWith("```")) {
@@ -355,7 +374,7 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
       cleanLines.push(trimmedLine);
       continue;
     }
-    
+
     if (inCodeBlock) {
       cleanLines.push(line);
       consecutiveEmpty = 0;
@@ -372,14 +391,16 @@ async function extractPageMarkdown(page: Page, isInteractive: boolean): Promise<
       }
     }
   }
-  
+
   return cleanLines.join("\n").trim();
 }
 
 /**
  * ヘッドレスブラウザでウェブページを開き、不要なタグを削除して可視部分をMarkdown形式にパースして取得する
  */
-export async function fetchCleanPageContent(url: string): Promise<{ title: string; markdown: string }> {
+export async function fetchCleanPageContent(
+  url: string,
+): Promise<{ title: string; markdown: string }> {
   let result: { title: string; markdown: string } | null = null;
 
   // まず Rust クローラーによる高速フェッチを試みる
@@ -405,11 +426,11 @@ export async function fetchCleanPageContent(url: string): Promise<{ title: strin
 
     try {
       const page = await browser.newPage();
-      
+
       await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       );
-      
+
       await page.setExtraHTTPHeaders({
         "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
       });
@@ -417,7 +438,9 @@ export async function fetchCleanPageContent(url: string): Promise<{ title: strin
       try {
         await page.goto(url, { waitUntil: "networkidle2", timeout: 15000 });
       } catch (gotoError: any) {
-        console.warn(`Navigation timeout or error for ${url}, extracting content anyway: ${gotoError.message}`);
+        console.warn(
+          `Navigation timeout or error for ${url}, extracting content anyway: ${gotoError.message}`,
+        );
       }
 
       const title = await page.title();
@@ -436,12 +459,12 @@ export async function fetchCleanPageContent(url: string): Promise<{ title: strin
   try {
     const lastFetchPath = path.join(DEBUG_SCRAPES_DIR, "debug_last_fetch.md");
     fs.writeFileSync(lastFetchPath, result.markdown, "utf-8");
-    
+
     const sanitizedUrl = url.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 100);
     const uniqueFilename = `fetch_${Date.now()}_${sanitizedUrl}.md`;
     const uniqueFetchPath = path.join(DEBUG_SCRAPES_DIR, uniqueFilename);
     fs.writeFileSync(uniqueFetchPath, result.markdown, "utf-8");
-    
+
     console.log(`[Debug] Saved scraped markdown to: ${uniqueFetchPath}`);
   } catch (saveErr: any) {
     console.warn(`Failed to save debug scrape file: ${saveErr.message}`);
@@ -454,7 +477,10 @@ export async function fetchCleanPageContent(url: string): Promise<{ title: strin
  * ウェブページのスクリーンショットを撮影し、画像を保存する
  * @returns 保存された画像ファイルの相対パス
  */
-export async function takePageScreenshot(url: string, filename: string = `screenshot_${Date.now()}.png`): Promise<string> {
+export async function takePageScreenshot(
+  url: string,
+  filename: string = `screenshot_${Date.now()}.png`,
+): Promise<string> {
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
@@ -478,7 +504,9 @@ export async function takePageScreenshot(url: string, filename: string = `screen
 /**
  * Web検索を実行して検索結果を取得する
  */
-export async function searchWeb(query: string): Promise<Array<{ title: string; url: string; snippet: string }>> {
+export async function searchWeb(
+  query: string,
+): Promise<Array<{ title: string; url: string; snippet: string }>> {
   try {
     console.log(`[Rust Crawler] Searching: ${query}`);
     const jsonOutput = await runRustCrawler("search", query);
@@ -497,7 +525,7 @@ export async function searchWeb(query: string): Promise<Array<{ title: string; u
   try {
     const page = await browser.newPage();
     await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
     await page.setExtraHTTPHeaders({
       "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
@@ -506,7 +534,7 @@ export async function searchWeb(query: string): Promise<Array<{ title: string; u
     const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     try {
       await page.goto(googleUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
-      
+
       const googleResults = await page.evaluate(() => {
         const items: Array<{ title: string; url: string; snippet: string }> = [];
         const elements = document.querySelectorAll("div.g");
@@ -529,12 +557,14 @@ export async function searchWeb(query: string): Promise<Array<{ title: string; u
         return googleResults.slice(0, 8);
       }
     } catch (e: any) {
-      console.warn(`Google Search failed or timed out: ${e.message}. Falling back to DuckDuckGo...`);
+      console.warn(
+        `Google Search failed or timed out: ${e.message}. Falling back to DuckDuckGo...`,
+      );
     }
 
     const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
     await page.goto(ddgUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
-    
+
     const ddgResults = await page.evaluate(() => {
       const items: Array<{ title: string; url: string; snippet: string }> = [];
       const elements = document.querySelectorAll(".result");
@@ -609,7 +639,10 @@ export async function annotateInteractiveElements(page: Page): Promise<void> {
 /**
  * 永続ブラウザで指定URLを開く
  */
-export async function browserInteractiveOpen(userId: string, url: string): Promise<{ success: boolean; title: string; url: string; message: string }> {
+export async function browserInteractiveOpen(
+  userId: string,
+  url: string,
+): Promise<{ success: boolean; title: string; url: string; message: string }> {
   const { page } = await getInteractiveBrowser(userId);
   try {
     console.log(`[Interactive Browser] Navigating to: ${url}`);
@@ -630,7 +663,10 @@ export async function browserInteractiveOpen(userId: string, url: string): Promi
 /**
  * 指定されたCSSセレクタまたはテキストに合致する要素をクリックする
  */
-export async function browserInteractiveClick(userId: string, selector: string): Promise<{ success: boolean; message: string }> {
+export async function browserInteractiveClick(
+  userId: string,
+  selector: string,
+): Promise<{ success: boolean; message: string }> {
   const { page } = await getInteractiveBrowser(userId);
 
   // 数値IDまたは "id:数字" 形式のセレクタを [data-yuuka-id="数値"] に変換
@@ -648,25 +684,32 @@ export async function browserInteractiveClick(userId: string, selector: string):
   if (match) {
     const targetTagName = match[1] || null;
     const cleanText = match[2];
-    
+
     try {
-      const clicked = await page.evaluate(({ tag, txt }: { tag: string | null; txt: string }) => {
-        const query = tag ? tag : "a, button, input[type='button'], input[type='submit'], [role='button'], span, div, h1, h2, h3, h4";
-        const elements = Array.from(document.querySelectorAll(query));
-        const target = elements.find(el => {
-          const elText = el.textContent?.trim() || "";
-          const valText = el.getAttribute("value")?.trim() || "";
-          return elText === txt || elText.includes(txt) || valText === txt || valText.includes(txt);
-        });
-        if (target) {
-          (target as HTMLElement).click();
-          return true;
-        }
-        return false;
-      }, { tag: targetTagName, txt: cleanText });
+      const clicked = await page.evaluate(
+        ({ tag, txt }: { tag: string | null; txt: string }) => {
+          const query = tag
+            ? tag
+            : "a, button, input[type='button'], input[type='submit'], [role='button'], span, div, h1, h2, h3, h4";
+          const elements = Array.from(document.querySelectorAll(query));
+          const target = elements.find((el) => {
+            const elText = el.textContent?.trim() || "";
+            const valText = el.getAttribute("value")?.trim() || "";
+            return (
+              elText === txt || elText.includes(txt) || valText === txt || valText.includes(txt)
+            );
+          });
+          if (target) {
+            (target as HTMLElement).click();
+            return true;
+          }
+          return false;
+        },
+        { tag: targetTagName, txt: cleanText },
+      );
 
       if (clicked) {
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
         return {
           success: true,
           message: `テキスト "${cleanText}" に合致する要素を見つけ出し、クリックしました。`,
@@ -675,16 +718,18 @@ export async function browserInteractiveClick(userId: string, selector: string):
     } catch (evalErr: any) {
       console.error("[Interactive Browser] Smart click contains evaluation error:", evalErr);
     }
-    throw new Error(`テキスト "${cleanText}" に合致する要素 "${actualSelector}" のクリックに失敗しました。`);
+    throw new Error(
+      `テキスト "${cleanText}" に合致する要素 "${actualSelector}" のクリックに失敗しました。`,
+    );
   }
 
   try {
     // まず通常のCSSセレクタでの検出を試みる
     await page.waitForSelector(actualSelector, { visible: true, timeout: 5000 });
     await page.click(actualSelector);
-    
+
     // クリック後の反応・遷移のために1秒待機
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise((r) => setTimeout(r, 1000));
     return {
       success: true,
       message: `要素 "${actualSelector}" をクリックしました。`,
@@ -693,8 +738,12 @@ export async function browserInteractiveClick(userId: string, selector: string):
     // スマートフォールバック: セレクタをテキストマッチ（ボタンやリンクの文言）として評価する
     try {
       const clicked = await page.evaluate((txt: string) => {
-        const elements = Array.from(document.querySelectorAll("a, button, input[type='button'], input[type='submit'], [role='button'], span, div, h1, h2, h3, h4"));
-        const target = elements.find(el => {
+        const elements = Array.from(
+          document.querySelectorAll(
+            "a, button, input[type='button'], input[type='submit'], [role='button'], span, div, h1, h2, h3, h4",
+          ),
+        );
+        const target = elements.find((el) => {
           const elText = el.textContent?.trim() || "";
           const valText = el.getAttribute("value")?.trim() || "";
           return elText === txt || elText.includes(txt) || valText === txt || valText.includes(txt);
@@ -707,7 +756,7 @@ export async function browserInteractiveClick(userId: string, selector: string):
       }, actualSelector);
 
       if (clicked) {
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
         return {
           success: true,
           message: `テキスト "${actualSelector}" に合致する要素を見つけ出し、クリックしました。`,
@@ -720,11 +769,14 @@ export async function browserInteractiveClick(userId: string, selector: string):
   }
 }
 
-
 /**
  * 指定されたCSSセレクタまたは属性部分一致の入力フィールドにテキストを入力する
  */
-export async function browserInteractiveType(userId: string, selector: string, text: string): Promise<{ success: boolean; message: string }> {
+export async function browserInteractiveType(
+  userId: string,
+  selector: string,
+  text: string,
+): Promise<{ success: boolean; message: string }> {
   const { page } = await getInteractiveBrowser(userId);
 
   // 数値IDまたは "id:数字" 形式のセレクタを [data-yuuka-id="数値"] に変換
@@ -738,14 +790,14 @@ export async function browserInteractiveType(userId: string, selector: string, t
 
   try {
     await page.waitForSelector(actualSelector, { visible: true, timeout: 5000 });
-    
+
     // 既存内容のクリア
     await page.focus(actualSelector);
     await page.keyboard.down("Control");
     await page.keyboard.press("KeyA");
     await page.keyboard.up("Control");
     await page.keyboard.press("Backspace");
-    
+
     await page.type(actualSelector, text, { delay: 50 });
     return {
       success: true,
@@ -754,26 +806,34 @@ export async function browserInteractiveType(userId: string, selector: string, t
   } catch (err: any) {
     // スマートフォールバック: プレースホルダー名、name属性、id、aria-labelの部分一致で入力要素を探す
     try {
-      const typed = await page.evaluate(({ sel, txt }: { sel: string; txt: string }) => {
-        const inputs = Array.from(document.querySelectorAll("input, textarea"));
-        const target = inputs.find(el => {
-          const placeholder = el.getAttribute("placeholder")?.toLowerCase() || "";
-          const name = el.getAttribute("name")?.toLowerCase() || "";
-          const id = el.id?.toLowerCase() || "";
-          const label = el.getAttribute("aria-label")?.toLowerCase() || "";
-          const lowerSel = sel.toLowerCase();
-          return placeholder.includes(lowerSel) || name.includes(lowerSel) || id.includes(lowerSel) || label.includes(lowerSel);
-        }) as HTMLInputElement | HTMLTextAreaElement;
+      const typed = await page.evaluate(
+        ({ sel, txt }: { sel: string; txt: string }) => {
+          const inputs = Array.from(document.querySelectorAll("input, textarea"));
+          const target = inputs.find((el) => {
+            const placeholder = el.getAttribute("placeholder")?.toLowerCase() || "";
+            const name = el.getAttribute("name")?.toLowerCase() || "";
+            const id = el.id?.toLowerCase() || "";
+            const label = el.getAttribute("aria-label")?.toLowerCase() || "";
+            const lowerSel = sel.toLowerCase();
+            return (
+              placeholder.includes(lowerSel) ||
+              name.includes(lowerSel) ||
+              id.includes(lowerSel) ||
+              label.includes(lowerSel)
+            );
+          }) as HTMLInputElement | HTMLTextAreaElement;
 
-        if (target) {
-          target.focus();
-          target.value = txt;
-          target.dispatchEvent(new Event("input", { bubbles: true }));
-          target.dispatchEvent(new Event("change", { bubbles: true }));
-          return true;
-        }
-        return false;
-      }, { sel: actualSelector, txt: text });
+          if (target) {
+            target.focus();
+            target.value = txt;
+            target.dispatchEvent(new Event("input", { bubbles: true }));
+            target.dispatchEvent(new Event("change", { bubbles: true }));
+            return true;
+          }
+          return false;
+        },
+        { sel: actualSelector, txt: text },
+      );
 
       if (typed) {
         return {
@@ -791,7 +851,11 @@ export async function browserInteractiveType(userId: string, selector: string, t
 /**
  * 指定時間、または特定要素が表示されるまで待機する
  */
-export async function browserInteractiveWait(userId: string, selector?: string, timeoutMs: number = 5000): Promise<{ success: boolean; message: string }> {
+export async function browserInteractiveWait(
+  userId: string,
+  selector?: string,
+  timeoutMs: number = 5000,
+): Promise<{ success: boolean; message: string }> {
   const { page } = await getInteractiveBrowser(userId);
 
   if (selector) {
@@ -810,7 +874,7 @@ export async function browserInteractiveWait(userId: string, selector?: string, 
       message: `要素 "${actualSelector}" が出現するまで待機しました。`,
     };
   } else {
-    await new Promise(r => setTimeout(r, timeoutMs));
+    await new Promise((r) => setTimeout(r, timeoutMs));
     return {
       success: true,
       message: `${timeoutMs}ms 待機しました。`,
@@ -835,7 +899,7 @@ export async function browserInteractiveStatus(userId: string): Promise<{
 
   const title = await page.title();
   const url = page.url();
-  
+
   // スクリーンショットの撮影と保存
   const filename = `interactive_screenshot_${Date.now()}.png`;
   const savePath = path.join(SCREENSHOT_DIR, filename);
@@ -857,7 +921,9 @@ export async function browserInteractiveStatus(userId: string): Promise<{
 /**
  * インタラクティブブラウザセッションを明示的に終了する
  */
-export async function browserInteractiveClose(userId: string): Promise<{ success: boolean; message: string }> {
+export async function browserInteractiveClose(
+  userId: string,
+): Promise<{ success: boolean; message: string }> {
   await closeInteractiveBrowser(userId);
   return {
     success: true,

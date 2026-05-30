@@ -12,7 +12,10 @@ function mask(str: string): string {
 }
 
 function countForDate(sql: string, userId: string, dateStr: string): number {
-  const row = getDb().prepare(sql).get(userId, dateStr) as { count?: number; total?: number | null };
+  const row = getDb().prepare(sql).get(userId, dateStr) as {
+    count?: number;
+    total?: number | null;
+  };
   return row?.count ?? row?.total ?? 0;
 }
 
@@ -22,27 +25,47 @@ export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, met
   try {
     const db = getDb();
     const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
-    const taskCount = db.prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ?").get(userId) as { count: number };
-    const pendingTaskCount = db.prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = 'pending'").get(userId) as { count: number };
-    const scheduleCount = db.prepare("SELECT COUNT(*) as count FROM schedules WHERE user_id = ?").get(userId) as { count: number };
-    const expenseCount = db.prepare("SELECT COUNT(*) as count FROM expenses WHERE user_id = ?").get(userId) as { count: number };
-    const priorityRows = db.prepare(`
+    const taskCount = db
+      .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ?")
+      .get(userId) as { count: number };
+    const pendingTaskCount = db
+      .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = 'pending'")
+      .get(userId) as { count: number };
+    const scheduleCount = db
+      .prepare("SELECT COUNT(*) as count FROM schedules WHERE user_id = ?")
+      .get(userId) as { count: number };
+    const expenseCount = db
+      .prepare("SELECT COUNT(*) as count FROM expenses WHERE user_id = ?")
+      .get(userId) as { count: number };
+    const priorityRows = db
+      .prepare(`
       SELECT priority, COUNT(*) as count
       FROM tasks
       WHERE user_id = ? AND status = 'pending'
       GROUP BY priority
-    `).all(userId) as { priority: number; count: number }[];
+    `)
+      .all(userId) as { priority: number; count: number }[];
 
     const priorityMap: Record<number, number> = { 0: 0, 1: 0, 2: 0 };
     for (const row of priorityRows) priorityMap[row.priority] = row.count;
 
     const scheduleTrend = Array.from({ length: 5 }, (_, i) => {
       const dateStr = new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      return countForDate("SELECT COUNT(*) as count FROM schedules WHERE user_id = ? AND date(start_at) = date(?)", userId, dateStr);
+      return countForDate(
+        "SELECT COUNT(*) as count FROM schedules WHERE user_id = ? AND date(start_at) = date(?)",
+        userId,
+        dateStr,
+      );
     });
     const expenseTrend = Array.from({ length: 5 }, (_, idx) => {
-      const dateStr = new Date(Date.now() - (4 - idx) * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      return countForDate("SELECT SUM(amount) as total FROM expenses WHERE user_id = ? AND date = ?", userId, dateStr);
+      const dateStr = new Date(Date.now() - (4 - idx) * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      return countForDate(
+        "SELECT SUM(amount) as total FROM expenses WHERE user_id = ? AND date = ?",
+        userId,
+        dateStr,
+      );
     });
 
     sendJson(res, 200, {
@@ -62,7 +85,7 @@ export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, met
         googleCalendarId: config.googleCalendarId,
         googleServiceAccountEmail: mask(config.googleServiceAccountEmail),
         googleClientId: mask(config.googleClientId),
-        googleCalendars: getGoogleCalendars().map(id => ({ id, summary: id })),
+        googleCalendars: getGoogleCalendars().map((id) => ({ id, summary: id })),
       },
     });
   } catch (err) {
@@ -79,16 +102,23 @@ export const handleUsers: RouteHandler = ({ req, res, pathname, method }) => {
     if (discordId) {
       const user = getUserByDiscordId(discordId);
       if (user) {
-        sendJson(res, 200, { success: true, users: [user.discord_id], username: user.username, discordId: user.discord_id });
+        sendJson(res, 200, {
+          success: true,
+          users: [user.discord_id],
+          username: user.username,
+          discordId: user.discord_id,
+        });
         return true;
       }
     }
-    const usersRows = getDb().prepare(`
+    const usersRows = getDb()
+      .prepare(`
       SELECT DISTINCT user_id FROM tasks
       UNION SELECT DISTINCT user_id FROM schedules
       UNION SELECT DISTINCT user_id FROM expenses
-    `).all() as { user_id: string }[];
-    const users = usersRows.map(r => r.user_id).filter(id => id && id.trim() !== "");
+    `)
+      .all() as { user_id: string }[];
+    const users = usersRows.map((r) => r.user_id).filter((id) => id && id.trim() !== "");
     sendJson(res, 200, { success: true, users: users.length ? users : ["sensei_default"] });
   } catch {
     sendError(res, 500, "ユーザー一覧の取得に失敗しました。");

@@ -8,16 +8,16 @@
 /* BA共通アクセントカラー変数 */
 [data-theme="blue-archive"] {
   /* BA公式シアン (#02D3FB は wiki confirmed, #00AED8 は hover用) */
-  --ba-cyan:       #02D3FB;
-  --ba-cyan-hover: #00AED8;
-  --ba-cyan-dim:   rgba(2, 211, 251, 0.12);
+  --ba-cyan: #02d3fb;
+  --ba-cyan-hover: #00aed8;
+  --ba-cyan-dim: rgba(2, 211, 251, 0.12);
   --ba-cyan-faint: rgba(2, 211, 251, 0.06);
 
   /* 追加アクセント — ゲーム本編の MomoTalk / 優先度 / 警告色を再現 */
-  --ba-pink:     #FB90A4;  /* MomoTalk バナー・優先度高 */
+  --ba-pink: #fb90a4; /* MomoTalk バナー・優先度高 */
   --ba-pink-dim: rgba(251, 144, 164, 0.15);
-  --ba-lavender: #A3BAFF;  /* ゲーム内リンク色 */
-  --ba-yellow:   #FFD966;  /* 警告/注意 */
+  --ba-lavender: #a3baff; /* ゲーム内リンク色 */
+  --ba-yellow: #ffd966; /* 警告/注意 */
   --ba-yellow-dim: rgba(255, 217, 102, 0.15);
 
   --accent-cyan: var(--ba-cyan);
@@ -31,72 +31,72 @@
   --accent-yellow-dim: var(--ba-yellow-dim);
 
   /* 背景 — 公式ゲーム画面に近い色 */
-  --bg-primary:       #FBFCFF; /* ほぼ白・微青みがかった main content */
-  --bg-secondary:     #F2F7F8; /* MomoTalkソース sidebar 値そのまま */
-  --bg-sidebar:       #F2F7F8; /* サイドバー */
-  --card-matte:       #FFFFFF;
-  --card-matte-hover: #F5FAFE;
+  --bg-primary: #fbfcff; /* ほぼ白・微青みがかった main content */
+  --bg-secondary: #f2f7f8; /* MomoTalkソース sidebar 値そのまま */
+  --bg-sidebar: #f2f7f8; /* サイドバー */
+  --card-matte: #ffffff;
+  --card-matte-hover: #f5fafe;
 
   /* ボーダー */
-  --border-matte: #DDE6ED; /* MomoTalkソース値そのまま */
-  --border-focus: #02D3FB;
+  --border-matte: #dde6ed; /* MomoTalkソース値そのまま */
+  --border-focus: #02d3fb;
 
   --radius: 2px;
 
   /* テキスト */
-  --color-white:      #1B2B3A; /* ダークネイビー（heading/icon用） */
-  --color-zinc-light: #2E4A62;
-  --color-zinc-muted: #3A6070;
+  --color-white: #1b2b3a; /* ダークネイビー（heading/icon用） */
+  --color-zinc-light: #2e4a62;
+  --color-zinc-muted: #3a6070;
   --color-green: #16a34a;
-  --color-red:   #dc2626;
+  --color-red: #dc2626;
 
-  --text-primary:   #1B2B3A;
-  --text-secondary: #2A4E66;
+  --text-primary: #1b2b3a;
+  --text-secondary: #2a4e66;
 }
 
 /* ---- ヘッダーエリア: ゲームのパネル上部の薄青を再現 ---- */
 [data-theme="blue-archive"] .top-header {
-  background-color: #E7F0F7;
-  border-bottom-color: #C8DCEA;
+  background-color: #e7f0f7;
+  border-bottom-color: #c8dcea;
 }
 
 @media (max-width: 768px) {
   [data-theme="blue-archive"] .top-header {
-    background-color: #E7F0F7;
+    background-color: #e7f0f7;
   }
 }
 
 /* ---- サイドバー ---- */
 [data-theme="blue-archive"] .sidebar {
-  background-color: #F2F7F8;
-  border-right-color: #DDE6ED;
+  background-color: #f2f7f8;
+  border-right-color: #dde6ed;
 }
 
 /* ---- ナビメニュー ---- */
 [data-theme="blue-archive"] .menu-item:hover {
   background-color: var(--ba-cyan-faint);
-  color: #1B2B3A;
+  color: #1b2b3a;
 }
 
 [data-theme="blue-archive"] .menu-item.active {
   background-color: rgba(2, 211, 251, 0.07);
-  color: #0BBAD8;
+  color: #0bbad8;
   font-weight: 700;
 }
 
 /* ---- ボタン ---- */
 [data-theme="blue-archive"] .btn-primary {
-  background-color: #02D3FB;
+  background-color: #02d3fb;
   color: #ffffff;
 }
 
 [data-theme="blue-archive"] .btn-primary:hover {
-  background-color: #00AED8;
+  background-color: #00aed8;
 }
 
 [data-theme="blue-archive"] .btn-filter.active {
-  background-color: #02D3FB;
-  border-color: #02D3FB;
+  background-color: #02d3fb;
+  border-color: #02d3fb;
   color: #ffffff;
 }
 
@@ -106,83 +106,83 @@
 
 [data-theme="blue-archive"] .btn-icon:hover {
   background-color: var(--ba-cyan-faint);
-  border-color: #02D3FB;
+  border-color: #02d3fb;
 }
 
 /* ---- フォームコントロール ---- */
 [data-theme="blue-archive"] .form-group input:focus,
 [data-theme="blue-archive"] .form-group select:focus,
 [data-theme="blue-archive"] .form-group textarea:focus {
-  border-color: #02D3FB;
+  border-color: #02d3fb;
   box-shadow: 0 0 0 2px rgba(2, 211, 251, 0.15);
 }
 
 [data-theme="blue-archive"] .checkbox-custom:checked {
-  background-color: #02D3FB;
-  border-color: #02D3FB;
+  background-color: #02d3fb;
+  border-color: #02d3fb;
 }
 
 /* ---- 各種パーツ ---- */
 [data-theme="blue-archive"] .budget-progress-bar {
-  background-color: #02D3FB;
+  background-color: #02d3fb;
 }
 
 [data-theme="blue-archive"] .hud-pulse-dot {
-  background-color: #02D3FB;
+  background-color: #02d3fb;
 }
 
 [data-theme="blue-archive"] .avatar-badge {
-  background-color: #02D3FB;
+  background-color: #02d3fb;
   color: #ffffff;
 }
 
 [data-theme="blue-archive"] .badge-accent {
-  color: #02D3FB;
-  border-color: #02D3FB;
+  color: #02d3fb;
+  border-color: #02d3fb;
 }
 
 [data-theme="blue-archive"] .hud-tag {
-  color: #02D3FB;
-  border-color: #C8DCEA;
+  color: #02d3fb;
+  border-color: #c8dcea;
 }
 
 [data-theme="blue-archive"] .spinner {
   border-color: rgba(2, 211, 251, 0.18);
-  border-top-color: #02D3FB;
+  border-top-color: #02d3fb;
 }
 
 [data-theme="blue-archive"] .alert-box {
-  border-left-color: #02D3FB;
-  background-color: #F0FAFF;
+  border-left-color: #02d3fb;
+  background-color: #f0faff;
 }
 
 /* ---- SVG チャート ---- */
 [data-theme="blue-archive"] #trend-line-path {
-  stroke: #02D3FB;
+  stroke: #02d3fb;
 }
 
 [data-theme="blue-archive"] #dashboard-trend-chart line {
-  stroke: #C8DCEA;
+  stroke: #c8dcea;
 }
 
 [data-theme="blue-archive"] #schedules-sparkline-path,
 [data-theme="blue-archive"] #expenses-sparkline-path {
-  stroke: #02D3FB;
+  stroke: #02d3fb;
 }
 
 [data-theme="blue-archive"] .donut-bg-ring {
-  stroke: #DDE6ED;
+  stroke: #dde6ed;
 }
 
 /* ---- ドロップゾーン ---- */
 [data-theme="blue-archive"] .dropzone:hover,
 [data-theme="blue-archive"] .dropzone.dragover {
-  border-color: #02D3FB;
+  border-color: #02d3fb;
   background-color: var(--ba-cyan-faint);
 }
 
 [data-theme="blue-archive"] .text-highlight {
-  color: #02D3FB;
+  color: #02d3fb;
 }
 
 /* ---- モーダルオーバーレイ ---- */
@@ -192,23 +192,23 @@
 
 /* ---- スクロールバー ---- */
 [data-theme="blue-archive"] ::-webkit-scrollbar-thumb {
-  background: #C8DCEA;
+  background: #c8dcea;
 }
 
 [data-theme="blue-archive"] ::-webkit-scrollbar-thumb:hover {
-  background: #02D3FB;
+  background: #02d3fb;
 }
 
 /* ---- モバイル ---- */
 @media (max-width: 768px) {
   [data-theme="blue-archive"] .sidebar {
-    background-color: #F2F7F8;
-    border-top-color: #DDE6ED;
+    background-color: #f2f7f8;
+    border-top-color: #dde6ed;
     box-shadow: 0 -2px 12px rgba(2, 211, 251, 0.1);
   }
 
   [data-theme="blue-archive"] .menu-item.active {
-    color: #0BBAD8;
+    color: #0bbad8;
     background-color: rgba(2, 211, 251, 0.07);
   }
 }
@@ -236,7 +236,7 @@
 /* 通常バッジは control 色のまま */
 [data-theme="blue-archive"] .badge-normal {
   color: var(--ba-lavender);
-  border-color: #C8DCEA;
+  border-color: #c8dcea;
 }
 
 /* 優先度: タスクカード左ボーダー (動的クラス付与時用) */
@@ -253,14 +253,20 @@
 }
 
 /* メタ情報内の "priority" マーカー */
-[data-theme="blue-archive"] .meta-item .priority-high { color: var(--ba-pink); }
-[data-theme="blue-archive"] .meta-item .priority-medium { color: var(--ba-yellow); }
-[data-theme="blue-archive"] .meta-item .priority-low { color: var(--ba-lavender); }
+[data-theme="blue-archive"] .meta-item .priority-high {
+  color: var(--ba-pink);
+}
+[data-theme="blue-archive"] .meta-item .priority-medium {
+  color: var(--ba-yellow);
+}
+[data-theme="blue-archive"] .meta-item .priority-low {
+  color: var(--ba-lavender);
+}
 
 /* ステータスバッジ — シアン枠 */
 [data-theme="blue-archive"] .stat-card-badge-trend {
   color: var(--ba-cyan);
-  border-color: #C8DCEA;
+  border-color: #c8dcea;
 }
 
 /* アクセントバッジ — シアン (既存上書きで明示) */
@@ -277,17 +283,23 @@
 
 [data-theme="blue-archive"] .alert-box {
   border-left-color: var(--ba-yellow);
-  background-color: #FFFBEC;
+  background-color: #fffbec;
 }
 
 /* ソースバッジを色分け */
-[data-theme="blue-archive"] .source-discord { color: var(--ba-lavender); }
-[data-theme="blue-archive"] .source-manual  { color: var(--ba-cyan); }
-[data-theme="blue-archive"] .source-web     { color: var(--ba-pink); }
+[data-theme="blue-archive"] .source-discord {
+  color: var(--ba-lavender);
+}
+[data-theme="blue-archive"] .source-manual {
+  color: var(--ba-cyan);
+}
+[data-theme="blue-archive"] .source-web {
+  color: var(--ba-pink);
+}
 
 /* ---- テーマセレクター ---- */
 [data-theme="blue-archive"] .theme-option.active {
-  border-color: #02D3FB;
+  border-color: #02d3fb;
 }
 
 /* ---- 支出詳細モーダル ---- */
@@ -296,18 +308,18 @@
 }
 
 [data-theme="blue-archive"] .modal-panel {
-  background: #FBFCFF;
-  border-color: #C8DCEA;
+  background: #fbfcff;
+  border-color: #c8dcea;
 }
 
 [data-theme="blue-archive"] .modal-filters {
-  background: #F0F5FA;
-  border-color: #C8DCEA;
+  background: #f0f5fa;
+  border-color: #c8dcea;
 }
 
 [data-theme="blue-archive"] .filter-input,
 [data-theme="blue-archive"] .filter-select {
-  background: #FBFCFF;
-  border-color: #C8DCEA;
+  background: #fbfcff;
+  border-color: #c8dcea;
   color: #1a2740;
 }

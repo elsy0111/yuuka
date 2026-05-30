@@ -11,15 +11,18 @@ export const expenseDeclarations: FunctionDeclaration[] = [
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
-        amount: { type: SchemaType.NUMBER, description: "金額（円、整数）。割引後の実際に支払った金額" },
+        amount: {
+          type: SchemaType.NUMBER,
+          description: "金額（円、整数）。割引後の実際に支払った金額",
+        },
         category: {
           type: SchemaType.STRING,
-          description:
-            "カテゴリ: 食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他",
+          description: "カテゴリ: 食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他",
         },
         description: {
           type: SchemaType.STRING,
-          description: "支出のメモ・説明（任意）。ユーザーが述べた内容のみ記載。割引がある場合は「(割引〇〇円引き)」を含める",
+          description:
+            "支出のメモ・説明（任意）。ユーザーが述べた内容のみ記載。割引がある場合は「(割引〇〇円引き)」を含める",
         },
         date: {
           type: SchemaType.STRING,
@@ -27,7 +30,8 @@ export const expenseDeclarations: FunctionDeclaration[] = [
         },
         purchase_source: {
           type: SchemaType.STRING,
-          description: "購入した場所・店舗名。ユーザーが明示した名前のみ使用（例: イオン、ファミリーマート、自販機）。不明な場合はユーザーに確認してから呼び出すこと",
+          description:
+            "購入した場所・店舗名。ユーザーが明示した名前のみ使用（例: イオン、ファミリーマート、自販機）。不明な場合はユーザーに確認してから呼び出すこと",
         },
       },
       required: ["amount", "category", "purchase_source"],
@@ -48,7 +52,8 @@ export const expenseDeclarations: FunctionDeclaration[] = [
         },
         module: {
           type: SchemaType.STRING,
-          description: "関連モジュール: expenses（家計）, schedules（予定）, tasks（タスク）, general（汎用）",
+          description:
+            "関連モジュール: expenses（家計）, schedules（予定）, tasks（タスク）, general（汎用）",
         },
       },
       required: ["content"],
@@ -77,7 +82,8 @@ export const expenseDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "listMemories",
-    description: "保存されているすべての記憶の一覧を取得する。先生が「何を覚えてる？」と聞いた時などに呼び出す。",
+    description:
+      "保存されているすべての記憶の一覧を取得する。先生が「何を覚えてる？」と聞いた時などに呼び出す。",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {

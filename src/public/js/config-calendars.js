@@ -11,11 +11,11 @@ export function renderCalendarsList(calendars, onChanged) {
     return;
   }
 
-  calendars.forEach(cal => list.appendChild(makeCalendarRow(cal, onChanged)));
+  calendars.forEach((cal) => list.appendChild(makeCalendarRow(cal, onChanged)));
 }
 
 export function initCalendarForm(onChanged) {
-  document.getElementById("config-calendar-form")?.addEventListener("submit", async e => {
+  document.getElementById("config-calendar-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const input = document.getElementById("config-new-calendar-id");
     const calendarId = input.value.trim();
@@ -43,7 +43,8 @@ export function initCalendarForm(onChanged) {
 
 function makeCalendarRow(cal, onChanged) {
   const row = document.createElement("div");
-  row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--border-matte);border-radius:var(--radius);background:var(--card-matte);";
+  row.style.cssText =
+    "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--border-matte);border-radius:var(--radius);background:var(--card-matte);";
 
   const left = document.createElement("div");
   left.style.cssText = "display:flex;flex-direction:column;gap:2px;";
@@ -52,7 +53,8 @@ function makeCalendarRow(cal, onChanged) {
   summary.style.cssText = "font-size:0.85rem;font-weight:700;color:var(--color-white);";
   const calId = document.createElement("span");
   calId.textContent = cal.id;
-  calId.style.cssText = "font-size:0.7rem;color:var(--color-zinc-muted);font-family:var(--font-family-mono);";
+  calId.style.cssText =
+    "font-size:0.7rem;color:var(--color-zinc-muted);font-family:var(--font-family-mono);";
   left.append(summary, calId);
 
   const btnDel = document.createElement("button");

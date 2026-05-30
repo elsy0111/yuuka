@@ -17,14 +17,16 @@ export async function initRedis(): Promise<void> {
         reconnectStrategy(retries) {
           // 最大 5 回リトライし、その後は再接続を諦めて SQLite フォールバックで稼働する
           if (retries > 5) {
-            console.warn("⚠️ Redis への再接続を諦めました。SQLite フォールバックモードで稼働します。");
+            console.warn(
+              "⚠️ Redis への再接続を諦めました。SQLite フォールバックモードで稼働します。",
+            );
             isRedisReady = false;
             return false;
           }
           // 3秒間隔でリトライ
           return 3000;
-        }
-      }
+        },
+      },
     }) as RedisClientType;
 
     client.on("error", (err) => {

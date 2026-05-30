@@ -12,7 +12,7 @@ export type { ChatMessage } from "./types.js";
 export async function processMessage(
   userId: string,
   message: ChatMessage,
-  onStatusChange?: (status: "thinking" | "writing" | "idle") => void
+  onStatusChange?: (status: "thinking" | "writing" | "idle") => void,
 ): Promise<string> {
   // 1. ユーザーのメッセージをDB履歴に保存
   if (message.text) {
@@ -87,7 +87,7 @@ export async function processMessage(
       if (!candidate) break;
 
       const functionCalls = candidate.content.parts.filter(
-        (p): p is Part & { functionCall: FunctionCall } => "functionCall" in p
+        (p): p is Part & { functionCall: FunctionCall } => "functionCall" in p,
       );
 
       if (functionCalls.length === 0) break;
@@ -99,8 +99,14 @@ export async function processMessage(
         const { name, args } = fc.functionCall;
         console.log(`🔧 Function Call: ${name}`, JSON.stringify(args));
 
-        const functionResult = await dispatchFunction(name, args as Record<string, unknown>, userId);
-        console.log(`📤 Function Result (Sent to Gemini): ${functionResult.substring(0, 500)}${functionResult.length > 500 ? "... (truncated in console log)" : ""}`);
+        const functionResult = await dispatchFunction(
+          name,
+          args as Record<string, unknown>,
+          userId,
+        );
+        console.log(
+          `📤 Function Result (Sent to Gemini): ${functionResult.substring(0, 500)}${functionResult.length > 500 ? "... (truncated in console log)" : ""}`,
+        );
 
         // ブラウザツールの実行と成否判定
         if (

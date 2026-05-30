@@ -22,7 +22,7 @@ export async function fetchConfigSettings() {
 
 async function loadProfileForm() {
   try {
-    const res  = await fetch("/api/users");
+    const res = await fetch("/api/users");
     const data = await res.json();
     if (data.success && data.username) {
       const input = document.getElementById("config-profile-username");
@@ -39,13 +39,13 @@ export function initConfigAfterAuth() {
 export function initConfig() {
   initCalendarForm(fetchConfigSettings);
 
-  document.getElementById("profile-config-form")?.addEventListener("submit", async e => {
+  document.getElementById("profile-config-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("config-profile-username").value.trim();
     if (!username) return;
 
     try {
-      const res  = await fetch("/api/profile", {
+      const res = await fetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
@@ -67,7 +67,10 @@ function renderConfigEntries(grid, config) {
   const entries = [
     { label: "データベースファイルのパス (DB Path)", value: config.dbPath },
     { label: "リマインダーチェック実行Cron (Reminder Cron)", value: config.reminderCron },
-    { label: "GoogleカレンダーID (Google Calendar ID)", value: config.googleCalendarId || "未設定 (カレンダー同期なし)" },
+    {
+      label: "GoogleカレンダーID (Google Calendar ID)",
+      value: config.googleCalendarId || "未設定 (カレンダー同期なし)",
+    },
     { label: "サービスアカウントEmail", value: config.googleServiceAccountEmail },
     { label: "OAuth2 クライアントID", value: config.googleClientId },
   ];

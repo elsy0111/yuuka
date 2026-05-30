@@ -25,10 +25,12 @@ function exportSingleUserDb(userId: string, tempDbPath: string): void {
 
   try {
     // 1. 全テーブルおよびインデックスの定義（スキーマ）をコピー
-    const schemaRows = srcDb.prepare(`
+    const schemaRows = srcDb
+      .prepare(`
       SELECT sql FROM sqlite_master 
       WHERE type IN ('table', 'index') AND sql IS NOT NULL AND name NOT LIKE 'sqlite_%'
-    `).all() as { sql: string }[];
+    `)
+      .all() as { sql: string }[];
 
     destDb.transaction(() => {
       for (const row of schemaRows) {
@@ -43,31 +45,46 @@ function exportSingleUserDb(userId: string, tempDbPath: string): void {
       if (userRows.length > 0) {
         const columns = Object.keys(userRows[0] as object);
         const placeholders = columns.map(() => "?").join(", ");
-        const insertUser = destDb.prepare(`INSERT INTO users (${columns.join(", ")}) VALUES (${placeholders})`);
+        const insertUser = destDb.prepare(
+          `INSERT INTO users (${columns.join(", ")}) VALUES (${placeholders})`,
+        );
         for (const row of userRows) {
           insertUser.run(Object.values(row as object));
         }
       }
 
       // invite_codes: 本人が作成した、または本人が使用した招待コードのみ
-      const inviteRows = srcDb.prepare("SELECT * FROM invite_codes WHERE created_by = ? OR used_by = ?").all(userId, userId);
+      const inviteRows = srcDb
+        .prepare("SELECT * FROM invite_codes WHERE created_by = ? OR used_by = ?")
+        .all(userId, userId);
       if (inviteRows.length > 0) {
         const columns = Object.keys(inviteRows[0] as object);
         const placeholders = columns.map(() => "?").join(", ");
-        const insertInvite = destDb.prepare(`INSERT INTO invite_codes (${columns.join(", ")}) VALUES (${placeholders})`);
+        const insertInvite = destDb.prepare(
+          `INSERT INTO invite_codes (${columns.join(", ")}) VALUES (${placeholders})`,
+        );
         for (const row of inviteRows) {
           insertInvite.run(Object.values(row as object));
         }
       }
 
       // user_id による完全分離テーブル
-      const userSpecificTables = ["tasks", "schedules", "expenses", "chat_history", "credentials", "playbooks"];
+      const userSpecificTables = [
+        "tasks",
+        "schedules",
+        "expenses",
+        "chat_history",
+        "credentials",
+        "playbooks",
+      ];
       for (const table of userSpecificTables) {
         const rows = srcDb.prepare(`SELECT * FROM ${table} WHERE user_id = ?`).all(userId);
         if (rows.length > 0) {
           const columns = Object.keys(rows[0] as object);
           const placeholders = columns.map(() => "?").join(", ");
-          const insertStmt = destDb.prepare(`INSERT INTO ${table} (${columns.join(", ")}) VALUES (${placeholders})`);
+          const insertStmt = destDb.prepare(
+            `INSERT INTO ${table} (${columns.join(", ")}) VALUES (${placeholders})`,
+          );
           for (const row of rows) {
             insertStmt.run(Object.values(row as object));
           }
@@ -129,8 +146,6 @@ export async function runBackup(userId: string): Promise<string> {
         archive.file(configPath, { name: "config.yaml" });
       }
 
-
-
       // data/self-expansion を追加
       const selfExpansionDir = path.resolve(process.cwd(), "data", "self-expansion");
       if (fs.existsSync(selfExpansionDir)) {
@@ -146,12 +161,11 @@ export async function runBackup(userId: string): Promise<string> {
       zipPath,
       BACKUP_ZIP_NAME,
       "application/zip",
-      user.google_drive_backup_folder_id || undefined
+      user.google_drive_backup_folder_id || undefined,
     );
 
     console.log(`✅ [User: ${userId}] バックアップ完了: ${result?.url}`);
     return result?.url || "";
-
   } catch (err) {
     console.error(`❌ [User: ${userId}] バックアップ処理中にエラーが発生しました:`, err);
     throw err;
@@ -188,7 +202,9 @@ export function initUserBackupSchedule(userId: string): void {
         }
       });
       activeCronTasks.set(userId, task);
-      console.log(`🕒 [User: ${userId}] バックアップスケジュールを登録しました (cron: ${cronTime})`);
+      console.log(
+        `🕒 [User: ${userId}] バックアップスケジュールを登録しました (cron: ${cronTime})`,
+      );
     } catch (err) {
       console.error(`❌ [User: ${userId}] バックアップ用のCron式が無効です:`, err);
     }

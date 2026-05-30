@@ -82,7 +82,9 @@
   font-weight: 500;
   padding: 8px 0;
   cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
   margin-bottom: -1px;
 }
 

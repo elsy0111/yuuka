@@ -21,10 +21,7 @@ function getCalendarClient(userId: string) {
 
   try {
     // OAuth2 方式で認証クライアントを初期化
-    const auth = new google.auth.OAuth2(
-      clientId,
-      clientSecret
-    );
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
     auth.setCredentials({
       refresh_token: googleConfig.refreshToken,
     });
@@ -46,7 +43,9 @@ export function isCalendarEnabled(userId: string): boolean {
 /**
  * ユーザーの利用可能なカレンダーの一覧をGoogle APIから取得する
  */
-export async function fetchAvailableCalendars(userId: string): Promise<{ id: string; summary: string }[]> {
+export async function fetchAvailableCalendars(
+  userId: string,
+): Promise<{ id: string; summary: string }[]> {
   const calendar = getCalendarClient(userId);
   if (!calendar) return [];
   const googleConfig = getUserGoogleConfig(userId);
@@ -63,7 +62,9 @@ export async function fetchAvailableCalendars(userId: string): Promise<{ id: str
           list.push({ id, summary: response.data.summary });
         }
       } catch (err: any) {
-        console.warn(`カレンダーへのアクセス不可 (${id}): ${err?.message ?? err} — 同期対象から除外`);
+        console.warn(
+          `カレンダーへのアクセス不可 (${id}): ${err?.message ?? err} — 同期対象から除外`,
+        );
       }
     }
     return list;
@@ -74,7 +75,7 @@ export async function fetchAvailableCalendars(userId: string): Promise<{ id: str
     const response = await calendar.calendarList.list({
       minAccessRole: "writer", // 書き込み権限があるもののみ（予定の追加・削除用）
     });
-    
+
     const list = (response.data.items || [])
       .filter((item) => item.id && item.summary)
       .map((item) => ({
@@ -83,10 +84,13 @@ export async function fetchAvailableCalendars(userId: string): Promise<{ id: str
       }));
 
     // デフォルトカレンダーが入っていなければ追加
-    if (googleConfig?.calendarId && !list.some(item => item.id === googleConfig!.calendarId)) {
+    if (googleConfig?.calendarId && !list.some((item) => item.id === googleConfig!.calendarId)) {
       try {
         const primaryRes = await calendar.calendars.get({ calendarId: googleConfig.calendarId! });
-        list.unshift({ id: googleConfig.calendarId!, summary: primaryRes.data.summary || "デフォルトカレンダー" });
+        list.unshift({
+          id: googleConfig.calendarId!,
+          summary: primaryRes.data.summary || "デフォルトカレンダー",
+        });
       } catch {
         list.unshift({ id: googleConfig.calendarId!, summary: "デフォルトカレンダー" });
       }
@@ -102,7 +106,10 @@ export async function fetchAvailableCalendars(userId: string): Promise<{ id: str
 }
 
 // ユーザー別キャッシュ
-const cachedCalendarsMap = new Map<string, { calendars: { id: string; summary: string }[]; lastFetched: number }>();
+const cachedCalendarsMap = new Map<
+  string,
+  { calendars: { id: string; summary: string }[]; lastFetched: number }
+>();
 const CACHE_TTL = 5 * 60 * 1000; // 5分キャッシュ
 
 export function clearCalendarCache(): void {
@@ -112,7 +119,9 @@ export function clearCalendarCache(): void {
 /**
  * ユーザー別のキャッシュ付きで利用可能なカレンダーの一覧を返す
  */
-export async function getCachedCalendars(userId: string): Promise<{ id: string; summary: string }[]> {
+export async function getCachedCalendars(
+  userId: string,
+): Promise<{ id: string; summary: string }[]> {
   const now = Date.now();
   const cached = cachedCalendarsMap.get(userId);
   if (cached && cached.calendars.length > 0 && now - cached.lastFetched < CACHE_TTL) {
@@ -158,7 +167,7 @@ export async function createCalendarEvent(
   startAt: string,
   endAt?: string,
   description?: string,
-  calendarId?: string
+  calendarId?: string,
 ): Promise<{ eventId: string; calendarId: string } | null> {
   const calendar = getCalendarClient(userId);
   if (!calendar) return null;
@@ -169,8 +178,8 @@ export async function createCalendarEvent(
   try {
     const isoStart = formatToISOString(startAt);
     // 終了時刻がない場合は開始から1時間後を設定
-    const isoEnd = endAt 
-      ? formatToISOString(endAt) 
+    const isoEnd = endAt
+      ? formatToISOString(endAt)
       : new Date(new Date(isoStart).getTime() + 60 * 60 * 1000).toISOString();
 
     const targetCalendarId = calendarId || googleConfig.calendarId || "";
@@ -205,7 +214,11 @@ export async function createCalendarEvent(
 /**
  * Googleカレンダーのイベントを削除
  */
-export async function deleteCalendarEvent(userId: string, eventId: string, calendarId?: string): Promise<boolean> {
+export async function deleteCalendarEvent(
+  userId: string,
+  eventId: string,
+  calendarId?: string,
+): Promise<boolean> {
   const calendar = getCalendarClient(userId);
   if (!calendar) return false;
 
@@ -222,7 +235,10 @@ export async function deleteCalendarEvent(userId: string, eventId: string, calen
     if (error.status === 404) {
       return true;
     }
-    console.error(`Googleカレンダーのイベント削除に失敗しました (EventID: ${eventId}, CalendarID: ${calendarId}):`, error);
+    console.error(
+      `Googleカレンダーのイベント削除に失敗しました (EventID: ${eventId}, CalendarID: ${calendarId}):`,
+      error,
+    );
     return false;
   }
 }
@@ -232,14 +248,16 @@ export async function deleteCalendarEvent(userId: string, eventId: string, calen
  */
 export async function syncGoogleCalendarToLocal(
   userId: string,
-  daysWindow: number = 30
+  daysWindow: number = 30,
 ): Promise<void> {
   const calendar = getCalendarClient(userId);
   if (!calendar) return;
 
   try {
     const calendars = await getCachedCalendars(userId);
-    console.log(`🔄 Googleカレンダー同期中... (対象ユーザー: ${userId}, カレンダー数: ${calendars.length})`);
+    console.log(
+      `🔄 Googleカレンダー同期中... (対象ユーザー: ${userId}, カレンダー数: ${calendars.length})`,
+    );
 
     const now = new Date();
     // 1日前から同期ウィンドウの終わりまでを取得
@@ -275,7 +293,7 @@ export async function syncGoogleCalendarToLocal(
 
           const title = event.summary || "無題の予定";
           const description = event.description || "";
-          
+
           const startDateTime = event.start?.dateTime || event.start?.date;
           const endDateTime = event.end?.dateTime || event.end?.date;
           if (!startDateTime) continue;
@@ -287,7 +305,7 @@ export async function syncGoogleCalendarToLocal(
 
           if (existingLocal) {
             // A. 既にローカルに存在する -> 差分があれば更新
-            const hasChanges = 
+            const hasChanges =
               existingLocal.title !== title ||
               existingLocal.start_at !== startAtLocal ||
               existingLocal.end_at !== endAtLocal ||
@@ -301,7 +319,7 @@ export async function syncGoogleCalendarToLocal(
                 startAtLocal,
                 endAtLocal,
                 description,
-                cal.id
+                cal.id,
               );
               console.log(`✏️ [同期] 予定更新: ${title} (${cal.summary})`);
             }
@@ -310,8 +328,12 @@ export async function syncGoogleCalendarToLocal(
             localMap.delete(googleEventId);
           } else {
             // B. ローカルに存在しない -> 新規作成、または未リンクのローカルイベントの紐付け
-            const unlinkedLocal = scheduleRepo.getScheduleByTitleAndStart(userId, title, startAtLocal);
-            
+            const unlinkedLocal = scheduleRepo.getScheduleByTitleAndStart(
+              userId,
+              title,
+              startAtLocal,
+            );
+
             if (unlinkedLocal) {
               scheduleRepo.linkGoogleEventId(unlinkedLocal.id, googleEventId, cal.id);
               console.log(`🔗 [同期] 予定紐付け: ${title} -> ${cal.summary}`);
@@ -324,14 +346,17 @@ export async function syncGoogleCalendarToLocal(
                 30,
                 description,
                 googleEventId,
-                cal.id
+                cal.id,
               );
               console.log(`✨ [同期] 新規登録: ${title} (${cal.summary})`);
             }
           }
         }
       } catch (calError) {
-        console.error(`カレンダー ${cal.summary} (${cal.id}) の同期中にエラーが発生しました:`, calError);
+        console.error(
+          `カレンダー ${cal.summary} (${cal.id}) の同期中にエラーが発生しました:`,
+          calError,
+        );
       }
     }
 

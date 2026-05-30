@@ -23,12 +23,15 @@ function readStoredSession() {
 
 function storeSession(data) {
   if (!data.sessionToken || !data.expiresAt) return;
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-    token: data.sessionToken,
-    expiresAt: data.expiresAt,
-    discordId: data.discordId || "",
-    username: data.username || "",
-  }));
+  localStorage.setItem(
+    SESSION_STORAGE_KEY,
+    JSON.stringify({
+      token: data.sessionToken,
+      expiresAt: data.expiresAt,
+      discordId: data.discordId || "",
+      username: data.username || "",
+    }),
+  );
 }
 
 function clearStoredSession() {
@@ -40,16 +43,15 @@ function installAuthenticatedFetch() {
     const session = readStoredSession();
     if (!session) return nativeFetch(input, init);
 
-    const url = typeof input === "string"
-      ? input
-      : input instanceof URL
-        ? input.toString()
-        : input.url;
+    const url =
+      typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     if (!url.startsWith("/api/") && !url.startsWith(window.location.origin + "/api/")) {
       return nativeFetch(input, init);
     }
 
-    const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+    const headers = new Headers(
+      init.headers || (input instanceof Request ? input.headers : undefined),
+    );
     headers.set("Authorization", `Bearer ${session.token}`);
     return nativeFetch(input, { ...init, headers });
   };
@@ -57,14 +59,15 @@ function installAuthenticatedFetch() {
 
 export async function loadUserProfiles() {
   try {
-    const res  = await fetch("/api/users");
+    const res = await fetch("/api/users");
     const data = await res.json();
     if (data.success) {
       state.userProfiles = data.users;
       if (data.discordId) state.activeUserId = data.discordId;
       else if (data.users.length > 0) state.activeUserId = data.users[0];
 
-      const displayName = data.username || readStoredSession()?.username || state.activeUserId || "—";
+      const displayName =
+        data.username || readStoredSession()?.username || state.activeUserId || "—";
       renderProfileDropdown(displayName);
     }
   } catch (err) {
@@ -97,19 +100,19 @@ function onLoginSuccess(data) {
 }
 
 function initInfoPopovers() {
-  const modal   = document.getElementById("modal-field-info");
+  const modal = document.getElementById("modal-field-info");
   const titleEl = document.getElementById("field-info-modal-title");
-  const bodyEl  = document.getElementById("field-info-modal-body");
+  const bodyEl = document.getElementById("field-info-modal-body");
 
-  document.querySelectorAll(".btn-field-info").forEach(btn => {
+  document.querySelectorAll(".btn-field-info").forEach((btn) => {
     btn.addEventListener("click", () => {
       titleEl.textContent = btn.dataset.infoTitle || "";
-      bodyEl.textContent  = btn.dataset.infoBody  || "";
+      bodyEl.textContent = btn.dataset.infoBody || "";
       modal.classList.add("active");
     });
   });
 
-  modal?.addEventListener("click", e => {
+  modal?.addEventListener("click", (e) => {
     if (e.target === modal) modal.classList.remove("active");
   });
 
@@ -140,14 +143,14 @@ export function initAuth() {
   });
 
   // ログインフォーム
-  document.getElementById("login-form")?.addEventListener("submit", async e => {
+  document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const errorEl = document.getElementById("login-error");
     errorEl.textContent = "";
     const discordId = document.getElementById("login-discord-id").value.trim();
-    const password  = document.getElementById("login-password").value;
+    const password = document.getElementById("login-password").value;
     try {
-      const res  = await nativeFetch("/api/login", {
+      const res = await nativeFetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ discordId, password }),
@@ -164,16 +167,16 @@ export function initAuth() {
   });
 
   // アカウント作成フォーム
-  document.getElementById("register-form")?.addEventListener("submit", async e => {
+  document.getElementById("register-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const errorEl = document.getElementById("login-error");
     errorEl.textContent = "";
-    const discordId  = document.getElementById("reg-discord-id").value.trim();
-    const username   = document.getElementById("reg-username").value.trim();
-    const password   = document.getElementById("reg-password").value;
+    const discordId = document.getElementById("reg-discord-id").value.trim();
+    const username = document.getElementById("reg-username").value.trim();
+    const password = document.getElementById("reg-password").value;
     const inviteCode = document.getElementById("reg-invite-code").value.trim();
     try {
-      const res  = await nativeFetch("/api/register", {
+      const res = await nativeFetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ discordId, username, password, inviteCode }),
@@ -191,7 +194,9 @@ export function initAuth() {
 
   // ログアウト
   document.getElementById("btn-logout")?.addEventListener("click", async () => {
-    try { await fetch("/api/logout", { method: "POST" }); } catch {}
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {}
     clearStoredSession();
     showLoginOverlay("ログアウトしました。");
     document.getElementById("login-discord-id").value = "";
@@ -201,7 +206,7 @@ export function initAuth() {
 
 export async function checkSessionHandshake() {
   try {
-    const res  = await fetch("/api/status");
+    const res = await fetch("/api/status");
     const data = await res.json();
     if (data.success) {
       document.getElementById("login-overlay").classList.remove("active");

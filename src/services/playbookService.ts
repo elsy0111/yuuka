@@ -17,7 +17,7 @@ export function savePlaybook(
   title: string,
   keywords: string[],
   description: string,
-  steps: string
+  steps: string,
 ): { success: boolean; message: string } {
   const db = getDb();
   const safeName = name.replace(/[^a-zA-Z0-9\-_]/g, "_").toLowerCase();
@@ -50,21 +50,25 @@ export function findPlaybooks(userId: string, query?: string): Playbook[] {
   let rows: any[];
   if (query) {
     const likePattern = `%${query}%`;
-    rows = db.prepare(`
+    rows = db
+      .prepare(`
       SELECT name, title, keywords, description, steps
       FROM playbooks
       WHERE user_id = ? AND (
         title LIKE ? OR description LIKE ? OR steps LIKE ? OR keywords LIKE ?
       )
       ORDER BY updated_at DESC
-    `).all(userId, likePattern, likePattern, likePattern, likePattern);
+    `)
+      .all(userId, likePattern, likePattern, likePattern, likePattern);
   } else {
-    rows = db.prepare(`
+    rows = db
+      .prepare(`
       SELECT name, title, keywords, description, steps
       FROM playbooks
       WHERE user_id = ?
       ORDER BY updated_at DESC
-    `).all(userId);
+    `)
+      .all(userId);
   }
 
   return rows.map((row: any) => {

@@ -1,9 +1,6 @@
 import * as memoryRepo from "../db/memoryRepo.js";
 
-export function saveMemory(
-  userId: string,
-  args: { content: string; module?: string }
-): string {
+export function saveMemory(userId: string, args: { content: string; module?: string }): string {
   const memory = memoryRepo.saveMemory(userId, args.content, args.module ?? "general");
   return JSON.stringify({
     success: true,
@@ -12,10 +9,7 @@ export function saveMemory(
   });
 }
 
-export function searchMemories(
-  userId: string,
-  args: { query: string; module?: string }
-): string {
+export function searchMemories(userId: string, args: { query: string; module?: string }): string {
   const memories = memoryRepo.searchMemories(userId, args.query, args.module);
   if (memories.length === 0) {
     return JSON.stringify({
@@ -24,7 +18,7 @@ export function searchMemories(
       memories: [],
     });
   }
-  const lines = memories.map(m => `[ID:${m.id}][${m.module}] ${m.content}`);
+  const lines = memories.map((m) => `[ID:${m.id}][${m.module}] ${m.content}`);
   return JSON.stringify({
     success: true,
     message: `関連する記憶 ${memories.length}件:\n${lines.join("\n")}`,
@@ -32,10 +26,7 @@ export function searchMemories(
   });
 }
 
-export function listMemories(
-  userId: string,
-  args: { module?: string }
-): string {
+export function listMemories(userId: string, args: { module?: string }): string {
   const memories = memoryRepo.listMemories(userId, args.module);
   if (memories.length === 0) {
     return JSON.stringify({
@@ -44,7 +35,7 @@ export function listMemories(
       memories: [],
     });
   }
-  const lines = memories.map(m => `[ID:${m.id}][${m.module}] ${m.content}`);
+  const lines = memories.map((m) => `[ID:${m.id}][${m.module}] ${m.content}`);
   return JSON.stringify({
     success: true,
     message: `記憶一覧 (${memories.length}件):\n${lines.join("\n")}`,
@@ -52,10 +43,7 @@ export function listMemories(
   });
 }
 
-export function deleteMemory(
-  userId: string,
-  args: { id: number }
-): string {
+export function deleteMemory(userId: string, args: { id: number }): string {
   const success = memoryRepo.deleteMemory(args.id, userId);
   return JSON.stringify({
     success,

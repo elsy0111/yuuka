@@ -5,7 +5,7 @@ import * as secretService from "../services/secretService.js";
  */
 export async function getCredential(
   userId: string,
-  args: { service_name: string }
+  args: { service_name: string },
 ): Promise<string> {
   try {
     const serviceName = args.service_name;
@@ -44,10 +44,7 @@ export async function getCredential(
 /**
  * AIエージェントが登録されている資格情報のインデックス（サービス名とユーザー名）の一覧を取得するためのツール関数
  */
-export async function listCredentials(
-  userId: string,
-  args: {}
-): Promise<string> {
+export async function listCredentials(userId: string, args: {}): Promise<string> {
   try {
     console.log(`🔒 AIエージェントが資格情報インデックス一覧の取得を要求 (User: ${userId})`);
     const list = secretService.listCredentials(userId);

@@ -6,11 +6,11 @@ export async function fetchCredentialsSettings() {
   list.replaceChildren();
 
   try {
-    const res  = await fetch("/api/credentials");
+    const res = await fetch("/api/credentials");
     const data = await res.json();
 
     if (data.success && data.credentials.length > 0) {
-      data.credentials.forEach(cred => list.appendChild(makeCredentialRow(cred)));
+      data.credentials.forEach((cred) => list.appendChild(makeCredentialRow(cred)));
     } else {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -41,12 +41,16 @@ function makeCredentialRow(cred) {
   tr.append(
     mkTd(cred.serviceName, { color: "var(--color-white)", fontWeight: "700" }),
     mkTd(cred.username, { fontFamily: "var(--font-family-mono)" }),
-    mkTd("•••••••••••• (暗号化)", { color: "var(--color-zinc-muted)", fontFamily: "var(--font-family-mono)" }),
+    mkTd("•••••••••••• (暗号化)", {
+      color: "var(--color-zinc-muted)",
+      fontFamily: "var(--font-family-mono)",
+    }),
     mkTd(cred.updatedAt, { fontSize: "0.75rem", color: "var(--color-zinc-muted)" }),
   );
 
   const tdAction = document.createElement("td");
-  tdAction.style.cssText = "padding:12px 10px;text-align:right;display:flex;gap:6px;justify-content:flex-end;";
+  tdAction.style.cssText =
+    "padding:12px 10px;text-align:right;display:flex;gap:6px;justify-content:flex-end;";
 
   const btnEdit = document.createElement("button");
   btnEdit.className = "btn-credential-delete";
@@ -80,7 +84,7 @@ function handleEditCredential(cred) {
 async function handleDeleteCredential(serviceName) {
   if (!confirm(`本当にサービス "${serviceName}" の認証情報を削除しますか？`)) return;
   try {
-    const res  = await fetch("/api/credentials/delete", {
+    const res = await fetch("/api/credentials/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ serviceName }),
@@ -107,13 +111,13 @@ export function initCredentials() {
     document.getElementById("cred-password").required = true;
   });
 
-  document.getElementById("credential-form")?.addEventListener("submit", async e => {
+  document.getElementById("credential-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const serviceName = document.getElementById("cred-service-name").value.trim().toLowerCase();
-    const username    = document.getElementById("cred-username").value.trim();
-    const password    = document.getElementById("cred-password").value;
+    const username = document.getElementById("cred-username").value.trim();
+    const password = document.getElementById("cred-password").value;
     try {
-      const res  = await fetch("/api/credentials/register", {
+      const res = await fetch("/api/credentials/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ serviceName, username, password }),

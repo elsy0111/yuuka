@@ -96,7 +96,7 @@
 }
 
 .checkbox-custom:checked::after {
-  content: '✓';
+  content: "✓";
   color: var(--bg-primary);
   font-size: 0.75rem;
   font-weight: bold;

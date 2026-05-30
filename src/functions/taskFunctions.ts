@@ -3,7 +3,7 @@ import { formatPriority, formatDate, statusEmoji } from "../utils/formatters.js"
 
 export function addTask(
   userId: string,
-  args: { title: string; description?: string; due_date?: string; priority?: number }
+  args: { title: string; description?: string; due_date?: string; priority?: number },
 ): string {
   const task = taskRepo.addTask(userId, args.title, args.description, args.due_date, args.priority);
   const priorityLabel = formatPriority(task.priority);
@@ -15,10 +15,7 @@ export function addTask(
   });
 }
 
-export function listTasks(
-  userId: string,
-  args: { status?: string }
-): string {
+export function listTasks(userId: string, args: { status?: string }): string {
   const tasks = taskRepo.listTasks(userId, args.status);
   if (tasks.length === 0) {
     return JSON.stringify({ success: true, message: "タスクはありません。", tasks: [] });
@@ -26,7 +23,7 @@ export function listTasks(
 
   const lines = tasks.map(
     (t) =>
-      `${statusEmoji(t.status)} #${t.id} ${t.title}${t.due_date ? ` (期限: ${formatDate(t.due_date)})` : ""}`
+      `${statusEmoji(t.status)} #${t.id} ${t.title}${t.due_date ? ` (期限: ${formatDate(t.due_date)})` : ""}`,
   );
   return JSON.stringify({
     success: true,
@@ -35,13 +32,13 @@ export function listTasks(
   });
 }
 
-export function completeTask(
-  userId: string,
-  args: { task_id: number }
-): string {
+export function completeTask(userId: string, args: { task_id: number }): string {
   const task = taskRepo.completeTask(args.task_id, userId);
   if (!task) {
-    return JSON.stringify({ success: false, message: `タスク #${args.task_id} が見つかりません。` });
+    return JSON.stringify({
+      success: false,
+      message: `タスク #${args.task_id} が見つかりません。`,
+    });
   }
   return JSON.stringify({
     success: true,
@@ -62,13 +59,13 @@ export function reopenTask(userId: string, args: { task_id: number }): string {
   });
 }
 
-export function deleteTask(
-  userId: string,
-  args: { task_id: number }
-): string {
+export function deleteTask(userId: string, args: { task_id: number }): string {
   const deleted = taskRepo.deleteTask(args.task_id, userId);
   if (!deleted) {
-    return JSON.stringify({ success: false, message: `タスク #${args.task_id} が見つかりません。` });
+    return JSON.stringify({
+      success: false,
+      message: `タスク #${args.task_id} が見つかりません。`,
+    });
   }
   return JSON.stringify({
     success: true,

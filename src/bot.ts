@@ -1,10 +1,4 @@
-import {
-  Client,
-  GatewayIntentBits,
-  Partials,
-  ActivityType,
-  type Message,
-} from "discord.js";
+import { Client, GatewayIntentBits, Partials, ActivityType, type Message } from "discord.js";
 import { config } from "./config.js";
 import { processMessage, type ChatMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
@@ -44,20 +38,24 @@ export function setBotStatus(botClient: Client, status: "thinking" | "writing" |
   try {
     if (status === "thinking") {
       botClient.user.setPresence({
-        activities: [{
-          name: "custom",
-          type: ActivityType.Custom,
-          state: "考え中...",
-        }],
+        activities: [
+          {
+            name: "custom",
+            type: ActivityType.Custom,
+            state: "考え中...",
+          },
+        ],
         status: "dnd",
       });
     } else if (status === "writing") {
       botClient.user.setPresence({
-        activities: [{
-          name: "custom",
-          type: ActivityType.Custom,
-          state: "書き込み中...",
-        }],
+        activities: [
+          {
+            name: "custom",
+            type: ActivityType.Custom,
+            state: "書き込み中...",
+          },
+        ],
         status: "online",
       });
     } else {
@@ -141,7 +139,10 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
 
     try {
       // 「入力中...」を表示し、処理が終わるまで5秒ごとに維持する
-      if ("sendTyping" in message.channel && typeof (message.channel as any).sendTyping === "function") {
+      if (
+        "sendTyping" in message.channel &&
+        typeof (message.channel as any).sendTyping === "function"
+      ) {
         const channel = message.channel as any;
         await channel.sendTyping().catch((err: unknown) => console.error("sendTyping error:", err));
         typingInterval = setInterval(() => {
@@ -150,14 +151,13 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       }
 
       // メンションテキストを除去してクリーンなメッセージを取得
-      let text = message.content
-        .replace(/<@!?\d+>/g, "")
-        .trim();
+      let text = message.content.replace(/<@!?\d+>/g, "").trim();
 
       // 返信先メッセージのテキストをコンテキストプレフィックスとして構築
       let contextPrefix = "";
       if (referencedMsg) {
-        const authorName = referencedMsg.author.id === botClient.user?.id ? "あなた" : referencedMsg.author.username;
+        const authorName =
+          referencedMsg.author.id === botClient.user?.id ? "あなた" : referencedMsg.author.username;
         const cleanRefText = referencedMsg.content.replace(/<@!?\d+>/g, "").trim();
         contextPrefix = `[返信先メッセージ (${authorName}): "${cleanRefText}"]\n`;
       }
@@ -166,12 +166,10 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       const fullText = contextPrefix + text;
 
       // 画像添付があるかチェック（現在のメッセージ、または返信先メッセージ）
-      let imageAttachment = message.attachments.find((a) =>
-        a.contentType?.startsWith("image/")
-      );
+      let imageAttachment = message.attachments.find((a) => a.contentType?.startsWith("image/"));
       if (!imageAttachment && referencedMsg) {
         imageAttachment = referencedMsg.attachments.find((a) =>
-          a.contentType?.startsWith("image/")
+          a.contentType?.startsWith("image/"),
         );
       }
 
@@ -188,12 +186,19 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         const imageBase64 = imageBuffer.toString("base64");
         const mimeType = imageAttachment.contentType || "image/jpeg";
 
-        response = await parseReceipt(userId, imageBase64, mimeType, text || undefined, statusCallback);
+        response = await parseReceipt(
+          userId,
+          imageBase64,
+          mimeType,
+          text || undefined,
+          statusCallback,
+        );
       } else if (fullText.trim()) {
         const chatMessage: ChatMessage = { text: fullText };
         response = await processMessage(userId, chatMessage, statusCallback);
       } else {
-        response = "何かお手伝いできることはありますか？ 📋\n\nタスク管理、予定管理、家計管理ができますよ！";
+        response =
+          "何かお手伝いできることはありますか？ 📋\n\nタスク管理、予定管理、家計管理ができますよ！";
       }
 
       // 応答が完了したため、タイマーをクリア
@@ -210,7 +215,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       }
       console.error("メッセージ処理エラー:", error);
       await message.reply(
-        "申し訳ございません、処理中にエラーが発生しました 😢\nしばらくしてからもう一度お試しください。"
+        "申し訳ございません、処理中にエラーが発生しました 😢\nしばらくしてからもう一度お試しください。",
       );
     } finally {
       setBotStatus(botClient, "idle");
@@ -225,9 +230,11 @@ async function reactWithEmoji(message: Message): Promise<void> {
   if (!config.geminiApiKey) return;
   try {
     const genAI = new GoogleGenerativeAI(config.geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: config.geminiModel || "gemini-2.0-flash-lite" });
+    const model = genAI.getGenerativeModel({
+      model: config.geminiModel || "gemini-2.0-flash-lite",
+    });
     const result = await model.generateContent(
-      `以下のDiscordメッセージに対して、内容に最もふさわしいUnicode絵文字を1文字だけ返してください。絵文字以外は絶対に出力しないでください。\n\n"${message.content.slice(0, 200)}"`
+      `以下のDiscordメッセージに対して、内容に最もふさわしいUnicode絵文字を1文字だけ返してください。絵文字以外は絶対に出力しないでください。\n\n"${message.content.slice(0, 200)}"`,
     );
     const emoji = result.response.text().trim().replace(/\s/g, "");
     if (emoji) {
@@ -245,7 +252,10 @@ async function sendSplitResponse(message: Message, response: string): Promise<vo
   const SPLIT_MARKER = "[SPLIT]";
   const MAX_LENGTH = 2000;
 
-  const rawChunks = response.split(SPLIT_MARKER).map(c => c.trim()).filter(c => c.length > 0);
+  const rawChunks = response
+    .split(SPLIT_MARKER)
+    .map((c) => c.trim())
+    .filter((c) => c.length > 0);
 
   // さらに2000字超えのチャンクは文字数で再分割
   const chunks: string[] = [];
@@ -260,7 +270,7 @@ async function sendSplitResponse(message: Message, response: string): Promise<vo
   for (let i = 0; i < chunks.length; i++) {
     if (i > 0) {
       const delay = Math.min(300 + chunks[i - 1].length * 1.5, 1200);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
     await (message.channel as any).send(chunks[i]);
   }
@@ -368,7 +378,6 @@ export function stopCustomBotForUser(userId: string): void {
   }
 }
 
-
 export async function startBot(): Promise<void> {
   // 1. デフォルトBotをログイン
   setupMessageListener(client);
@@ -385,7 +394,7 @@ export async function startBot(): Promise<void> {
 
 export function stopBot(): void {
   stopReminderService();
-  
+
   // デフォルトBot停止
   client.destroy();
 

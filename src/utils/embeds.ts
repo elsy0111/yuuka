@@ -18,10 +18,7 @@ const WARNING_COLOR = 0xfee75c;
 const EXPENSE_COLOR = 0xed4245;
 
 export function buildTaskListEmbed(tasks: Task[]): EmbedBuilder {
-  const embed = new EmbedBuilder()
-    .setTitle("📋 タスク一覧")
-    .setColor(THEME_COLOR)
-    .setTimestamp();
+  const embed = new EmbedBuilder().setTitle("📋 タスク一覧").setColor(THEME_COLOR).setTimestamp();
 
   if (tasks.length === 0) {
     embed.setDescription("タスクはありません。");
@@ -47,18 +44,13 @@ export function buildTaskAddedEmbed(task: Task): EmbedBuilder {
     .addFields(
       { name: "タスク", value: `#${task.id} ${task.title}`, inline: true },
       { name: "優先度", value: formatPriority(task.priority), inline: true },
-      ...(task.due_date
-        ? [{ name: "期限", value: formatDate(task.due_date), inline: true }]
-        : [])
+      ...(task.due_date ? [{ name: "期限", value: formatDate(task.due_date), inline: true }] : []),
     )
     .setTimestamp();
 }
 
 export function buildScheduleListEmbed(schedules: Schedule[]): EmbedBuilder {
-  const embed = new EmbedBuilder()
-    .setTitle("📅 今後の予定")
-    .setColor(THEME_COLOR)
-    .setTimestamp();
+  const embed = new EmbedBuilder().setTitle("📅 今後の予定").setColor(THEME_COLOR).setTimestamp();
 
   if (schedules.length === 0) {
     embed.setDescription("予定はありません。");
@@ -87,7 +79,7 @@ export function buildScheduleAddedEmbed(schedule: Schedule): EmbedBuilder {
         name: "リマインド",
         value: `${schedule.remind_before_minutes}分前`,
         inline: true,
-      }
+      },
     )
     .setTimestamp();
 }
@@ -97,7 +89,7 @@ export function buildReminderEmbed(schedule: Schedule): EmbedBuilder {
     .setTitle("🔔 リマインダー")
     .setColor(WARNING_COLOR)
     .setDescription(
-      `**${schedule.title}** の時間が近づいています！\n\n📅 ${formatDateTime(schedule.start_at)}`
+      `**${schedule.title}** の時間が近づいています！\n\n📅 ${formatDateTime(schedule.start_at)}`,
     )
     .setTimestamp();
 }
@@ -110,9 +102,7 @@ export function buildExpenseAddedEmbed(expense: Expense): EmbedBuilder {
       { name: "金額", value: formatCurrency(expense.amount), inline: true },
       { name: "カテゴリ", value: expense.category, inline: true },
       { name: "日付", value: formatDate(expense.date), inline: true },
-      ...(expense.description
-        ? [{ name: "メモ", value: expense.description, inline: false }]
-        : [])
+      ...(expense.description ? [{ name: "メモ", value: expense.description, inline: false }] : []),
     )
     .setTimestamp();
 }
@@ -121,7 +111,7 @@ export function buildMonthlySummaryEmbed(
   breakdown: CategoryTotal[],
   total: number,
   year?: number,
-  month?: number
+  month?: number,
 ): EmbedBuilder {
   const label = currentMonthLabel(year, month);
   const embed = new EmbedBuilder()
@@ -135,7 +125,8 @@ export function buildMonthlySummaryEmbed(
   }
 
   const lines = breakdown.map(
-    (c) => `${categoryEmoji(c.category)} **${c.category}**: ${formatCurrency(c.total)} (${c.count}件)`
+    (c) =>
+      `${categoryEmoji(c.category)} **${c.category}**: ${formatCurrency(c.total)} (${c.count}件)`,
   );
   lines.push(`\n━━━━━━━━━━━━━━━\n💴 **合計: ${formatCurrency(total)}**`);
 
@@ -168,10 +159,10 @@ export function buildReceiptParsedEmbed(
   storeName: string,
   date: string,
   items: Array<{ name: string; amount: number; category: string }>,
-  total: number
+  total: number,
 ): EmbedBuilder {
   const lines = items.map(
-    (item) => `・${item.name} ${formatCurrency(item.amount)} (${item.category})`
+    (item) => `・${item.name} ${formatCurrency(item.amount)} (${item.category})`,
   );
 
   return new EmbedBuilder()
@@ -181,7 +172,7 @@ export function buildReceiptParsedEmbed(
       { name: "店舗", value: storeName, inline: true },
       { name: "日付", value: formatDate(date), inline: true },
       { name: "合計", value: formatCurrency(total), inline: true },
-      { name: "明細", value: lines.join("\n") || "なし" }
+      { name: "明細", value: lines.join("\n") || "なし" },
     )
     .setTimestamp();
 }

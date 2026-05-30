@@ -45,7 +45,7 @@ export const handleCalendarDelete: RouteHandler = async ({ req, res, pathname, m
       return true;
     }
 
-    updateGoogleCalendarsInYaml(getGoogleCalendars().filter(id => id !== cleanId));
+    updateGoogleCalendarsInYaml(getGoogleCalendars().filter((id) => id !== cleanId));
     clearCalendarCache();
     sendJson(res, 200, { success: true, message: "カレンダーIDを削除しました。" });
   } catch (err) {

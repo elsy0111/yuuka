@@ -11,7 +11,7 @@ export async function fetchDynamicPage(userId: string, args: { url: string }): P
       url: args.url,
       title: title,
       markdownContent: markdown.slice(0, 30000), // より詳細な内容を読み込めるように30,000文字に拡張
-      htmlContent: markdown.slice(0, 30000),     // 既存プロンプトとの互換性のために同一のテキストを設定
+      htmlContent: markdown.slice(0, 30000), // 既存プロンプトとの互換性のために同一のテキストを設定
     });
   } catch (err: any) {
     return JSON.stringify({
@@ -65,7 +65,7 @@ export async function searchWeb(userId: string, args: { query: string }): Promis
  */
 export async function browserInteractiveOpen(
   userId: string,
-  args: { url: string }
+  args: { url: string },
 ): Promise<string> {
   try {
     const res = await browserService.browserInteractiveOpen(userId, args.url);
@@ -80,7 +80,7 @@ export async function browserInteractiveOpen(
  */
 export async function browserInteractiveClick(
   userId: string,
-  args: { selector: string }
+  args: { selector: string },
 ): Promise<string> {
   try {
     const res = await browserService.browserInteractiveClick(userId, args.selector);
@@ -95,7 +95,7 @@ export async function browserInteractiveClick(
  */
 export async function browserInteractiveType(
   userId: string,
-  args: { selector: string; text: string }
+  args: { selector: string; text: string },
 ): Promise<string> {
   try {
     const res = await browserService.browserInteractiveType(userId, args.selector, args.text);
@@ -110,7 +110,7 @@ export async function browserInteractiveType(
  */
 export async function browserInteractiveWait(
   userId: string,
-  args: { selector?: string; timeoutMs?: number }
+  args: { selector?: string; timeoutMs?: number },
 ): Promise<string> {
   try {
     const res = await browserService.browserInteractiveWait(userId, args.selector, args.timeoutMs);
@@ -143,4 +143,3 @@ export async function browserInteractiveClose(userId: string): Promise<string> {
     return JSON.stringify({ success: false, message: err.message });
   }
 }
-

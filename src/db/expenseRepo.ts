@@ -39,7 +39,7 @@ export function addExpense(
   description?: string,
   date?: string,
   source: string = "manual",
-  purchaseSource: string = "不明"
+  purchaseSource: string = "不明",
 ): Expense {
   const db = getDb();
   const expenseDate = date ?? new Date().toISOString().slice(0, 10);
@@ -47,7 +47,15 @@ export function addExpense(
     INSERT INTO expenses (user_id, amount, category, description, date, source, purchase_source)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
-  const result = stmt.run(userId, amount, category, description ?? null, expenseDate, source, purchaseSource);
+  const result = stmt.run(
+    userId,
+    amount,
+    category,
+    description ?? null,
+    expenseDate,
+    source,
+    purchaseSource,
+  );
   return getExpenseById(result.lastInsertRowid as number)!;
 }
 
@@ -64,7 +72,9 @@ export function getMonthlyTotal(userId: string, year?: number, month?: number): 
   const prefix = `${y}-${String(m).padStart(2, "0")}`;
 
   const row = db
-    .prepare("SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE user_id = ? AND date LIKE ?")
+    .prepare(
+      "SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE user_id = ? AND date LIKE ?",
+    )
     .get(userId, `${prefix}%`) as { total: number };
   return row.total;
 }
@@ -72,7 +82,7 @@ export function getMonthlyTotal(userId: string, year?: number, month?: number): 
 export function getMonthlyCategoryBreakdown(
   userId: string,
   year?: number,
-  month?: number
+  month?: number,
 ): CategoryTotal[] {
   const db = getDb();
   const now = new Date();
@@ -86,7 +96,7 @@ export function getMonthlyCategoryBreakdown(
        FROM expenses 
        WHERE user_id = ? AND date LIKE ?
        GROUP BY category 
-       ORDER BY total DESC`
+       ORDER BY total DESC`,
     )
     .all(userId, `${prefix}%`) as CategoryTotal[];
 }
@@ -111,16 +121,37 @@ export interface ExpenseFilter {
 export function updateExpense(
   id: number,
   userId: string,
-  fields: { amount?: number; category?: string; description?: string | null; date?: string; purchase_source?: string }
+  fields: {
+    amount?: number;
+    category?: string;
+    description?: string | null;
+    date?: string;
+    purchase_source?: string;
+  },
 ): Expense | undefined {
   const db = getDb();
   const sets: string[] = [];
   const params: unknown[] = [];
-  if (fields.amount !== undefined)           { sets.push("amount = ?");           params.push(fields.amount); }
-  if (fields.category !== undefined)         { sets.push("category = ?");         params.push(fields.category); }
-  if ("description" in fields)               { sets.push("description = ?");      params.push(fields.description ?? null); }
-  if (fields.date !== undefined)             { sets.push("date = ?");             params.push(fields.date); }
-  if (fields.purchase_source !== undefined)  { sets.push("purchase_source = ?");  params.push(fields.purchase_source); }
+  if (fields.amount !== undefined) {
+    sets.push("amount = ?");
+    params.push(fields.amount);
+  }
+  if (fields.category !== undefined) {
+    sets.push("category = ?");
+    params.push(fields.category);
+  }
+  if ("description" in fields) {
+    sets.push("description = ?");
+    params.push(fields.description ?? null);
+  }
+  if (fields.date !== undefined) {
+    sets.push("date = ?");
+    params.push(fields.date);
+  }
+  if (fields.purchase_source !== undefined) {
+    sets.push("purchase_source = ?");
+    params.push(fields.purchase_source);
+  }
   if (sets.length === 0) return getExpenseById(id);
   params.push(id, userId);
   db.prepare(`UPDATE expenses SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
@@ -138,12 +169,30 @@ export function listFilteredExpenses(userId: string, filter: ExpenseFilter = {})
   const conditions: string[] = ["user_id = ?"];
   const params: unknown[] = [userId];
 
-  if (filter.dateFrom) { conditions.push("date >= ?"); params.push(filter.dateFrom); }
-  if (filter.dateTo)   { conditions.push("date <= ?"); params.push(filter.dateTo); }
-  if (filter.category) { conditions.push("category = ?"); params.push(filter.category); }
-  if (filter.source)        { conditions.push("source = ?");                params.push(filter.source); }
-  if (filter.amountMin != null) { conditions.push("amount >= ?");          params.push(filter.amountMin); }
-  if (filter.amountMax != null) { conditions.push("amount <= ?");          params.push(filter.amountMax); }
+  if (filter.dateFrom) {
+    conditions.push("date >= ?");
+    params.push(filter.dateFrom);
+  }
+  if (filter.dateTo) {
+    conditions.push("date <= ?");
+    params.push(filter.dateTo);
+  }
+  if (filter.category) {
+    conditions.push("category = ?");
+    params.push(filter.category);
+  }
+  if (filter.source) {
+    conditions.push("source = ?");
+    params.push(filter.source);
+  }
+  if (filter.amountMin != null) {
+    conditions.push("amount >= ?");
+    params.push(filter.amountMin);
+  }
+  if (filter.amountMax != null) {
+    conditions.push("amount <= ?");
+    params.push(filter.amountMax);
+  }
   if (filter.q) {
     const like = `%${filter.q}%`;
     conditions.push(`(

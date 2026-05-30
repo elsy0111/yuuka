@@ -11,7 +11,7 @@ export async function savePlaybook(
     keywords: string[];
     description: string;
     steps: string;
-  }
+  },
 ): Promise<string> {
   try {
     const res = playbookService.savePlaybook(
@@ -20,7 +20,7 @@ export async function savePlaybook(
       args.title,
       args.keywords,
       args.description,
-      args.steps
+      args.steps,
     );
     return JSON.stringify(res);
   } catch (err: any) {
@@ -34,10 +34,7 @@ export async function savePlaybook(
 /**
  * 関連する手順書（Playbook）を検索・取得するツール関数
  */
-export async function findPlaybooks(
-  userId: string,
-  args: { query?: string }
-): Promise<string> {
+export async function findPlaybooks(userId: string, args: { query?: string }): Promise<string> {
   try {
     const playbooks = playbookService.findPlaybooks(userId, args.query);
     return JSON.stringify({

@@ -19,10 +19,7 @@ function getDriveClient(userId: string): drive_v3.Drive | null {
 
   try {
     // OAuth2 方式で認証クライアントを初期化
-    const auth = new google.auth.OAuth2(
-      clientId,
-      clientSecret
-    );
+    const auth = new google.auth.OAuth2(clientId, clientSecret);
     auth.setCredentials({
       refresh_token: googleConfig.refreshToken,
     });
@@ -42,11 +39,13 @@ export async function uploadToGoogleDrive(
   filePath: string,
   fileName: string,
   mimeType: string = "application/zip",
-  folderId?: string
+  folderId?: string,
 ): Promise<{ fileId: string; url: string } | null> {
   const drive = getDriveClient(userId);
   if (!drive) {
-    throw new Error("Google Driveクライアントが初期化されていません。Google OAuth設定を確認してください。");
+    throw new Error(
+      "Google Driveクライアントが初期化されていません。Google OAuth設定を確認してください。",
+    );
   }
 
   try {

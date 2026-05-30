@@ -15,25 +15,29 @@ export async function renderUrgentDashboardList() {
     let count = 0;
 
     if (dataSched.success) {
-      dataSched.schedules.slice(0, 2).forEach(sched => {
-        list.appendChild(makeUrgentItem(
-          "calendar_today",
-          `[今日の予定] ${sched.title}`,
-          sched.start_at.slice(11, 16),
-          "badge-urgent"
-        ));
+      dataSched.schedules.slice(0, 2).forEach((sched) => {
+        list.appendChild(
+          makeUrgentItem(
+            "calendar_today",
+            `[今日の予定] ${sched.title}`,
+            sched.start_at.slice(11, 16),
+            "badge-urgent",
+          ),
+        );
         count++;
       });
     }
 
     if (dataTasks.success) {
-      dataTasks.tasks.slice(0, 3).forEach(task => {
-        list.appendChild(makeUrgentItem(
-          "checklist",
-          `[未消化タスク] ${task.title}`,
-          task.priority === 2 ? "優先: 高" : "優先: 普通",
-          "badge-normal"
-        ));
+      dataTasks.tasks.slice(0, 3).forEach((task) => {
+        list.appendChild(
+          makeUrgentItem(
+            "checklist",
+            `[未消化タスク] ${task.title}`,
+            task.priority === 2 ? "優先: 高" : "優先: 普通",
+            "badge-normal",
+          ),
+        );
         count++;
       });
     }

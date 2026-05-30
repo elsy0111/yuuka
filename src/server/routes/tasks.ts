@@ -1,4 +1,11 @@
-import { addTask, completeTask, deleteTask, listTasks, reopenTask, updateTask } from "../../db/taskRepo.js";
+import {
+  addTask,
+  completeTask,
+  deleteTask,
+  listTasks,
+  reopenTask,
+  updateTask,
+} from "../../db/taskRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -16,7 +23,9 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
 
   if (pathname === "/api/tasks/add" && method === "POST") {
     try {
-      const { userId, title, description, dueDate, priority } = JSON.parse(await getRequestBody(req));
+      const { userId, title, description, dueDate, priority } = JSON.parse(
+        await getRequestBody(req),
+      );
       if (!title) return sendError(res, 400, "タイトルは必須です。"), true;
       const task = addTask(userId || "sensei_default", title, description, dueDate, priority);
       sendJson(res, 200, { success: true, task });
@@ -28,7 +37,9 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
 
   if (pathname === "/api/tasks/update" && method === "POST") {
     try {
-      const { id, userId, title, description, dueDate, priority } = JSON.parse(await getRequestBody(req));
+      const { id, userId, title, description, dueDate, priority } = JSON.parse(
+        await getRequestBody(req),
+      );
       if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;
       const task = updateTask(id, userId, { title, description, dueDate, priority });
       sendJson(res, 200, { success: true, task });
@@ -38,7 +49,12 @@ export const handleTasks: RouteHandler = async ({ req, res, parsedUrl, pathname,
     return true;
   }
 
-  if ((pathname === "/api/tasks/complete" || pathname === "/api/tasks/reopen" || pathname === "/api/tasks/delete") && method === "POST") {
+  if (
+    (pathname === "/api/tasks/complete" ||
+      pathname === "/api/tasks/reopen" ||
+      pathname === "/api/tasks/delete") &&
+    method === "POST"
+  ) {
     try {
       const { id, userId } = JSON.parse(await getRequestBody(req));
       if (!id || !userId) return sendError(res, 400, "IDとユーザーIDが必要です。"), true;

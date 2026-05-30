@@ -59,11 +59,13 @@ const SCRYPT_PARALLELIZATION = 1; // p
  */
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
-  const hash = crypto.scryptSync(password, salt, SCRYPT_KEYLEN, {
-    N: SCRYPT_COST,
-    r: SCRYPT_BLOCK_SIZE,
-    p: SCRYPT_PARALLELIZATION,
-  }).toString("hex");
+  const hash = crypto
+    .scryptSync(password, salt, SCRYPT_KEYLEN, {
+      N: SCRYPT_COST,
+      r: SCRYPT_BLOCK_SIZE,
+      p: SCRYPT_PARALLELIZATION,
+    })
+    .toString("hex");
   return `${salt}:${hash}`;
 }
 
@@ -73,11 +75,13 @@ export function hashPassword(password: string): string {
 export function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, hash] = storedHash.split(":");
   if (!salt || !hash) return false;
-  const derived = crypto.scryptSync(password, salt, SCRYPT_KEYLEN, {
-    N: SCRYPT_COST,
-    r: SCRYPT_BLOCK_SIZE,
-    p: SCRYPT_PARALLELIZATION,
-  }).toString("hex");
+  const derived = crypto
+    .scryptSync(password, salt, SCRYPT_KEYLEN, {
+      N: SCRYPT_COST,
+      r: SCRYPT_BLOCK_SIZE,
+      p: SCRYPT_PARALLELIZATION,
+    })
+    .toString("hex");
   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(derived, "hex"));
 }
 
@@ -102,7 +106,9 @@ export function createUser(discordId: string, username: string, password: string
  */
 export function getUserByDiscordId(discordId: string): UserRecord | undefined {
   const db = getDb();
-  return db.prepare("SELECT * FROM users WHERE discord_id = ?").get(discordId) as UserRecord | undefined;
+  return db.prepare("SELECT * FROM users WHERE discord_id = ?").get(discordId) as
+    | UserRecord
+    | undefined;
 }
 
 /**
@@ -119,10 +125,12 @@ export function isRegisteredUser(discordId: string): boolean {
  */
 export function updateUsername(discordId: string, newUsername: string): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET username = ?, updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(newUsername, discordId);
+  `)
+    .run(newUsername, discordId);
   return result.changes > 0;
 }
 
@@ -134,10 +142,11 @@ export function updateGeminiSettings(
   apiKeyEncrypted: string | null,
   apiKeyIv: string | null,
   apiKeyTag: string | null,
-  model: string
+  model: string,
 ): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET
       gemini_api_key_encrypted = ?,
       gemini_api_key_iv = ?,
@@ -145,7 +154,8 @@ export function updateGeminiSettings(
       gemini_model = ?,
       updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(apiKeyEncrypted, apiKeyIv, apiKeyTag, model, discordId);
+  `)
+    .run(apiKeyEncrypted, apiKeyIv, apiKeyTag, model, discordId);
   return result.changes > 0;
 }
 
@@ -158,11 +168,12 @@ export function updateGoogleSettings(
   clientSecret: string | null,
   refreshToken: string | null,
   calendarId: string | null,
-  calendars: string[]
+  calendars: string[],
 ): boolean {
   const db = getDb();
   const calendarsJson = calendars.length > 0 ? JSON.stringify(calendars) : null;
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET
       google_client_id = ?,
       google_client_secret = ?,
@@ -171,7 +182,8 @@ export function updateGoogleSettings(
       google_calendars = ?,
       updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(clientId, clientSecret, refreshToken, calendarId, calendarsJson, discordId);
+  `)
+    .run(clientId, clientSecret, refreshToken, calendarId, calendarsJson, discordId);
   return result.changes > 0;
 }
 
@@ -182,17 +194,19 @@ export function updateBackupSettings(
   discordId: string,
   enabled: boolean,
   folderId: string | null,
-  cron: string
+  cron: string,
 ): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET
       google_drive_backup_enabled = ?,
       google_drive_backup_folder_id = ?,
       backup_cron = ?,
       updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(enabled ? 1 : 0, folderId, cron, discordId);
+  `)
+    .run(enabled ? 1 : 0, folderId, cron, discordId);
   return result.changes > 0;
 }
 
@@ -201,15 +215,19 @@ export function updateBackupSettings(
  */
 export function getUserGeminiConfig(discordId: string): GeminiConfig | null {
   const db = getDb();
-  const row = db.prepare(`
+  const row = db
+    .prepare(`
     SELECT gemini_api_key_encrypted, gemini_api_key_iv, gemini_api_key_tag, gemini_model
     FROM users WHERE discord_id = ?
-  `).get(discordId) as {
-    gemini_api_key_encrypted: string | null;
-    gemini_api_key_iv: string | null;
-    gemini_api_key_tag: string | null;
-    gemini_model: string;
-  } | undefined;
+  `)
+    .get(discordId) as
+    | {
+        gemini_api_key_encrypted: string | null;
+        gemini_api_key_iv: string | null;
+        gemini_api_key_tag: string | null;
+        gemini_model: string;
+      }
+    | undefined;
 
   if (!row) return null;
   return {
@@ -225,17 +243,21 @@ export function getUserGeminiConfig(discordId: string): GeminiConfig | null {
  */
 export function getUserGoogleConfig(discordId: string): GoogleConfig | null {
   const db = getDb();
-  const row = db.prepare(`
+  const row = db
+    .prepare(`
     SELECT google_client_id, google_client_secret, google_refresh_token,
            google_calendar_id, google_calendars
     FROM users WHERE discord_id = ?
-  `).get(discordId) as {
-    google_client_id: string | null;
-    google_client_secret: string | null;
-    google_refresh_token: string | null;
-    google_calendar_id: string | null;
-    google_calendars: string | null;
-  } | undefined;
+  `)
+    .get(discordId) as
+    | {
+        google_client_id: string | null;
+        google_client_secret: string | null;
+        google_refresh_token: string | null;
+        google_calendar_id: string | null;
+        google_calendars: string | null;
+      }
+    | undefined;
 
   if (!row) return null;
 
@@ -262,8 +284,10 @@ export function getUserGoogleConfig(discordId: string): GoogleConfig | null {
  */
 export function listAllUserIds(): string[] {
   const db = getDb();
-  const rows = db.prepare("SELECT discord_id FROM users ORDER BY created_at ASC").all() as { discord_id: string }[];
-  return rows.map(r => r.discord_id);
+  const rows = db.prepare("SELECT discord_id FROM users ORDER BY created_at ASC").all() as {
+    discord_id: string;
+  }[];
+  return rows.map((r) => r.discord_id);
 }
 
 /**
@@ -280,10 +304,12 @@ export function deleteUser(discordId: string): boolean {
  */
 export function updateGoogleRefreshToken(discordId: string, refreshToken: string): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET google_refresh_token = ?, updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(refreshToken, discordId);
+  `)
+    .run(refreshToken, discordId);
   return result.changes > 0;
 }
 
@@ -295,10 +321,11 @@ export function updateDiscordBotSettings(
   tokenEncrypted: string | null,
   tokenIv: string | null,
   tokenTag: string | null,
-  persona: string | null
+  persona: string | null,
 ): boolean {
   const db = getDb();
-  const result = db.prepare(`
+  const result = db
+    .prepare(`
     UPDATE users SET
       discord_token_encrypted = ?,
       discord_token_iv = ?,
@@ -306,7 +333,8 @@ export function updateDiscordBotSettings(
       persona = ?,
       updated_at = datetime('now', 'localtime')
     WHERE discord_id = ?
-  `).run(tokenEncrypted, tokenIv, tokenTag, persona, discordId);
+  `)
+    .run(tokenEncrypted, tokenIv, tokenTag, persona, discordId);
   return result.changes > 0;
 }
 
@@ -319,7 +347,9 @@ export function migrateUserId(fromId: string, toId: string): { migrated: number 
   const tables = ["tasks", "schedules", "expenses", "memories"];
   for (const table of tables) {
     try {
-      const result = db.prepare(`UPDATE ${table} SET user_id = ? WHERE user_id = ?`).run(toId, fromId);
+      const result = db
+        .prepare(`UPDATE ${table} SET user_id = ? WHERE user_id = ?`)
+        .run(toId, fromId);
       total += result.changes;
     } catch {
       // テーブルが存在しない場合はスキップ
@@ -333,15 +363,19 @@ export function migrateUserId(fromId: string, toId: string): { migrated: number 
  */
 export function getUserDiscordBotConfig(discordId: string): DiscordBotConfig | null {
   const db = getDb();
-  const row = db.prepare(`
+  const row = db
+    .prepare(`
     SELECT discord_token_encrypted, discord_token_iv, discord_token_tag, persona
     FROM users WHERE discord_id = ?
-  `).get(discordId) as {
-    discord_token_encrypted: string | null;
-    discord_token_iv: string | null;
-    discord_token_tag: string | null;
-    persona: string | null;
-  } | undefined;
+  `)
+    .get(discordId) as
+    | {
+        discord_token_encrypted: string | null;
+        discord_token_iv: string | null;
+        discord_token_tag: string | null;
+        persona: string | null;
+      }
+    | undefined;
 
   if (!row) return null;
   return {
