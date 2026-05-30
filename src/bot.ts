@@ -11,6 +11,7 @@ import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
 import { isRegisteredUser, getUserDiscordBotConfig, listAllUserIds } from "./db/userRepo.js";
 import { decryptText } from "./utils/crypto.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // デフォルト（共有）クライアント
 export const client = new Client({
@@ -135,6 +136,9 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
     // 「入力中...」を維持するためのタイマー
     let typingInterval: NodeJS.Timeout | null = null;
 
+    // リアクションをメイン処理と並列で実行（待たない）
+    reactWithEmoji(message).catch(() => {});
+
     try {
       // 「入力中...」を表示し、処理が終わるまで5秒ごとに維持する
       if ("sendTyping" in message.channel && typeof (message.channel as any).sendTyping === "function") {
@@ -198,15 +202,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         typingInterval = null;
       }
 
-      // Discord の文字数制限 (2000文字) に対応
-      if (response.length > 2000) {
-        const chunks = splitMessage(response, 2000);
-        for (const chunk of chunks) {
-          await message.reply(chunk);
-        }
-      } else {
-        await message.reply(response);
-      }
+      await sendSplitResponse(message, response);
     } catch (error) {
       if (typingInterval) {
         clearInterval(typingInterval);
@@ -220,6 +216,57 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       setBotStatus(botClient, "idle");
     }
   });
+}
+
+/**
+ * メッセージ内容に応じた適切な絵文字をGeminiで選択してリアクション
+ */
+async function reactWithEmoji(message: Message): Promise<void> {
+  if (!config.geminiApiKey) return;
+  try {
+    const genAI = new GoogleGenerativeAI(config.geminiApiKey);
+    const model = genAI.getGenerativeModel({ model: config.geminiModel || "gemini-2.0-flash-lite" });
+    const result = await model.generateContent(
+      `以下のDiscordメッセージに対して、内容に最もふさわしいUnicode絵文字を1文字だけ返してください。絵文字以外は絶対に出力しないでください。\n\n"${message.content.slice(0, 200)}"`
+    );
+    const emoji = result.response.text().trim().replace(/\s/g, "");
+    if (emoji) {
+      await message.react(emoji).catch(() => message.react("👀"));
+    }
+  } catch {
+    await message.react("👀").catch(() => {});
+  }
+}
+
+/**
+ * [SPLIT]マーカーで区切られたレスポンスを分割して順番に送信
+ */
+async function sendSplitResponse(message: Message, response: string): Promise<void> {
+  const SPLIT_MARKER = "[SPLIT]";
+  const MAX_LENGTH = 2000;
+
+  const rawChunks = response.split(SPLIT_MARKER).map(c => c.trim()).filter(c => c.length > 0);
+
+  // さらに2000字超えのチャンクは文字数で再分割
+  const chunks: string[] = [];
+  for (const chunk of rawChunks) {
+    if (chunk.length <= MAX_LENGTH) {
+      chunks.push(chunk);
+    } else {
+      chunks.push(...splitMessage(chunk, MAX_LENGTH));
+    }
+  }
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (i === 0) {
+      await message.reply(chunks[i]);
+    } else {
+      // 前のチャンクの長さに応じて自然な間隔を設ける（最小300ms、最大1200ms）
+      const delay = Math.min(300 + chunks[i - 1].length * 1.5, 1200);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      await (message.channel as any).send(chunks[i]);
+    }
+  }
 }
 
 /**
