@@ -10,6 +10,8 @@ import { processMessage, type ChatMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
 
+const INSTRUCTION_RECEIVED_REACTION = "👀";
+
 export const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -91,6 +93,8 @@ client.on("messageCreate", async (message: Message) => {
 
   // メンションもDMも、ボットへの返信でもなければ無視（RESPOND_WITHOUT_MENTION=true で全メッセージに反応）
   if (!config.respondWithoutMention && !isMentioned && !isDM && !isReplyToBot) return;
+
+  reactToReceivedInstruction(message);
 
   // 「入力中...」を維持するためのタイマー
   let typingInterval: NodeJS.Timeout | null = null;
@@ -211,6 +215,12 @@ function splitMessage(text: string, maxLength: number): string[] {
   }
 
   return chunks;
+}
+
+function reactToReceivedInstruction(message: Message): void {
+  message.react(INSTRUCTION_RECEIVED_REACTION).catch((err: unknown) => {
+    console.error("message reaction error:", err);
+  });
 }
 
 export async function startBot(): Promise<void> {
