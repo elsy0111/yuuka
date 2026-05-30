@@ -40,6 +40,11 @@
   /* ボーダー */
   --border-matte: #dde6ed; /* MomoTalkソース値そのまま */
   --border-focus: #02d3fb;
+  --control-bg: #f7fbff;
+  --control-bg-hover: #f0f8fd;
+  --control-text: #1b2b3a;
+  --control-placeholder: #6b8798;
+  --control-border: #c8dcea;
 
   --radius: 2px;
 
@@ -110,9 +115,10 @@
 }
 
 /* ---- フォームコントロール ---- */
-[data-theme="blue-archive"] .form-group input:focus,
-[data-theme="blue-archive"] .form-group select:focus,
-[data-theme="blue-archive"] .form-group textarea:focus {
+[data-theme="blue-archive"]
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+[data-theme="blue-archive"] select:focus,
+[data-theme="blue-archive"] textarea:focus {
   border-color: #02d3fb;
   box-shadow: 0 0 0 2px rgba(2, 211, 251, 0.15);
 }
