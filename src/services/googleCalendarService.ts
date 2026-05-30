@@ -65,9 +65,8 @@ export async function fetchAvailableCalendars(): Promise<{ id: string; summary: 
         if (response.data.summary) {
           list.push({ id, summary: response.data.summary });
         }
-      } catch (err) {
-        console.error(`カレンダー情報取得失敗 (${id}):`, err);
-        // アクセスできないカレンダーはスキップ（同期対象から除外）
+      } catch (err: any) {
+        console.warn(`カレンダーへのアクセス不可 (${id}): ${err?.message ?? err} — 同期対象から除外`);
       }
     }
     return list;

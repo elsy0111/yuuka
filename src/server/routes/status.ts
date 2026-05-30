@@ -1,6 +1,5 @@
-import { config } from "../../config.js";
+import { config, getGoogleCalendars } from "../../config.js";
 import { getDb } from "../../db/database.js";
-import { getCachedCalendars } from "../../services/googleCalendarService.js";
 import { sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -61,7 +60,7 @@ export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, met
         googleCalendarId: config.googleCalendarId,
         googleServiceAccountEmail: mask(config.googleServiceAccountEmail),
         googleClientId: mask(config.googleClientId),
-        googleCalendars: await getCachedCalendars(),
+        googleCalendars: getGoogleCalendars().map(id => ({ id, summary: id })),
       },
     });
   } catch (err) {
