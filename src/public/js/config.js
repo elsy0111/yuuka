@@ -1,6 +1,7 @@
 import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
 import { fetchCredentialsSettings } from "./credentials.js";
 import { initMemories } from "./memories.js";
+import { renderProfileDropdown } from "./auth.js";
 
 export async function fetchConfigSettings() {
   const grid = document.getElementById("config-settings-grid");
@@ -19,9 +20,44 @@ export async function fetchConfigSettings() {
   }
 }
 
+async function loadProfileForm() {
+  try {
+    const res  = await fetch("/api/users");
+    const data = await res.json();
+    if (data.success && data.username) {
+      const input = document.getElementById("config-profile-username");
+      if (input) input.value = data.username;
+    }
+  } catch {}
+}
+
 export function initConfig() {
   initCalendarForm(fetchConfigSettings);
   initMemories();
+  loadProfileForm();
+
+  document.getElementById("profile-config-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const username = document.getElementById("config-profile-username").value.trim();
+    if (!username) return;
+
+    try {
+      const res  = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        renderProfileDropdown(data.username);
+        alert(`表示名を「${data.username}」に変更しました。`);
+      } else {
+        alert(data.message || "保存に失敗しました。");
+      }
+    } catch {
+      alert("サーバー接続に失敗しました。");
+    }
+  });
 }
 
 function renderConfigEntries(grid, config) {
