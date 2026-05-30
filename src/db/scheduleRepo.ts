@@ -117,6 +117,24 @@ export function markReminded(id: number): void {
   db.prepare("UPDATE schedules SET reminded = 1 WHERE id = ?").run(id);
 }
 
+export function updateSchedule(
+  id: number,
+  userId: string,
+  fields: { title?: string; description?: string | null; startAt?: string; endAt?: string | null; remindBeforeMinutes?: number }
+): Schedule | undefined {
+  const db = getDb();
+  const sets: string[] = ["reminded = 0"];
+  const params: unknown[] = [];
+  if (fields.title !== undefined)              { sets.push("title = ?");                  params.push(fields.title); }
+  if ("description" in fields)                 { sets.push("description = ?");            params.push(fields.description ?? null); }
+  if (fields.startAt !== undefined)            { sets.push("start_at = ?");               params.push(fields.startAt); }
+  if ("endAt" in fields)                       { sets.push("end_at = ?");                 params.push(fields.endAt ?? null); }
+  if (fields.remindBeforeMinutes !== undefined) { sets.push("remind_before_minutes = ?"); params.push(fields.remindBeforeMinutes); }
+  params.push(id, userId);
+  db.prepare(`UPDATE schedules SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
+  return getScheduleById(id);
+}
+
 export function deleteSchedule(id: number, userId: string): boolean {
   const db = getDb();
   const result = db.prepare("DELETE FROM schedules WHERE id = ? AND user_id = ?").run(id, userId);

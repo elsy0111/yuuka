@@ -1,4 +1,4 @@
-import { addSchedule, deleteSchedule, listUpcomingSchedules } from "../../db/scheduleRepo.js";
+import { addSchedule, deleteSchedule, listUpcomingSchedules, updateSchedule } from "../../db/scheduleRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -25,6 +25,21 @@ export const handleSchedules: RouteHandler = async ({ req, res, parsedUrl, pathn
       sendJson(res, 200, { success: true, schedule });
     } catch {
       sendError(res, 500, "スケジュールの追加に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/schedules/update" && method === "POST") {
+    try {
+      const { id, userId, title, description, startAt, endAt, remindBeforeMinutes } = JSON.parse(await getRequestBody(req));
+      if (!id || !userId) {
+        sendError(res, 400, "IDとユーザーIDが必要です。");
+        return true;
+      }
+      const schedule = updateSchedule(id, userId, { title, description, startAt, endAt, remindBeforeMinutes });
+      sendJson(res, 200, { success: true, schedule });
+    } catch {
+      sendError(res, 500, "予定の更新に失敗しました。");
     }
     return true;
   }
