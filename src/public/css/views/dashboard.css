@@ -198,11 +198,17 @@
 }
 
 .chart-x-axis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 1.2em;
   font-family: var(--font-family-mono);
   font-size: 0.65rem;
   color: var(--color-zinc-muted);
+}
+
+.chart-x-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .column-header {

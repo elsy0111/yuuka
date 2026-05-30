@@ -48,9 +48,11 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   const xAxis = svg.nextElementSibling;
   xAxis.replaceChildren();
   rows.forEach((row, idx) => {
+    const pct = rows.length > 1 ? (idx / (rows.length - 1)) * 100 : 50;
     const span = document.createElement("span");
     span.textContent =
       idx === 0 ? `${rows.length - 1}日前` : formatDateLabel(row.date, idx, rows.length - 1);
+    span.style.left = `${pct}%`;
     xAxis.appendChild(span);
   });
 
