@@ -11,6 +11,7 @@ export async function fetchExpensesList() {
 
     document.getElementById("expense-month-total").textContent = `¥${data.total.toLocaleString()}`;
     renderBudgetBar(data.total, data.budget ?? 50000, data.remaining ?? data.budget - data.total);
+    renderExpenseStats(data.stats || {});
     renderDailyExpenseTotals(data.dailyTotals || []);
 
     if (data.expenses?.length > 0) {
@@ -30,6 +31,51 @@ export async function fetchExpensesList() {
   }
 }
 
+function renderExpenseStats(stats) {
+  const countEl = document.getElementById("stat-expense-count");
+  const avgEl = document.getElementById("stat-expense-avg-daily");
+  const avgSubEl = document.getElementById("stat-expense-avg-daily-sub");
+  const maxAmtEl = document.getElementById("stat-expense-max-day-amount");
+  const maxDateEl = document.getElementById("stat-expense-max-day-date");
+  const rankEl = document.getElementById("stat-expense-top-categories");
+
+  if (countEl) countEl.textContent = `${(stats.count ?? 0).toLocaleString()}件`;
+
+  if (avgEl) avgEl.textContent = `¥${(stats.avgDaily ?? 0).toLocaleString()}`;
+  if (avgSubEl) {
+    const d = new Date().getDate();
+    avgSubEl.textContent = `${d}日経過`;
+  }
+
+  if (maxAmtEl)
+    maxAmtEl.textContent = stats.maxDay ? `¥${stats.maxDay.total.toLocaleString()}` : "¥0";
+  if (maxDateEl) {
+    if (stats.maxDay) {
+      const [, m, d] = stats.maxDay.date.split("-");
+      maxDateEl.textContent = `${Number(m)}/${Number(d)}`;
+    } else {
+      maxDateEl.textContent = "—";
+    }
+  }
+
+  if (rankEl) {
+    rankEl.replaceChildren();
+    (stats.topCategories ?? []).forEach((cat, i) => {
+      const li = document.createElement("li");
+      li.className = "stat-ranking-item";
+      li.innerHTML = `<span class="stat-rank-num">${i + 1}</span><span class="stat-rank-cat">${cat.category}</span><span class="stat-rank-amt">¥${cat.total.toLocaleString()}</span>`;
+      rankEl.appendChild(li);
+    });
+    if ((stats.topCategories ?? []).length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "記録なし";
+      li.style.color = "var(--text-secondary)";
+      li.style.fontSize = "0.8rem";
+      rankEl.appendChild(li);
+    }
+  }
+}
+
 function renderDailyExpenseTotals(dailyTotals) {
   const list = document.getElementById("expense-daily-list");
   if (!list) return;
@@ -43,7 +89,11 @@ function renderDailyExpenseTotals(dailyTotals) {
 
     const label = document.createElement("span");
     label.className = "expense-daily-date";
-    label.textContent = formatDailyLabel(row.date, reversed.length - 1 - idx, dailyTotals.length - 1);
+    label.textContent = formatDailyLabel(
+      row.date,
+      reversed.length - 1 - idx,
+      dailyTotals.length - 1,
+    );
 
     const barTrack = document.createElement("div");
     barTrack.className = "expense-daily-track";

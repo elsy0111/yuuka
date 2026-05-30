@@ -418,6 +418,28 @@
             </div>
           </div>
 
+          <!-- Stats Grid -->
+          <div class="expense-stats-grid">
+            <div class="expense-stat-card card">
+              <p class="stat-label">支出件数</p>
+              <div class="stat-value" id="stat-expense-count">0件</div>
+            </div>
+            <div class="expense-stat-card card">
+              <p class="stat-label">平均日次支出</p>
+              <div class="stat-value" id="stat-expense-avg-daily">¥0</div>
+              <div class="stat-sub" id="stat-expense-avg-daily-sub"></div>
+            </div>
+            <div class="expense-stat-card card">
+              <p class="stat-label">最高支出日</p>
+              <div class="stat-value" id="stat-expense-max-day-amount">¥0</div>
+              <div class="stat-sub" id="stat-expense-max-day-date">—</div>
+            </div>
+            <div class="expense-stat-card card expense-stat-ranking">
+              <p class="stat-label">カテゴリ別 TOP 3</p>
+              <ol id="stat-expense-top-categories" class="stat-ranking-list"></ol>
+            </div>
+          </div>
+
           <div class="expense-daily-card card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">monitoring</span>日単位の消費量</h3>

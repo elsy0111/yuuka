@@ -3,6 +3,8 @@ import {
   deleteExpense,
   getMonthlyCategoryBreakdown,
   getMonthlyTotal,
+  getMonthlyCount,
+  getMonthlyMaxDay,
   getDailyExpenseTotals,
   listFilteredExpenses,
   listRecentExpenses,
@@ -22,14 +24,22 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
       const total = getMonthlyTotal(userId, year, month);
       const budget = getMonthlyBudget(userId);
+      const daysElapsed = new Date().getDate();
+      const breakdown = getMonthlyCategoryBreakdown(userId, year, month);
       sendJson(res, 200, {
         success: true,
         expenses: listRecentExpenses(userId, 30),
         total,
         budget,
         remaining: budget - total,
-        breakdown: getMonthlyCategoryBreakdown(userId, year, month),
+        breakdown,
         dailyTotals: getDailyExpenseTotals(userId, 7),
+        stats: {
+          count: getMonthlyCount(userId, year, month),
+          avgDaily: daysElapsed > 0 ? Math.round(total / daysElapsed) : 0,
+          maxDay: getMonthlyMaxDay(userId, year, month),
+          topCategories: breakdown.slice(0, 3),
+        },
       });
     } catch {
       sendError(res, 500, "家計データの取得に失敗しました。");

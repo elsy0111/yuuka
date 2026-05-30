@@ -117,6 +117,38 @@ export function listRecentExpenses(userId: string, count: number = 10): Expense[
     .all(userId, count) as Expense[];
 }
 
+export function getMonthlyCount(userId: string, year?: number, month?: number): number {
+  const db = getDb();
+  const now = new Date();
+  const y = year ?? now.getFullYear();
+  const m = month ?? now.getMonth() + 1;
+  const prefix = `${y}-${String(m).padStart(2, "0")}`;
+  const row = db
+    .prepare("SELECT COUNT(*) as cnt FROM expenses WHERE user_id = ? AND date LIKE ?")
+    .get(userId, `${prefix}%`) as { cnt: number };
+  return row.cnt;
+}
+
+export function getMonthlyMaxDay(
+  userId: string,
+  year?: number,
+  month?: number,
+): DailyExpenseTotal | null {
+  const db = getDb();
+  const now = new Date();
+  const y = year ?? now.getFullYear();
+  const m = month ?? now.getMonth() + 1;
+  const prefix = `${y}-${String(m).padStart(2, "0")}`;
+  const row = db
+    .prepare(
+      `SELECT date, SUM(amount) as total FROM expenses
+       WHERE user_id = ? AND date LIKE ?
+       GROUP BY date ORDER BY total DESC LIMIT 1`,
+    )
+    .get(userId, `${prefix}%`) as DailyExpenseTotal | undefined;
+  return row ?? null;
+}
+
 export function getDailyExpenseTotals(userId: string, days: number = 6): DailyExpenseTotal[] {
   const safeDays = Math.max(1, Math.min(days, 31));
   const dateStrings = Array.from({ length: safeDays }, (_, idx) => {

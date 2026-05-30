@@ -131,6 +131,88 @@
   font-family: var(--font-family-mono);
 }
 
+/* Stats Grid */
+.expense-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.expense-stat-card {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-zinc-muted);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.stat-value {
+  font-family: var(--font-family-mono);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-white);
+  line-height: 1.1;
+}
+
+.stat-sub {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: var(--font-family-mono);
+}
+
+.expense-stat-ranking .stat-value {
+  font-size: 1rem;
+}
+
+.stat-ranking-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+}
+
+.stat-rank-num {
+  font-family: var(--font-family-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.stat-rank-cat {
+  flex: 1;
+  color: var(--text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-rank-amt {
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
 /* Upload & Manual Columns Grid */
 .expense-actions-columns {
   display: grid;
