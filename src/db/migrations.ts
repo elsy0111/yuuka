@@ -54,6 +54,13 @@ export function runMigrations(): void {
     // すでにカラムが存在する場合はエラーを無視
   }
 
+  try {
+    db.exec("ALTER TABLE expenses ADD COLUMN purchase_source TEXT NOT NULL DEFAULT '不明';");
+    console.log("ℹ️ expenses テーブルに purchase_source カラムを追加しました");
+  } catch (e) {
+    // すでにカラムが存在する場合はエラーを無視
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS expenses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +70,7 @@ export function runMigrations(): void {
       description TEXT,
       date TEXT NOT NULL,
       source TEXT NOT NULL DEFAULT 'manual',
+      purchase_source TEXT NOT NULL DEFAULT '不明',
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
     );
 
@@ -93,6 +101,19 @@ export function runMigrations(): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_credentials_updated_at ON credentials(updated_at);
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS memories (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      module TEXT NOT NULL DEFAULT 'general',
+      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_memories_user ON memories(user_id);
+    CREATE INDEX IF NOT EXISTS idx_memories_module ON memories(user_id, module);
   `);
 
   console.log("✅ データベースマイグレーション完了");

@@ -9,6 +9,7 @@ export function addExpense(
     description?: string;
     date?: string;
     source?: string;
+    purchase_source?: string;
   }
 ): string {
   const expense = expenseRepo.addExpense(
@@ -17,7 +18,8 @@ export function addExpense(
     args.category,
     args.description,
     args.date,
-    args.source ?? "manual"
+    args.source ?? "manual",
+    args.purchase_source ?? "不明"
   );
   return JSON.stringify({
     success: true,

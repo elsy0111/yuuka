@@ -343,7 +343,7 @@
             <div class="action-column card">
               <div class="column-header">
                 <h3><span class="material-symbols-outlined header-icon-symbol">document_scanner</span>AIレシートスキャナー</h3>
-                <span class="badge badge-accent">Gemini連携</span>
+                <span class="hud-tag">AI</span>
               </div>
               <p class="description-text">レシート画像をドラッグ＆ドロップするか、ファイルを選択してください。ユウカが自動的に分類・登録を行います。</p>
               
@@ -351,7 +351,10 @@
               <div id="receipt-dropzone" class="dropzone">
                 <div class="dropzone-content">
                   <span class="material-symbols-outlined dropzone-icon-symbol">cloud_upload</span>
-                  <p>画像をドロップ、または<span class="text-highlight">ブラウズ</span></p>
+                  <p class="dropzone-title">
+                    <span>画像をドロップ、</span>
+                    <span>または<span class="text-highlight">ブラウズ</span></span>
+                  </p>
                   <span class="dropzone-sub">PNG, JPEG / 最大 5MB</span>
                   <input type="file" id="receipt-file-input" accept="image/*" class="hidden">
                 </div>
@@ -398,6 +401,10 @@
                   <label for="exp-date">日付</label>
                   <input type="date" id="exp-date">
                 </div>
+                <div class="form-group">
+                  <label for="exp-purchase-source">購入もと</label>
+                  <input type="text" id="exp-purchase-source" placeholder="イオン、ファミマ、自販機など">
+                </div>
                 <button type="submit" class="btn btn-primary btn-block">経費登録</button>
               </form>
             </div>
@@ -420,7 +427,6 @@
                     <th>日付</th>
                     <th>カテゴリー</th>
                     <th>メモ/詳細</th>
-                    <th>登録元</th>
                     <th>金額</th>
                   </tr>
                 </thead>
@@ -502,7 +508,7 @@
           <div class="config-card card" style="margin-top: 24px;">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">lock</span>AI認証情報管理 (AI Credentials)</h3>
-              <span class="badge badge-accent">セキュア暗号化</span>
+              <span class="hud-tag">SECURE</span>
             </div>
             <p class="description-text">AIエージェント（ユウカ）が自動ブラウジング等でログインするために使用するユーザー名とパスワードを安全に登録します。パスワードはAES-256-GCMにより強固に暗号化され、必要な時にのみオンデマンドで復号されます。</p>
             
@@ -528,6 +534,41 @@
             <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
               <button id="btn-new-credential" class="btn btn-primary">＋ 認証情報を追加</button>
             </div>
+          </div>
+
+          <!-- Memory Management Card -->
+          <div class="config-card card" style="margin-top: 24px;">
+            <div class="column-header">
+              <h3><span class="material-symbols-outlined header-icon-symbol">memory</span>ユウカの記憶管理</h3>
+              <span class="hud-tag">MEMORY</span>
+            </div>
+            <p class="description-text">ユウカがDiscordで学習した定型情報の一覧です。AIが家計記録などの際に自動参照します。</p>
+
+            <div style="display:flex;gap:8px;margin:14px 0 10px;">
+              <select id="memory-filter-module" class="filter-select">
+                <option value="">すべて</option>
+                <option value="expenses">家計 (expenses)</option>
+                <option value="schedules">予定 (schedules)</option>
+                <option value="tasks">タスク (tasks)</option>
+                <option value="general">汎用 (general)</option>
+              </select>
+              <button id="btn-memory-reload" class="btn btn-secondary btn-sm">更新</button>
+            </div>
+
+            <div id="config-memories-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+              <!-- Generated dynamically -->
+            </div>
+
+            <form id="memory-add-form" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+              <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" style="flex-grow:1;min-width:200px;">
+              <select id="memory-new-module" class="filter-select">
+                <option value="general">general</option>
+                <option value="expenses">expenses</option>
+                <option value="schedules">schedules</option>
+                <option value="tasks">tasks</option>
+              </select>
+              <button type="submit" class="btn btn-primary" style="white-space:nowrap;">追加</button>
+            </form>
           </div>
 
           <div class="config-card card alert-box">
@@ -745,8 +786,10 @@
           <input type="number" id="filter-amount-min" class="filter-input filter-input-num" placeholder="下限">
           <span style="color:var(--color-zinc-muted);">〜</span>
           <input type="number" id="filter-amount-max" class="filter-input filter-input-num" placeholder="上限">
-          <label>キーワード</label>
-          <input type="text" id="filter-q" class="filter-input" placeholder="メモで検索">
+        </div>
+        <div class="filter-row">
+          <label>フリーワード</label>
+          <input type="text" id="filter-q" class="filter-input" placeholder="ID、日付、カテゴリ、メモ、購入もと、登録元、金額">
         </div>
         <div class="filter-row filter-actions">
           <button id="btn-filter-apply" class="btn btn-primary btn-sm">検索</button>
@@ -760,13 +803,13 @@
         <table class="expense-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>日付</th>
-              <th>カテゴリ</th>
-              <th>メモ/詳細</th>
-              <th>登録元</th>
-              <th>金額</th>
-              <th>登録日時</th>
+              <th class="sortable-th sort-desc" data-sort="date">日付 <span class="sort-icon">▼</span></th>
+              <th class="sortable-th" data-sort="category">カテゴリ <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="description">メモ/詳細 <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="purchase_source">購入もと <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="source">登録元 <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="amount">金額 <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="created_at">登録日時 <span class="sort-icon"></span></th>
             </tr>
           </thead>
           <tbody id="detail-expenses-table-body">

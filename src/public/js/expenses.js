@@ -71,23 +71,11 @@ export function makeExpenseRow(exp) {
   const tdDesc = document.createElement("td");
   tdDesc.textContent = exp.description || "なし";
 
-  const tdSrc  = document.createElement("td");
-  const badge  = document.createElement("span");
-  badge.className = `expense-source-badge source-${exp.source}`;
-  const badgeIcon = document.createElement("span");
-  badgeIcon.className = "material-symbols-outlined source-icon";
-  let srcText = "";
-  if (exp.source === "web")         { badgeIcon.textContent = "language"; srcText = " Web"; }
-  else if (exp.source === "manual") { badgeIcon.textContent = "edit";     srcText = " 手動"; }
-  else                              { badgeIcon.textContent = "chat";     srcText = " Discord"; }
-  badge.append(badgeIcon, document.createTextNode(srcText));
-  tdSrc.appendChild(badge);
-
   const tdAmt = document.createElement("td");
   tdAmt.className = "expense-amount-val";
   tdAmt.textContent = `¥${exp.amount.toLocaleString()}`;
 
-  tr.append(tdDate, tdCat, tdDesc, tdSrc, tdAmt);
+  tr.append(tdDate, tdCat, tdDesc, tdAmt);
   return tr;
 }
 
@@ -99,13 +87,14 @@ export function initExpenses() {
     e.preventDefault();
     const amount   = parseInt(document.getElementById("exp-amount").value, 10);
     const category = document.getElementById("exp-category").value;
-    const desc     = document.getElementById("exp-description").value.trim();
-    const date     = document.getElementById("exp-date").value;
+    const desc           = document.getElementById("exp-description").value.trim();
+    const date           = document.getElementById("exp-date").value;
+    const purchaseSrc    = document.getElementById("exp-purchase-source")?.value.trim() || "不明";
     try {
       const res  = await fetch("/api/expenses/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: state.activeUserId, amount, category, description: desc, date }),
+        body: JSON.stringify({ userId: state.activeUserId, amount, category, description: desc, date, purchase_source: purchaseSrc }),
       });
       const data = await res.json();
       if (data.success) {

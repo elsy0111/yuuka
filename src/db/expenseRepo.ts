@@ -8,6 +8,7 @@ export interface Expense {
   description: string | null;
   date: string;
   source: string;
+  purchase_source: string;
   created_at: string;
 }
 
@@ -37,15 +38,16 @@ export function addExpense(
   category: string,
   description?: string,
   date?: string,
-  source: string = "manual"
+  source: string = "manual",
+  purchaseSource: string = "不明"
 ): Expense {
   const db = getDb();
   const expenseDate = date ?? new Date().toISOString().slice(0, 10);
   const stmt = db.prepare(`
-    INSERT INTO expenses (user_id, amount, category, description, date, source)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO expenses (user_id, amount, category, description, date, source, purchase_source)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
-  const result = stmt.run(userId, amount, category, description ?? null, expenseDate, source);
+  const result = stmt.run(userId, amount, category, description ?? null, expenseDate, source, purchaseSource);
   return getExpenseById(result.lastInsertRowid as number)!;
 }
 
@@ -114,10 +116,24 @@ export function listFilteredExpenses(userId: string, filter: ExpenseFilter = {})
   if (filter.dateFrom) { conditions.push("date >= ?"); params.push(filter.dateFrom); }
   if (filter.dateTo)   { conditions.push("date <= ?"); params.push(filter.dateTo); }
   if (filter.category) { conditions.push("category = ?"); params.push(filter.category); }
-  if (filter.source)   { conditions.push("source = ?"); params.push(filter.source); }
-  if (filter.amountMin != null) { conditions.push("amount >= ?"); params.push(filter.amountMin); }
-  if (filter.amountMax != null) { conditions.push("amount <= ?"); params.push(filter.amountMax); }
-  if (filter.q) { conditions.push("description LIKE ?"); params.push(`%${filter.q}%`); }
+  if (filter.source)        { conditions.push("source = ?");                params.push(filter.source); }
+  if (filter.amountMin != null) { conditions.push("amount >= ?");          params.push(filter.amountMin); }
+  if (filter.amountMax != null) { conditions.push("amount <= ?");          params.push(filter.amountMax); }
+  if (filter.q) {
+    const like = `%${filter.q}%`;
+    conditions.push(`(
+      CAST(id AS TEXT) LIKE ?
+      OR user_id LIKE ?
+      OR CAST(amount AS TEXT) LIKE ?
+      OR category LIKE ?
+      OR COALESCE(description, '') LIKE ?
+      OR date LIKE ?
+      OR source LIKE ?
+      OR purchase_source LIKE ?
+      OR created_at LIKE ?
+    )`);
+    params.push(like, like, like, like, like, like, like, like, like);
+  }
 
   const sql = `SELECT * FROM expenses WHERE ${conditions.join(" AND ")} ORDER BY date DESC, created_at DESC`;
   return db.prepare(sql).all(...params) as Expense[];
