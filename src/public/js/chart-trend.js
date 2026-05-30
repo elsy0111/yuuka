@@ -25,7 +25,9 @@ function computeNiceScale(maxVal) {
   return { step, niceMax };
 }
 
-function formatDateLabel(dateString) {
+function formatDateLabel(dateString, idx, lastIdx) {
+  if (idx === lastIdx) return "今日";
+  if (idx === 0) return "7日前";
   const [, month, day] = dateString.split("-");
   return `${Number(month)}/${Number(day)}`;
 }
@@ -48,7 +50,7 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   rows.forEach((row, idx) => {
     const pct = rows.length > 1 ? (idx / (rows.length - 1)) * 100 : 50;
     const span = document.createElement("span");
-    span.textContent = formatDateLabel(row.date);
+    span.textContent = formatDateLabel(row.date, idx, rows.length - 1);
     span.style.left = `${pct}%`;
     xAxis.appendChild(span);
   });
@@ -61,7 +63,7 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
     y: 130 - (Number(row.total || 0) / niceMax) * 100,
     amount: Number(row.total || 0),
     date: row.date,
-    dateLabel: formatDateLabel(row.date),
+    dateLabel: formatDateLabel(row.date, idx, rows.length - 1),
   }));
 
   if (yAxis) {
