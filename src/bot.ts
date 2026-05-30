@@ -7,6 +7,22 @@ import { isRegisteredUser, getUserDiscordBotConfig, listAllUserIds } from "./db/
 import { decryptText } from "./utils/crypto.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+type TypingChannel = Message["channel"] & {
+  sendTyping: () => Promise<unknown>;
+};
+
+type SendableChannel = Message["channel"] & {
+  send: (content: string) => Promise<unknown>;
+};
+
+function hasSendTyping(channel: Message["channel"]): channel is TypingChannel {
+  return "sendTyping" in channel && typeof channel.sendTyping === "function";
+}
+
+function hasSend(channel: Message["channel"]): channel is SendableChannel {
+  return "send" in channel && typeof channel.send === "function";
+}
+
 // デフォルト（共有）クライアント
 export const client = new Client({
   intents: [
@@ -27,7 +43,7 @@ export const customClients = new Map<string, Client>();
  */
 export function getBotClientForUser(userId: string): Client {
   const custom = customClients.get(userId);
-  if (custom && custom.readyAt) {
+  if (custom?.readyAt) {
     return custom;
   }
   return client;
@@ -100,7 +116,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
     // 登録ユーザーが独自のBotを有効に起動している場合は、デフォルトクライアントは応答をスキップする
     if (!ownerId && customClients.has(message.author.id)) {
       const customClient = customClients.get(message.author.id);
-      if (customClient && customClient.readyAt) {
+      if (customClient?.readyAt) {
         return;
       }
     }
@@ -108,28 +124,19 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
     // 処理対象のユーザーID（カスタムの場合はオーナー、デフォルトの場合はメッセージの送信者）
     const userId = ownerId || message.author.id;
 
-    let isReplyToBot = false;
     let referencedMsg: Message | null = null;
 
     // 返信先メッセージの取得
     if (message.reference?.messageId) {
       try {
         referencedMsg = await message.channel.messages.fetch(message.reference.messageId);
-        if (referencedMsg?.author.id === botClient.user?.id) {
-          isReplyToBot = true;
-        }
       } catch (err) {
         console.error("返信先メッセージの取得に失敗しました:", err);
       }
     }
 
-    // メンションされたかどうかチェック
-    const isMentioned = message.mentions.has(botClient.user!);
-    // DMかどうか
-    const isDM = !message.guild;
-
-    // メンションもDMも、ボットへの返信でもなければ無視
-    if (!isMentioned && !isDM && !isReplyToBot) return;
+    const currentBotUser = botClient.user;
+    if (!currentBotUser) return;
 
     // 「入力中...」を維持するためのタイマー
     let typingInterval: NodeJS.Timeout | null = null;
@@ -139,11 +146,8 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
 
     try {
       // 「入力中...」を表示し、処理が終わるまで5秒ごとに維持する
-      if (
-        "sendTyping" in message.channel &&
-        typeof (message.channel as any).sendTyping === "function"
-      ) {
-        const channel = message.channel as any;
+      if (hasSendTyping(message.channel)) {
+        const channel = message.channel;
         await channel.sendTyping().catch((err: unknown) => console.error("sendTyping error:", err));
         typingInterval = setInterval(() => {
           channel.sendTyping().catch((err: unknown) => console.error("sendTyping error:", err));
@@ -151,7 +155,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       }
 
       // メンションテキストを除去してクリーンなメッセージを取得
-      let text = message.content.replace(/<@!?\d+>/g, "").trim();
+      const text = message.content.replace(/<@!?\d+>/g, "").trim();
 
       // 返信先メッセージのテキストをコンテキストプレフィックスとして構築
       let contextPrefix = "";
@@ -272,7 +276,8 @@ async function sendSplitResponse(message: Message, response: string): Promise<vo
       const delay = Math.min(300 + chunks[i - 1].length * 1.5, 1200);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
-    await (message.channel as any).send(chunks[i]);
+    if (!hasSend(message.channel)) return;
+    await message.channel.send(chunks[i]);
   }
 }
 
@@ -306,7 +311,7 @@ function splitMessage(text: string, maxLength: number): string[] {
  */
 function getDecryptedDiscordToken(userId: string): string | null {
   const config = getUserDiscordBotConfig(userId);
-  if (!config || !config.tokenEncrypted || !config.tokenIv || !config.tokenTag) {
+  if (!config?.tokenEncrypted || !config.tokenIv || !config.tokenTag) {
     return null;
   }
   try {
