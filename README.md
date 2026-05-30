@@ -6,6 +6,8 @@
 
 『Yuuka』は、Google の最先端 AI である **Gemini API** を活用した、Discord 秘書ボットと Web 管理者ダッシュボードのハイブリッドシステムです。『ブルーアーカイブ』に登場するセミナー会計「**早瀬ユウカ**」が、あなたの秘書としてタスクやスケジュール、家計簿を徹底的に管理・サポートしてくれます。
 
+この README は利用者向け説明だけでなく、実装・運用時の仕様書として扱います。挙動を変える場合は、コード変更と同じコミットで該当仕様も更新してください。
+
 ### 🤖 Discord 秘書 Bot 機能
 
 *   **📐 早瀬ユウカによる親身なロールプレイ**
@@ -27,13 +29,28 @@
 *   **🛠️ 自己開発・Git連携 (エージェント自己拡張用)**
     *   AIエージェントが自らコードを読み書きし、Git ブランチの作成、コミット、マージ、プッシュなどを行って自己拡張するための強力なツール（Function Calling）を内蔵しています。
 
+### Discord 応答仕様
+
+Yuuka の Discord Bot は、以下の順序で受信メッセージを判定します。
+
+*   Bot 自身を含む Bot 投稿は無視します。
+*   デフォルト Bot は、Web 管理画面で登録済みの Discord ユーザーからのメッセージだけに応答します。未登録ユーザーの投稿には、メンションされても返信・リアクションしません。
+*   ユーザー別の独自 Bot が起動している場合、デフォルト Bot はそのユーザーへの応答をスキップし、独自 Bot 側だけが処理します。
+*   独自 Bot は、その Bot の所有者として紐づいたユーザーの投稿だけに応答します。
+*   登録済みユーザーからの投稿であれば、サーバー内の通常メッセージでもメンションなしで応答します。DM と Bot への返信も同じ処理経路です。
+*   返信メッセージの場合、返信先の本文を文脈として Gemini に渡します。返信先に画像が添付されていて、現在の投稿に画像がない場合は、返信先画像もレシート解析対象になります。
+*   メッセージ処理開始時に Unicode 絵文字リアクションを非同期で付けます。`GEMINI_API_KEY` がない場合、絵文字選択は実行されません。
+*   リアクションには Discord 側の `Add Reactions` 権限が必要です。返信先取得には `Read Message History` 権限が必要です。
+*   Discord Developer Portal では、対象 Bot の `Message Content Intent` を有効化してください。
+
 ### 🌐 Web 管理者ダッシュボード
 
 ブラウザからアクセスして、全てのデータを一元管理・視覚化できるプレミアムな管理者ダッシュボードです。
 
 *   **🔒 セキュアな認証システム**
-    *   設定ファイル (`config.yaml`) で指定したパスコードによるログイン。
-    *   IPごとのログイン試行レート制限（5回失敗で15分間ロックアウト）や安全なセッションクッキー管理により、外部からの不正アクセスを防ぎます。
+    *   Discord ユーザー ID とパスワードによるログイン。
+    *   新規アカウント作成には `config.yaml` の `INVITE_CODES` に設定された招待コードが必要です。招待コードは1回使い切りです。
+    *   IPごとのログイン試行レート制限（5回失敗で15分間ロックアウト）、HttpOnly セッションクッキー、Bearer session token により、外部からの不正アクセスを防ぎます。
 *   **📊 データ統計 & トレンドの視覚化**
     *   タスクの総数、未完了タスク数、優先度別の未完了タスク数を一目で把握。
     *   直近5日間の「予定登録数」および「支出額」の推移を視覚的なグラフ用データとして集計・表示します。
@@ -45,16 +62,27 @@
     *   タスク、予定、支出データの追加、完了、削除をダッシュボード上からブラウザ操作で素早く行えます。
     *   Web 画面から直接レシート画像をアップロードし、Gemini による自動解析・家計簿登録を実行することも可能です。
 
+### Web/PWA 仕様
+
+*   静的ファイルは `src/public/` から配信します。
+*   ログイン/登録後、サーバーは `__Host-yuuka-session` Cookie と session token を返します。ブラウザ側は session token を `localStorage` に保存し、同一オリジンの `/api/` リクエストへ `Authorization: Bearer ...` を自動付与します。
+*   Service Worker は `/sw.js` として登録され、`/`, CSS, JS, manifest, icons, `materials/yuka.webp` をプリキャッシュします。
+*   GET かつ同一オリジンかつ `/api/` を含まないリクエストだけをキャッシュ対象にします。API、認証、外部リクエストはキャッシュしません。
+*   ネットワーク取得時の `Response` は、ブラウザへ返す前に同期的に `clone()` してから Cache Storage に保存します。`Response body is already used` を避けるため、この順序は変えないでください。
+*   Google OAuth の「Google 連携認証を開始する」ボタンは、カード幅いっぱいに表示します。
+
 ---
 
 ## 🚀 セットアップ手順
 
 ### 1. リポジトリのクローンと依存関係のインストール
 
+このプロジェクトは **Yarn 4** を標準の package manager とします。`package.json` の `packageManager`、`.yarn/releases/yarn-4.15.0.cjs`、`yarn.lock` をリポジトリに含め、`pnpm-lock.yaml` は使いません。
+
 プロジェクトディレクトリに移動し、依存パッケージをインストールします。
 
 ```bash
-pnpm install
+yarn install --immutable
 ```
 
 ### 2. 設定ファイルの作成
@@ -79,6 +107,27 @@ cp example.yaml config.yaml
 
 ※ ユーザー個別の Gemini API キーや Google OAuth 設定、連携カレンダー ID 等は、システム起動後に管理画面ダッシュボードから安全に設定・管理できます。
 
+### 3. Discord Bot 側の必須設定
+
+Discord Developer Portal とサーバー招待時の設定も必要です。
+
+*   Bot Token を `DISCORD_TOKEN` に設定します。
+*   Privileged Gateway Intents で `Message Content Intent` を有効化します。
+*   サーバーで少なくとも `View Channel`, `Send Messages`, `Read Message History`, `Add Reactions` を付与します。
+*   登録済みユーザーだけが応答対象です。初回利用者は Web 管理画面でアカウント登録し、Discord ユーザー ID を `users.discord_id` として保持する必要があります。
+
+### 4. Runtime prerequisites
+
+ローカル開発・VPS 運用では以下が必要です。
+
+*   Node.js 22 系。CI も Node.js 22 で動作確認します。
+*   Yarn 4。Corepack が使える環境では `corepack enable` 後に `yarn install --immutable` を使います。
+*   Rust/Cargo。`yarn build` は `src/rust_crawler` を release build し、生成された `yuuka-crawler` を `dist/bin/` にコピーします。
+*   SQLite ネイティブ依存。`better-sqlite3` を利用します。
+*   Redis。`REDIS_URL` に接続できない場合は SQLite の永続化を主に使いますが、チャット履歴キャッシュ等の高速化には Redis を使います。
+*   Puppeteer/Chromium 実行環境。VPS でブラウザ操作機能を使う場合は、Chromium の実行に必要な OS パッケージも用意してください。
+*   Google OAuth を使う場合、`BASE_URL` は Google から到達可能な HTTPS URL にしてください。
+
 ---
 
 ## 🏃 起動と開発
@@ -87,7 +136,7 @@ cp example.yaml config.yaml
 コードの変更を監視し、自動でサーバーが再起動します。
 
 ```bash
-pnpm dev
+yarn dev
 ```
 
 ### プロダクションビルド & 起動
@@ -95,13 +144,43 @@ TypeScript のコンパイルを行い、本番環境用として最適化され
 
 ```bash
 # コンパイル (dist/ 以下に出力されます)
-pnpm build
+yarn build
 
 # 本番サーバーの起動
-pnpm start
+yarn start
 ```
 
-起動後、ブラウザで `http://localhost:7854` (または `config.yaml` で設定したポート/ホスト) にアクセスすると、管理者用ダッシュボードが開きます。設定した `ADMIN_TOKEN` を入力してログインしてください。
+起動後、ブラウザで `http://localhost:7854` (または `config.yaml` で設定したポート/ホスト) にアクセスすると、管理者用ダッシュボードが開きます。登録済みの Discord ユーザー ID とパスワードでログインしてください。初回は招待コードを使ってアカウントを作成します。
+
+### 品質チェック
+
+Formatter/Linter は **Biome** です。CI と同じチェックは以下です。
+
+```bash
+yarn format:check
+yarn lint
+yarn tsc --noEmit
+```
+
+`yarn lint` は `--error-on-warnings` を付けて実行されます。Biome の recommended lint で warning が出ても CI は落ちます。意図的に緩める場合は、README と `biome.json` に理由を書いてください。
+
+自動整形は以下です。
+
+```bash
+yarn format
+```
+
+---
+
+## CI 仕様
+
+GitHub Actions は `.github/workflows/checks.yml` で定義します。
+
+*   `main` への push と pull request で実行します。
+*   Node.js 22 を使います。
+*   Corepack を有効化し、Yarn 4 で `yarn install --immutable` を実行します。
+*   `yarn format:check` と `yarn lint` を実行します。
+*   CI では Rust crawler の release build や本番起動までは実行しません。必要になったら別 job として追加してください。
 
 ---
 
@@ -124,6 +203,52 @@ pnpm start
     ```bash
     sudo systemctl status yuuka.service
     ```
+
+### VPS 運用メモ
+
+本番運用では、`node dist/index.js` を手動で直接起動し続けるより、systemd 管理に寄せてください。手動起動の Node プロセスは stdout/stderr が shell や socket に接続され、`journalctl -u yuuka` で現在ログを追えないことがあります。
+
+正常起動時のログ目安:
+
+```text
+🚀 Yuuka 起動中...
+✅ データベースマイグレーション完了
+✅ Redis への接続が完了しました。インメモリDBキャッシュを有効にします。
+🌐 Yuuka 管理画面サーバー起動完了: http://127.0.0.1:7854
+✅ yuuka#6022 としてログインしました
+⏰ リマインダーサービス開始
+✨ Yuuka が起動しました！
+```
+
+反応しない場合の確認:
+
+```bash
+ps -axo pid,etime,command | grep -Ei 'node|tsx|yuuka|dist/index|src/index' | grep -v grep
+systemctl status yuuka --no-pager -l
+journalctl -u yuuka -n 120 --no-pager
+ss -ltnp | grep ':7854'
+git -C /home/elsy/yuuka rev-parse --short HEAD
+```
+
+`yuuka.service` が inactive なのに `node /home/elsy/yuuka/dist/index.js` が動いている場合、手動起動プロセスが残っています。ポート 7854 の競合やログ欠落の原因になるため、プロセスを止めて systemd で起動し直してください。
+
+```bash
+pkill -f '/home/elsy/yuuka/dist/index.js'
+sudo systemctl daemon-reload
+sudo systemctl enable --now yuuka
+sudo systemctl status yuuka --no-pager -l
+journalctl -u yuuka -n 80 --no-pager
+```
+
+登録ユーザーの確認:
+
+```bash
+node --input-type=module - <<'NODE'
+import Database from 'better-sqlite3';
+const db = new Database('/home/elsy/yuuka/data/yuuka.db', { readonly: true });
+console.log(db.prepare('select discord_id, username from users order by created_at desc').all());
+NODE
+```
 
 ---
 
