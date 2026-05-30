@@ -178,3 +178,98 @@
   border-color: var(--color-red);
   color: var(--color-red);
 }
+
+/* Discord Bot logs */
+.bot-log-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+.bot-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bot-log-empty,
+.bot-log-row {
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  background-color: var(--bg-primary);
+  padding: 12px;
+}
+
+.bot-log-empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.bot-log-row {
+  border-left-width: 3px;
+}
+
+.bot-log-debug {
+  border-left-color: var(--text-secondary);
+}
+
+.bot-log-info {
+  border-left-color: var(--accent-cyan);
+}
+
+.bot-log-warn {
+  border-left-color: var(--accent-yellow);
+}
+
+.bot-log-error {
+  border-left-color: var(--color-red);
+}
+
+.bot-log-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.bot-log-level {
+  font-family: var(--font-family-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bot-log-event {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.bot-log-time,
+.bot-log-meta {
+  color: var(--text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+}
+
+.bot-log-meta {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.bot-log-details {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}

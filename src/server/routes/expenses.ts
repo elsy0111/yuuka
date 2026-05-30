@@ -3,6 +3,7 @@ import {
   deleteExpense,
   getMonthlyCategoryBreakdown,
   getMonthlyTotal,
+  getDailyExpenseTotals,
   listFilteredExpenses,
   listRecentExpenses,
   updateExpense,
@@ -23,6 +24,7 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
         expenses: listRecentExpenses(userId, 30),
         total: getMonthlyTotal(userId, year, month),
         breakdown: getMonthlyCategoryBreakdown(userId, year, month),
+        dailyTotals: getDailyExpenseTotals(userId, 6),
       });
     } catch {
       sendError(res, 500, "家計データの取得に失敗しました。");

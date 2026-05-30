@@ -5,6 +5,7 @@ import { fetchSchedulesList } from "./schedules.js";
 import { fetchExpensesList } from "./expenses.js";
 import { fetchConfigSettings } from "./config.js";
 import { fetchMemories } from "./memories.js";
+import { fetchBotLogs } from "./bot-logs.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",
@@ -12,6 +13,7 @@ const TAB_TITLES = {
   schedules: "予定スケジュール（Googleカレンダー同期）",
   expenses: "家計管理（レシートAI解析＆経費簿）",
   config: "システム設定情報",
+  "bot-logs": "Discord Botログ",
 };
 
 export function loadDataForActiveTab() {
@@ -31,6 +33,9 @@ export function loadDataForActiveTab() {
     case "config":
       fetchConfigSettings();
       fetchMemories();
+      break;
+    case "bot-logs":
+      fetchBotLogs();
       break;
   }
 }

@@ -30,6 +30,7 @@ import { initExpenses } from "./expenses.js";
 import { initExpenseDetail } from "./expense-detail.js";
 import { initConfig } from "./config.js";
 import { initCredentials } from "./credentials.js";
+import { initBotLogs } from "./bot-logs.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initExpenseDetail();
   initConfig();
   initCredentials();
+  initBotLogs();
 
   checkSessionHandshake();
 

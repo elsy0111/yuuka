@@ -53,9 +53,9 @@ export async function fetchDashboardStats() {
       expenses.length > 0 ? `¥${Math.round(expenseData.total / 30).toLocaleString()}` : "¥0";
 
     renderPriceTrendChart(
-      expenses,
+      expenseData.dailyTotals || [],
       (p) => {
-        const label = p.x === 400 ? "今日" : p.x === 320 ? "昨日" : "この日";
+        const label = p.dateLabel || (p.x === 400 ? "今日" : p.x === 320 ? "昨日" : "この日");
         document.getElementById("yuuka-bubble-text").textContent =
           `${label}の出費額は ¥${p.amount.toLocaleString()} ですよ、先生！`;
       },

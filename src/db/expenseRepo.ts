@@ -18,6 +18,11 @@ export interface CategoryTotal {
   count: number;
 }
 
+export interface DailyExpenseTotal {
+  date: string;
+  total: number;
+}
+
 export const CATEGORIES = [
   "食費",
   "日用品",
@@ -110,6 +115,27 @@ export function listRecentExpenses(userId: string, count: number = 10): Expense[
   return db
     .prepare("SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC, created_at DESC LIMIT ?")
     .all(userId, count) as Expense[];
+}
+
+export function getDailyExpenseTotals(userId: string, days: number = 6): DailyExpenseTotal[] {
+  const safeDays = Math.max(1, Math.min(days, 31));
+  const dateStrings = Array.from({ length: safeDays }, (_, idx) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (safeDays - 1 - idx));
+    return d.toISOString().slice(0, 10);
+  });
+
+  const rows = getDb()
+    .prepare(`
+      SELECT date, COALESCE(SUM(amount), 0) as total
+      FROM expenses
+      WHERE user_id = ? AND date BETWEEN ? AND ?
+      GROUP BY date
+    `)
+    .all(userId, dateStrings[0], dateStrings[dateStrings.length - 1]) as DailyExpenseTotal[];
+
+  const totals = new Map(rows.map((row) => [row.date, row.total]));
+  return dateStrings.map((date) => ({ date, total: totals.get(date) ?? 0 }));
 }
 
 export interface ExpenseFilter {

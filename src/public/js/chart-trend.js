@@ -1,42 +1,68 @@
 import { currentTheme } from "./theme.js";
 
-export function renderPriceTrendChart(expenses, onHover, onLeave) {
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function formatYen(value) {
+  if (value >= 10000) return `¥${Math.round(value / 1000).toLocaleString()}k`;
+  return `¥${value.toLocaleString()}`;
+}
+
+function formatDateLabel(dateString, idx, lastIdx) {
+  if (idx === lastIdx) return "今日";
+  if (idx === lastIdx - 1) return "昨日";
+  const [, month, day] = dateString.split("-");
+  return `${Number(month)}/${Number(day)}`;
+}
+
+export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   const svg = document.getElementById("dashboard-trend-chart");
   const linePath = document.getElementById("trend-line-path");
   const areaPath = document.getElementById("trend-area-path");
+  const yAxis = document.getElementById("dashboard-trend-y-axis");
 
-  svg.querySelectorAll("circle").forEach((c) => {
+  svg.querySelectorAll("circle, text.trend-point-label").forEach((c) => {
     c.remove();
   });
 
-  const dateLabels = [];
-  const dateStrings = [];
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    dateStrings.push(d.toISOString().slice(0, 10));
-    dateLabels.push(`${d.getMonth() + 1}/${d.getDate()}`);
-  }
+  const rows = Array.isArray(dailyTotals) ? dailyTotals : [];
+  const totals = rows.map((row) => Number(row.total || 0));
 
   const xAxis = svg.nextElementSibling;
   xAxis.replaceChildren();
-  dateLabels.forEach((label, idx) => {
+  rows.forEach((row, idx) => {
     const span = document.createElement("span");
-    span.textContent = idx === 0 ? "5日前" : idx === 4 ? "昨日" : idx === 5 ? "今日" : label;
+    span.textContent =
+      idx === 0 ? `${rows.length - 1}日前` : formatDateLabel(row.date, idx, rows.length - 1);
     xAxis.appendChild(span);
   });
 
-  const dailyTotals = dateStrings.map((date) => {
-    if (!expenses) return 0;
-    return expenses.filter((e) => e.date === date).reduce((s, e) => s + e.amount, 0);
-  });
-
-  const maxVal = Math.max(...dailyTotals, 10000);
-  const points = dailyTotals.map((val, idx) => ({
-    x: idx * 80,
-    y: 130 - (val / maxVal) * 100,
-    amount: val,
+  const maxVal = Math.max(...totals, 1);
+  const scaleMax = Math.ceil(maxVal * 1.18);
+  const xStep = rows.length > 1 ? 400 / (rows.length - 1) : 400;
+  const points = rows.map((row, idx) => ({
+    x: idx * xStep,
+    y: 130 - (Number(row.total || 0) / scaleMax) * 100,
+    amount: Number(row.total || 0),
+    date: row.date,
+    dateLabel: formatDateLabel(row.date, idx, rows.length - 1),
   }));
+
+  if (yAxis) {
+    const labels = [scaleMax, Math.round(scaleMax * 0.6), Math.round(scaleMax * 0.2), 0];
+    yAxis.replaceChildren(
+      ...labels.map((val) => {
+        const span = document.createElement("span");
+        span.textContent = formatYen(val);
+        return span;
+      }),
+    );
+  }
+
+  if (points.length === 0) {
+    linePath.setAttribute("d", "");
+    areaPath.setAttribute("d", "");
+    return;
+  }
 
   linePath.setAttribute(
     "d",
@@ -50,9 +76,19 @@ export function renderPriceTrendChart(expenses, onHover, onLeave) {
   const isLight = currentTheme() === "blue-archive";
   const dotNorm = isLight ? "#02D3FB" : "#fafafa";
   const dotHover = isLight ? "#00AED8" : "#a1a1aa";
+  const labelColor = isLight ? "#1a2740" : "#e4e4e7";
 
   points.forEach((p) => {
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    const label = document.createElementNS(SVG_NS, "text");
+    label.classList.add("trend-point-label");
+    label.setAttribute("x", Math.min(Math.max(p.x, 28), 372));
+    label.setAttribute("y", Math.max(12, p.y - 10));
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("fill", labelColor);
+    label.textContent = formatYen(p.amount);
+    svg.appendChild(label);
+
+    const circle = document.createElementNS(SVG_NS, "circle");
     circle.setAttribute("cx", p.x);
     circle.setAttribute("cy", p.y);
     circle.setAttribute("r", "4.5");

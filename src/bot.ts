@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { processMessage, type ChatMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
+import { addBotLog, pruneBotLogs, type BotLogLevel } from "./db/botLogRepo.js";
 import { isRegisteredUser, getUserDiscordBotConfig, listAllUserIds } from "./db/userRepo.js";
 import { decryptText } from "./utils/crypto.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -21,6 +22,46 @@ function hasSendTyping(channel: Message["channel"]): channel is TypingChannel {
 
 function hasSend(channel: Message["channel"]): channel is SendableChannel {
   return "send" in channel && typeof channel.send === "function";
+}
+
+function serializeError(error: unknown): string {
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  return String(error);
+}
+
+function logBotEvent(
+  level: BotLogLevel,
+  event: string,
+  message: Message,
+  details?: Record<string, unknown>,
+): void {
+  try {
+    addBotLog({
+      level,
+      event,
+      userId: message.author.id,
+      username: message.author.tag,
+      guildId: message.guild?.id ?? null,
+      channelId: message.channelId,
+      messageId: message.id,
+      details,
+    });
+  } catch (error) {
+    console.error("[Discord Bot] Botログ記録に失敗しました:", error);
+  }
+}
+
+function logSystemBotEvent(
+  level: BotLogLevel,
+  event: string,
+  details?: Record<string, unknown>,
+  userId?: string,
+): void {
+  try {
+    addBotLog({ level, event, userId, details });
+  } catch (error) {
+    console.error("[Discord Bot] Botログ記録に失敗しました:", error);
+  }
 }
 
 // デフォルト（共有）クライアント
@@ -87,6 +128,7 @@ export function setBotStatus(botClient: Client, status: "thinking" | "writing" |
 
 client.once("clientReady", (c) => {
   console.log(`✅ デフォルトBot: ${c.user.tag} としてログインしました`);
+  logSystemBotEvent("info", "default_bot_ready", { tag: c.user.tag, id: c.user.id });
   setBotStatus(client, "idle");
   // リマインダーサービスを開始
   startReminderService();
@@ -94,6 +136,10 @@ client.once("clientReady", (c) => {
 
 client.once("clientReady", (c) => {
   console.log(`✅ デフォルトBot: ${c.user.tag} としてログインしました (clientReady)`);
+  logSystemBotEvent("debug", "default_bot_ready_duplicate_listener", {
+    tag: c.user.tag,
+    id: c.user.id,
+  });
   setBotStatus(client, "idle");
   // リマインダーサービスを開始
   startReminderService();
@@ -111,12 +157,32 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
     if (ownerId && message.author.id !== ownerId) return;
 
     // デフォルトクライアントの場合、登録ユーザーからのメッセージのみ応答
-    if (!ownerId && !isRegisteredUser(message.author.id)) return;
+    if (!ownerId) {
+      try {
+        if (!isRegisteredUser(message.author.id)) {
+          logBotEvent("warn", "ignored_unregistered_user", message, {
+            contentLength: message.content.length,
+            hasGuild: Boolean(message.guild),
+          });
+          return;
+        }
+      } catch (error) {
+        logBotEvent("error", "registration_check_failed", message, {
+          error: serializeError(error),
+          contentLength: message.content.length,
+          hasGuild: Boolean(message.guild),
+        });
+        return;
+      }
+    }
 
     // 登録ユーザーが独自のBotを有効に起動している場合は、デフォルトクライアントは応答をスキップする
     if (!ownerId && customClients.has(message.author.id)) {
       const customClient = customClients.get(message.author.id);
       if (customClient?.readyAt) {
+        logBotEvent("info", "ignored_custom_bot_active", message, {
+          customBotUser: customClient.user?.tag,
+        });
         return;
       }
     }
@@ -132,19 +198,33 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         referencedMsg = await message.channel.messages.fetch(message.reference.messageId);
       } catch (err) {
         console.error("返信先メッセージの取得に失敗しました:", err);
+        logBotEvent("warn", "reference_fetch_failed", message, { error: serializeError(err) });
       }
     }
 
     const currentBotUser = botClient.user;
-    if (!currentBotUser) return;
+    if (!currentBotUser) {
+      logBotEvent("error", "bot_user_unavailable", message);
+      return;
+    }
 
     // 「入力中...」を維持するためのタイマー
     let typingInterval: NodeJS.Timeout | null = null;
 
     // リアクションをメイン処理と並列で実行（待たない）
-    reactWithEmoji(message).catch(() => {});
+    reactWithEmoji(message).catch((error) => {
+      logBotEvent("warn", "reaction_unhandled_error", message, { error: serializeError(error) });
+    });
 
     try {
+      logBotEvent("info", "message_received", message, {
+        ownerId: ownerId ?? null,
+        contentLength: message.content.length,
+        hasGuild: Boolean(message.guild),
+        hasReference: Boolean(message.reference?.messageId),
+        attachmentCount: message.attachments.size,
+      });
+
       // 「入力中...」を表示し、処理が終わるまで5秒ごとに維持する
       if (hasSendTyping(message.channel)) {
         const channel = message.channel;
@@ -184,6 +264,11 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
 
       if (imageAttachment) {
         console.log(`📷 画像受信 (返信先含む): ${imageAttachment.name} from ${message.author.tag}`);
+        logBotEvent("info", "image_attachment_received", message, {
+          name: imageAttachment.name,
+          contentType: imageAttachment.contentType,
+          size: imageAttachment.size,
+        });
 
         const imageResponse = await fetch(imageAttachment.url);
         const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
@@ -212,12 +297,14 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       }
 
       await sendSplitResponse(message, response);
+      logBotEvent("info", "response_sent", message, { responseLength: response.length });
     } catch (error) {
       if (typingInterval) {
         clearInterval(typingInterval);
         typingInterval = null;
       }
       console.error("メッセージ処理エラー:", error);
+      logBotEvent("error", "message_processing_error", message, { error: serializeError(error) });
       await message.reply(
         "申し訳ございません、処理中にエラーが発生しました 😢\nしばらくしてからもう一度お試しください。",
       );
@@ -231,7 +318,10 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
  * メッセージ内容に応じた適切な絵文字をGeminiで選択してリアクション
  */
 async function reactWithEmoji(message: Message): Promise<void> {
-  if (!config.geminiApiKey) return;
+  if (!config.geminiApiKey) {
+    logBotEvent("debug", "reaction_skipped_no_gemini_key", message);
+    return;
+  }
   try {
     const genAI = new GoogleGenerativeAI(config.geminiApiKey);
     const model = genAI.getGenerativeModel({
@@ -242,10 +332,22 @@ async function reactWithEmoji(message: Message): Promise<void> {
     );
     const emoji = result.response.text().trim().replace(/\s/g, "");
     if (emoji) {
-      await message.react(emoji).catch(() => message.react("👀"));
+      await message.react(emoji).catch(async (error: unknown) => {
+        logBotEvent("warn", "reaction_emoji_failed", message, {
+          emoji,
+          error: serializeError(error),
+        });
+        await message.react("👀");
+      });
+      logBotEvent("debug", "reaction_added", message, { emoji });
     }
-  } catch {
-    await message.react("👀").catch(() => {});
+  } catch (error) {
+    logBotEvent("warn", "reaction_generation_failed", message, { error: serializeError(error) });
+    await message.react("👀").catch((fallbackError: unknown) => {
+      logBotEvent("warn", "reaction_fallback_failed", message, {
+        error: serializeError(fallbackError),
+      });
+    });
   }
 }
 
@@ -351,6 +453,7 @@ export async function startCustomBotForUser(userId: string): Promise<boolean> {
   try {
     customClient.once("clientReady", (c) => {
       console.log(`✅ 独自Bot (ユーザー: ${userId}): ${c.user.tag} としてログインしました`);
+      logSystemBotEvent("info", "custom_bot_ready", { tag: c.user.tag, id: c.user.id }, userId);
       setBotStatus(customClient, "idle");
     });
 
@@ -360,6 +463,7 @@ export async function startCustomBotForUser(userId: string): Promise<boolean> {
     return true;
   } catch (err) {
     console.error(`[Discord Bot] [User: ${userId}] 独自Botの起動に失敗しました:`, err);
+    logSystemBotEvent("error", "custom_bot_start_failed", { error: serializeError(err) }, userId);
     try {
       customClient.destroy();
     } catch {}
@@ -384,6 +488,7 @@ export function stopCustomBotForUser(userId: string): void {
 }
 
 export async function startBot(): Promise<void> {
+  pruneBotLogs();
   // 1. デフォルトBotをログイン
   setupMessageListener(client);
   await client.login(config.discordToken);

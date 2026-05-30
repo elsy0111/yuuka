@@ -84,6 +84,53 @@
   flex-direction: column;
 }
 
+.expense-daily-card {
+  margin-bottom: 24px;
+}
+
+.expense-daily-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.expense-daily-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 96px;
+  gap: 12px;
+  align-items: center;
+}
+
+.expense-daily-date,
+.expense-daily-amount {
+  font-family: var(--font-family-mono);
+  font-size: 0.78rem;
+}
+
+.expense-daily-date {
+  color: var(--text-secondary);
+}
+
+.expense-daily-amount {
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.expense-daily-track {
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  overflow: hidden;
+}
+
+.expense-daily-bar {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--accent-cyan);
+}
+
 /* AI Scan drag and drop zone */
 .dropzone {
   flex-grow: 1;
@@ -148,6 +195,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.scan-status-box.hidden {
+  display: none;
 }
 
 .spinner {

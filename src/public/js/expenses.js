@@ -11,6 +11,7 @@ export async function fetchExpensesList() {
 
     document.getElementById("expense-month-total").textContent = `¥${data.total.toLocaleString()}`;
     renderBudgetBar(data.total);
+    renderDailyExpenseTotals(data.dailyTotals || []);
 
     if (data.expenses?.length > 0) {
       data.expenses.forEach((exp) => {
@@ -27,6 +28,43 @@ export async function fetchExpensesList() {
   } catch (e) {
     console.error(e);
   }
+}
+
+function renderDailyExpenseTotals(dailyTotals) {
+  const list = document.getElementById("expense-daily-list");
+  if (!list) return;
+  list.replaceChildren();
+
+  const maxTotal = Math.max(...dailyTotals.map((row) => Number(row.total || 0)), 1);
+  dailyTotals.forEach((row, idx) => {
+    const item = document.createElement("div");
+    item.className = "expense-daily-item";
+
+    const label = document.createElement("span");
+    label.className = "expense-daily-date";
+    label.textContent = formatDailyLabel(row.date, idx, dailyTotals.length - 1);
+
+    const barTrack = document.createElement("div");
+    barTrack.className = "expense-daily-track";
+    const bar = document.createElement("div");
+    bar.className = "expense-daily-bar";
+    bar.style.width = `${Math.max((Number(row.total || 0) / maxTotal) * 100, row.total > 0 ? 4 : 0)}%`;
+    barTrack.appendChild(bar);
+
+    const amount = document.createElement("strong");
+    amount.className = "expense-daily-amount";
+    amount.textContent = `¥${Number(row.total || 0).toLocaleString()}`;
+
+    item.append(label, barTrack, amount);
+    list.appendChild(item);
+  });
+}
+
+function formatDailyLabel(dateString, idx, lastIdx) {
+  if (idx === lastIdx) return "今日";
+  if (idx === lastIdx - 1) return "昨日";
+  const [, month, day] = dateString.split("-");
+  return `${Number(month)}/${Number(day)}`;
 }
 
 function renderBudgetBar(total) {

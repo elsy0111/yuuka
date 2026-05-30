@@ -151,6 +151,25 @@ export function runMigrations(): void {
   `);
 
   db.exec(`
+    CREATE TABLE IF NOT EXISTS bot_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      level TEXT NOT NULL,
+      event TEXT NOT NULL,
+      user_id TEXT,
+      username TEXT,
+      guild_id TEXT,
+      channel_id TEXT,
+      message_id TEXT,
+      details TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_bot_logs_user_created ON bot_logs(user_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_bot_logs_level_created ON bot_logs(level, created_at);
+    CREATE INDEX IF NOT EXISTS idx_bot_logs_created ON bot_logs(created_at);
+  `);
+
+  db.exec(`
     CREATE TABLE IF NOT EXISTS credentials (
       user_id TEXT NOT NULL DEFAULT '',
       service_name TEXT NOT NULL,

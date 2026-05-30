@@ -143,6 +143,9 @@
         <a href="#config" class="menu-item" data-tab="config">
           <span class="material-symbols-outlined menu-icon-symbol">settings</span> <span class="menu-text">システム設定</span>
         </a>
+        <a href="#bot-logs" class="menu-item" data-tab="bot-logs">
+          <span class="material-symbols-outlined menu-icon-symbol">terminal</span> <span class="menu-text">Botログ</span>
+        </a>
       </nav>
     </aside>
 
@@ -249,7 +252,7 @@
                 <span class="hud-tag">LIVE</span>
               </div>
               <div class="chart-main-wrapper">
-                <div class="chart-y-axis">
+                <div class="chart-y-axis" id="dashboard-trend-y-axis">
                   <span>50k</span>
                   <span>30k</span>
                   <span>10k</span>
@@ -394,6 +397,16 @@
                 <span id="expense-budget-percent">0%</span>
                 <span id="expense-budget-status">健全な支出状況です！</span>
               </div>
+            </div>
+          </div>
+
+          <div class="expense-daily-card card">
+            <div class="column-header">
+              <h3><span class="material-symbols-outlined header-icon-symbol">monitoring</span>日単位の消費量</h3>
+              <span class="hud-tag">6 DAYS</span>
+            </div>
+            <div id="expense-daily-list" class="expense-daily-list">
+              <!-- Generated dynamically -->
             </div>
           </div>
 
@@ -738,6 +751,36 @@
               <h4>会計管理人よりお知らせ</h4>
             </div>
             <p>設定ファイルを直接編集する場合は、ボットプロセスを再起動する必要があります。設定内容はMillennium生徒会セミナー局の監査対象となりますので、計画的かつ慎重に変更を行ってください。</p>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             6. BOT LOGS VIEW
+             ========================================== -->
+        <section id="tab-bot-logs" class="tab-view">
+          <div class="config-card card">
+            <div class="column-header">
+              <h3><span class="material-symbols-outlined header-icon-symbol">terminal</span>Discord Botログ</h3>
+              <span class="hud-tag">LIVE</span>
+            </div>
+            <p class="description-text">Discord で受信したメッセージ、無視した理由、リアクションや返信の失敗を確認できます。</p>
+
+            <div class="bot-log-toolbar">
+              <select id="bot-log-level-filter" class="filter-select">
+                <option value="">すべてのレベル</option>
+                <option value="debug">DEBUG</option>
+                <option value="info">INFO</option>
+                <option value="warn">WARN</option>
+                <option value="error">ERROR</option>
+              </select>
+              <button type="button" id="btn-bot-logs-reload" class="btn btn-secondary btn-sm">
+                <span class="material-symbols-outlined">refresh</span>更新
+              </button>
+            </div>
+
+            <div id="bot-logs-list" class="bot-logs-list">
+              <!-- Generated dynamically -->
+            </div>
           </div>
         </section>
 

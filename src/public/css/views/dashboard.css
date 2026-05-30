@@ -413,3 +413,9 @@
   color: var(--accent-lavender);
   border: 1px solid var(--border-matte);
 }
+.trend-point-label {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+}
