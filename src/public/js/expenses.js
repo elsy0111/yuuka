@@ -1,5 +1,5 @@
 import { state } from "./state.js";
-import { openModal, getModal } from "./modal.js";
+import { openModal, getModal, closeModal } from "./modal.js";
 
 export async function fetchExpensesList() {
   const tbody = document.getElementById("expenses-table-body");
@@ -75,8 +75,72 @@ export function makeExpenseRow(exp) {
   tdAmt.className = "expense-amount-val";
   tdAmt.textContent = `¥${exp.amount.toLocaleString()}`;
 
-  tr.append(tdDate, tdCat, tdDesc, tdAmt);
+  const tdActions = document.createElement("td");
+  tdActions.style.cssText = "text-align:right; white-space:nowrap;";
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "btn-trash";
+  editBtn.title = "編集";
+  editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">edit</span>';
+  editBtn.addEventListener("click", () => openEditExpenseModal(exp));
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "btn-trash";
+  delBtn.title = "削除";
+  delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1rem;">delete</span>';
+  delBtn.addEventListener("click", () => handleDeleteExpense(exp.id));
+
+  tdActions.append(editBtn, delBtn);
+  tr.append(tdDate, tdCat, tdDesc, tdAmt, tdActions);
   return tr;
+}
+
+function openEditExpenseModal(exp) {
+  document.getElementById("exp-edit-id").value              = exp.id;
+  document.getElementById("exp-edit-amount").value          = exp.amount;
+  document.getElementById("exp-edit-date").value            = exp.date;
+  document.getElementById("exp-edit-category").value        = exp.category;
+  document.getElementById("exp-edit-description").value     = exp.description || "";
+  document.getElementById("exp-edit-purchase-source").value = exp.purchase_source || "";
+  openModal(getModal("expense-edit"));
+}
+
+async function handleDeleteExpense(id) {
+  if (!confirm("この支出記録を削除しますか？")) return;
+  try {
+    await fetch("/api/expenses/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, userId: state.activeUserId }),
+    });
+    fetchExpensesList();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function handleEditExpenseSubmit(e) {
+  e.preventDefault();
+  const id             = parseInt(document.getElementById("exp-edit-id").value, 10);
+  const amount         = parseInt(document.getElementById("exp-edit-amount").value, 10);
+  const date           = document.getElementById("exp-edit-date").value;
+  const category       = document.getElementById("exp-edit-category").value;
+  const description    = document.getElementById("exp-edit-description").value.trim();
+  const purchase_source = document.getElementById("exp-edit-purchase-source").value.trim();
+  try {
+    const res  = await fetch("/api/expenses/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, userId: state.activeUserId, amount, date, category, description, purchase_source }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal(getModal("expense-edit"));
+      fetchExpensesList();
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export function initExpenses() {
@@ -107,6 +171,7 @@ export function initExpenses() {
     }
   });
 
+  document.getElementById("expense-edit-form")?.addEventListener("submit", handleEditExpenseSubmit);
   initReceiptDropzone();
 }
 

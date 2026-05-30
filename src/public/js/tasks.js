@@ -1,5 +1,5 @@
 import { state } from "./state.js";
-import { closeModal, getModal } from "./modal.js";
+import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchTasksList(filter = "all") {
   const list = document.getElementById("tasks-list");
@@ -58,6 +58,7 @@ function makeTaskCard(task) {
 
   const right     = document.createElement("div");
   right.className = "card-actions-right";
+  right.appendChild(makeIconButton("edit", () => openEditTaskModal(task)));
   right.appendChild(makeTrashButton(() => handleDeleteTask(task.id)));
 
   card.append(left, right);
@@ -74,15 +75,28 @@ function makeMetaItem(icon, text) {
   return span;
 }
 
-function makeTrashButton(onClick) {
+function makeIconButton(iconName, onClick) {
   const btn  = document.createElement("button");
   btn.className = "btn-trash";
   const icon = document.createElement("span");
   icon.className = "material-symbols-outlined";
-  icon.textContent = "delete";
+  icon.textContent = iconName;
   btn.appendChild(icon);
   btn.addEventListener("click", onClick);
   return btn;
+}
+
+function makeTrashButton(onClick) {
+  return makeIconButton("delete", onClick);
+}
+
+function openEditTaskModal(task) {
+  document.getElementById("task-edit-id").value        = task.id;
+  document.getElementById("task-edit-title").value     = task.title;
+  document.getElementById("task-edit-description").value = task.description || "";
+  document.getElementById("task-edit-due").value       = task.due_date || "";
+  document.getElementById("task-edit-priority").value  = String(task.priority ?? 0);
+  openModal(getModal("task-edit"));
 }
 
 async function toggleTaskCompletion(id, currentStatus) {
@@ -115,6 +129,30 @@ async function handleDeleteTask(id) {
   }
 }
 
+async function handleEditTaskSubmit(e) {
+  e.preventDefault();
+  const id       = parseInt(document.getElementById("task-edit-id").value, 10);
+  const title    = document.getElementById("task-edit-title").value.trim();
+  const desc     = document.getElementById("task-edit-description").value.trim();
+  const dueDate  = document.getElementById("task-edit-due").value || null;
+  const priority = parseInt(document.getElementById("task-edit-priority").value, 10);
+  try {
+    const res  = await fetch("/api/tasks/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, userId: state.activeUserId, title, description: desc, dueDate, priority }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeModal(getModal("task-edit"));
+      const f = document.querySelector("[data-filter].active")?.getAttribute("data-filter") || "all";
+      fetchTasksList(f);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 export function initTasks() {
   document.querySelectorAll("[data-filter]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -123,6 +161,8 @@ export function initTasks() {
       fetchTasksList(btn.getAttribute("data-filter"));
     });
   });
+
+  document.getElementById("task-edit-form")?.addEventListener("submit", handleEditTaskSubmit);
 
   document.getElementById("task-form")?.addEventListener("submit", async e => {
     e.preventDefault();

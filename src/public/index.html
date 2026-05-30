@@ -439,6 +439,7 @@
                     <th>カテゴリー</th>
                     <th>詳細</th>
                     <th>金額</th>
+                    <th>操作</th>
                   </tr>
                 </thead>
                 <tbody id="expenses-table-body">
@@ -687,6 +688,92 @@
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block">タスク登録</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div id="modal-task-edit" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>タスクの編集</h3>
+        <button class="btn-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="task-edit-form">
+        <input type="hidden" id="task-edit-id">
+        <div class="form-group">
+          <label for="task-edit-title">タイトル *</label>
+          <input type="text" id="task-edit-title" required>
+        </div>
+        <div class="form-group">
+          <label for="task-edit-description">詳細説明</label>
+          <textarea id="task-edit-description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-edit-due">期限日</label>
+            <input type="date" id="task-edit-due">
+          </div>
+          <div class="form-group">
+            <label for="task-edit-priority">優先度</label>
+            <select id="task-edit-priority">
+              <option value="0">低</option>
+              <option value="1">中</option>
+              <option value="2">高</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">更新する</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Expense Modal -->
+  <div id="modal-expense-edit" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>支出の編集</h3>
+        <button class="btn-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="expense-edit-form">
+        <input type="hidden" id="exp-edit-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exp-edit-amount">金額 (¥) *</label>
+            <input type="number" id="exp-edit-amount" required min="1">
+          </div>
+          <div class="form-group">
+            <label for="exp-edit-date">日付 *</label>
+            <input type="date" id="exp-edit-date" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="exp-edit-category">カテゴリー *</label>
+          <select id="exp-edit-category" required>
+            <option value="食費">食費</option>
+            <option value="日用品">日用品</option>
+            <option value="交通費">交通費</option>
+            <option value="光熱費">光熱費</option>
+            <option value="通信費">通信費</option>
+            <option value="医療費">医療費</option>
+            <option value="娯楽">娯楽</option>
+            <option value="衣服">衣服</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="exp-edit-description">詳細説明</label>
+          <input type="text" id="exp-edit-description" placeholder="例: コンビニでの買い物">
+        </div>
+        <div class="form-group">
+          <label for="exp-edit-purchase-source">購入元</label>
+          <input type="text" id="exp-edit-purchase-source" placeholder="例: セブンイレブン">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">更新する</button>
       </form>
     </div>
   </div>
