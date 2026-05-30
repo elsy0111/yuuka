@@ -27,7 +27,7 @@ const privateRoutes: RouteHandler[] = [
   handleMemories,
 ];
 
-export async function serverHandler(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+export async function serverHandler(req: http.IncomingMessage, res: http.ServerResponse) {
   const { method, url } = req;
   const parsedUrl = new URL(url || "/", `http://${req.headers.host || "localhost"}`);
   const ctx: RouteContext = {

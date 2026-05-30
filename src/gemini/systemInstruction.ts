@@ -1,7 +1,7 @@
 import { config } from "../config.js";
 import { getCachedCalendars, isCalendarEnabled } from "../services/googleCalendarService.js";
 
-export async function buildSystemInstruction(): Promise<string> {
+export async function buildSystemInstruction(userId?: string): Promise<string> {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -13,9 +13,9 @@ export async function buildSystemInstruction(): Promise<string> {
   const dateTimeStr = `${year}年${month}月${date}日 (${dayOfWeek}) ${hours}時${minutes}分${seconds}秒`;
 
   let calendarInfo = "";
-  if (isCalendarEnabled()) {
+  if (userId && isCalendarEnabled(userId)) {
     try {
-      const calendars = await getCachedCalendars();
+      const calendars = await getCachedCalendars(userId);
       if (calendars.length > 0) {
         calendarInfo = `\n# 連携中のGoogleカレンダー一覧\n現在、予定を登録可能なカレンダーは以下の通りです。ユーザーからの予定追加指示の際、その内容や目的に最も適したカレンダーの「ID」を選択し、addSchedule関数の calendar_id 引数に指定して登録してください。\n`;
         for (const cal of calendars) {

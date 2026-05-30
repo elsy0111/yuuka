@@ -5,10 +5,7 @@ import { config } from "../config.js";
 import * as taskFn from "./taskFunctions.js";
 import * as scheduleFn from "./scheduleFunctions.js";
 import * as expenseFn from "./expenseFunctions.js";
-import * as fileFn from "./fileFunctions.js";
-import * as commandFn from "./commandFunctions.js";
 import * as browserFn from "./browserFunctions.js";
-import * as gitFn from "./gitFunctions.js";
 import * as credentialFn from "./credentialFunctions.js";
 import * as playbookFn from "./playbookFunctions.js";
 import * as memoryFn from "./memoryFunctions.js";
@@ -212,28 +209,6 @@ export async function dispatchFunction(
         userId,
         args as Parameters<typeof expenseFn.listRecentExpenses>[1]
       );
-
-    // 自己開発・ファイル操作
-    case "readCodeFile":
-      return fileFn.readCodeFile(userId, args as Parameters<typeof fileFn.readCodeFile>[1]);
-    case "writeCodeFile":
-      return fileFn.writeCodeFile(userId, args as Parameters<typeof fileFn.writeCodeFile>[1]);
-    case "listCodeFiles":
-      return fileFn.listCodeFiles(userId, args as Parameters<typeof fileFn.listCodeFiles>[1]);
-    case "searchCodeFiles":
-      return fileFn.searchCodeFiles(userId, args as Parameters<typeof fileFn.searchCodeFiles>[1]);
-    case "verifyCodeChanges":
-      return commandFn.verifyCodeChanges(userId, args as Parameters<typeof commandFn.verifyCodeChanges>[1]);
-
-    // Git連携
-    case "checkoutBranch":
-      return gitFn.checkoutBranch(userId, args as Parameters<typeof gitFn.checkoutBranch>[1]);
-    case "commitLocalChanges":
-      return gitFn.commitLocalChanges(userId, args as Parameters<typeof gitFn.commitLocalChanges>[1]);
-    case "mergeBranch":
-      return gitFn.mergeBranch(userId, args as Parameters<typeof gitFn.mergeBranch>[1]);
-    case "pushChanges":
-      return gitFn.pushChanges(userId, args as Parameters<typeof gitFn.pushChanges>[1]);
 
     // ヘッドレスブラウザ操作
     case "fetchDynamicPage":

@@ -2,38 +2,30 @@
   "name": "yuuka",
   "version": "1.0.0",
   "description": "Discord Gemini 秘書ボット",
-  "private": true,
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "checkhealth": "node scripts/checkhealth.mjs",
-    "checkhealth:runtime": "node scripts/checkhealth.mjs --runtime",
-    "build": "node scripts/checkhealth.mjs && cargo build --release --manifest-path src/rust_crawler/Cargo.toml && mkdir -p dist/bin && cp src/rust_crawler/target/release/yuuka-crawler dist/bin/ && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/index.js --external:better-sqlite3 --external:discord.js --external:@google/generative-ai --external:googleapis --external:node-cron --external:dotenv --external:puppeteer --external:redis",
+    "build": "cargo build --release --manifest-path src/rust_crawler/Cargo.toml && mkdir -p dist/bin && cp src/rust_crawler/target/release/yuuka-crawler dist/bin/ && tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.0",
-    "better-sqlite3": "^11.8.0",
-    "discord.js": "^14.18.0",
-    "dotenv": "^16.5.0",
+    "@google/generative-ai": "^0.24.1",
+    "archiver": "^8.0.0",
+    "better-sqlite3": "^11.10.0",
+    "discord.js": "^14.26.4",
+    "dotenv": "^16.6.1",
     "googleapis": "^144.0.0",
     "node-cron": "^3.0.3",
     "puppeteer": "^25.1.0",
-    "redis": "^4.7.0"
+    "redis": "^4.7.1"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^22.15.0",
+    "@types/node": "^22.19.19",
     "@types/node-cron": "^3.0.11",
-    "esbuild": "^0.28.0",
-    "tsx": "^4.19.0",
-    "typescript": "^5.8.0"
-  },
-  "dependenciesMeta": {
-    "puppeteer": {
-      "built": false
-    }
-  },
-  "packageManager": "yarn@4.15.0"
+    "tsx": "^4.22.3",
+    "typescript": "^5.9.3"
+  }
 }
