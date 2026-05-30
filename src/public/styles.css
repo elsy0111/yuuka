@@ -327,6 +327,7 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 10px 20px;
   border-radius: var(--radius);
   font-weight: 600;
@@ -336,6 +337,11 @@ button, input, select, textarea {
   outline: none;
   transition: var(--transition-smooth);
   white-space: nowrap;
+}
+
+.btn-icon-symbol {
+  font-size: 1rem !important;
+  line-height: 1;
 }
 
 .btn-block {
