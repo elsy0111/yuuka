@@ -4,6 +4,7 @@ import { fetchTasksList } from "./tasks.js";
 import { fetchSchedulesList } from "./schedules.js";
 import { fetchExpensesList } from "./expenses.js";
 import { fetchConfigSettings } from "./config.js";
+import { fetchMemories } from "./memories.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",
@@ -19,7 +20,7 @@ export function loadDataForActiveTab() {
     case "tasks":     fetchTasksList();       break;
     case "schedules": fetchSchedulesList();   break;
     case "expenses":  fetchExpensesList();    break;
-    case "config":    fetchConfigSettings();  break;
+    case "config":    fetchConfigSettings(); fetchMemories(); break;
   }
 }
 
