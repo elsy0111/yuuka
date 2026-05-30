@@ -43,6 +43,16 @@ export function listMemories(userId: string, module?: string): Memory[] {
     .all(userId) as Memory[];
 }
 
+export function updateMemory(id: number, userId: string, content: string, module?: string): Memory | undefined {
+  const db = getDb();
+  const sets = ["content = ?"];
+  const params: unknown[] = [content];
+  if (module !== undefined) { sets.push("module = ?"); params.push(module); }
+  params.push(id, userId);
+  db.prepare(`UPDATE memories SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
+  return db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as Memory | undefined;
+}
+
 export function deleteMemory(id: number, userId: string): boolean {
   const db = getDb();
   const result = db.prepare("DELETE FROM memories WHERE id = ? AND user_id = ?").run(id, userId);

@@ -1,4 +1,4 @@
-import { deleteMemory, listMemories, saveMemory } from "../../db/memoryRepo.js";
+import { deleteMemory, listMemories, saveMemory, updateMemory } from "../../db/memoryRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -25,6 +25,21 @@ export const handleMemories: RouteHandler = async ({ req, res, parsedUrl, pathna
       sendJson(res, 200, { success: true, memory });
     } catch {
       sendError(res, 500, "記憶の保存に失敗しました。");
+    }
+    return true;
+  }
+
+  if (pathname === "/api/memories/update" && method === "POST") {
+    try {
+      const { id, userId, content, module } = JSON.parse(await getRequestBody(req));
+      if (!id || !content?.trim()) {
+        sendError(res, 400, "idとcontentは必須です。");
+        return true;
+      }
+      const memory = updateMemory(Number(id), userId || "sensei_default", content.trim(), module);
+      sendJson(res, 200, { success: true, memory });
+    } catch {
+      sendError(res, 500, "記憶の更新に失敗しました。");
     }
     return true;
   }
