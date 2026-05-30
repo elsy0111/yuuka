@@ -56,50 +56,13 @@
         <p>ミレニアムサイエンススクール 生徒会セミナー会計室</p>
       </div>
       
-      <div class="login-tabs">
-        <button class="login-tab-btn active" id="btn-tab-login" type="button">ログイン</button>
-        <button class="login-tab-btn" id="btn-tab-register" type="button">アカウント作成</button>
-      </div>
-
-      <!-- ログイン用フォーム -->
-      <div id="login-tab-content" class="login-tab-pane active">
-        <form id="login-form">
-          <div class="form-group">
-            <label for="login-discord-id">Discord ユーザーID *</label>
-            <input type="text" id="login-discord-id" required placeholder="例: 123456789012345678">
-          </div>
-          <div class="form-group">
-            <label for="login-password">パスワード *</label>
-            <input type="password" id="login-password" required placeholder="••••••••••••" autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">アクセスを承認する</button>
-        </form>
-      </div>
-
-      <!-- アカウント作成用フォーム -->
-      <div id="register-tab-content" class="login-tab-pane">
-        <form id="register-form">
-          <div class="form-group">
-            <label for="reg-discord-id">Discord ユーザーID *</label>
-            <input type="text" id="reg-discord-id" required placeholder="例: 123456789012345678">
-            <span class="field-sub">※Discord上で右クリックしてコピーしたID</span>
-          </div>
-          <div class="form-group">
-            <label for="reg-username">ユーザーネーム（表示名） *</label>
-            <input type="text" id="reg-username" required placeholder="例: シャーレの先生">
-          </div>
-          <div class="form-group">
-            <label for="reg-password">パスワード *</label>
-            <input type="password" id="reg-password" required placeholder="••••••••••••" autocomplete="new-password">
-          </div>
-          <div class="form-group">
-            <label for="reg-invite-code">招待コード *</label>
-            <input type="text" id="reg-invite-code" required placeholder="管理者から配布されたコード">
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">登録してログインする</button>
-        </form>
-      </div>
-
+      <form id="login-form">
+        <div class="form-group">
+          <label for="passcode">先生、アクセスパスコードを入力してください：</label>
+          <input type="password" id="passcode" required placeholder="••••••••••••" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">アクセスを承認する</button>
+      </form>
       <div id="login-error" class="error-msg"></div>
     </div>
   </div>

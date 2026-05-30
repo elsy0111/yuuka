@@ -19,7 +19,8 @@ const MIME_TYPES: Record<string, string> = {
 };
 
 export function serveStaticFile(req: http.IncomingMessage, res: http.ServerResponse): void {
-  const urlPath = req.url === "/" || !req.url ? "/index.html" : req.url;
+  const rawPath = new URL(req.url || "/", "http://x").pathname;
+  const urlPath = rawPath === "/" ? "/index.html" : rawPath;
   const resolvedPath = path.normalize(path.join(PUBLIC_DIR, urlPath));
 
   if (!resolvedPath.startsWith(PUBLIC_DIR + path.sep) && resolvedPath !== PUBLIC_DIR) {

@@ -58,6 +58,7 @@ export async function serverHandler(req: http.IncomingMessage, res: http.ServerR
     if (await route(ctx)) return;
   }
 
+  console.warn(`[404] 未マッチルート: ${ctx.method} ${ctx.pathname}`);
   sendError(res, 404, "APIエンドポイントが見つかりません。");
 }
 
