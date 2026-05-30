@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { config } from "../config.js";
+import { config, getGoogleCalendars } from "../config.js";
 import * as scheduleRepo from "../db/scheduleRepo.js";
 
 /**
@@ -55,7 +55,7 @@ export async function fetchAvailableCalendars(): Promise<{ id: string; summary: 
   if (!calendar) return [];
 
   // 1. config.yaml に GOOGLE_CALENDARS が指定されている場合はそちらを最優先
-  const envCalendarIds = config.googleCalendars || [];
+  const envCalendarIds = getGoogleCalendars();
 
   if (envCalendarIds.length > 0) {
     const list: { id: string; summary: string }[] = [];
@@ -67,8 +67,7 @@ export async function fetchAvailableCalendars(): Promise<{ id: string; summary: 
         }
       } catch (err) {
         console.error(`カレンダー情報取得失敗 (${id}):`, err);
-        // 取得に失敗してもIDと最低限の仮名を設定しておく
-        list.push({ id, summary: id === config.googleCalendarId ? "メインカレンダー" : `カレンダー (${id})` });
+        // アクセスできないカレンダーはスキップ（同期対象から除外）
       }
     }
     return list;
@@ -110,6 +109,11 @@ export async function fetchAvailableCalendars(): Promise<{ id: string; summary: 
 let cachedCalendars: { id: string; summary: string }[] = [];
 let lastFetchedTime = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5分キャッシュ
+
+export function clearCalendarCache(): void {
+  cachedCalendars = [];
+  lastFetchedTime = 0;
+}
 
 /**
  * キャッシュ付きで利用可能なカレンダーの一覧を返す

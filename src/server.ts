@@ -2,8 +2,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { config, updateGoogleCalendarsInYaml } from "./config.js";
-import { getCachedCalendars } from "./services/googleCalendarService.js";
+import { config, updateGoogleCalendarsInYaml, getGoogleCalendars } from "./config.js";
+import { getCachedCalendars, clearCalendarCache } from "./services/googleCalendarService.js";
 import { getDb } from "./db/database.js";
 import {
   addTask,
@@ -358,13 +358,14 @@ export async function serverHandler(req: http.IncomingMessage, res: http.ServerR
       }
       const cleanId = calendarId.trim();
 
-      const current = [...(config.googleCalendars || [])];
+      const current = [...getGoogleCalendars()];
       if (current.includes(cleanId)) {
         return sendJson(res, 200, { success: true, message: "このカレンダーIDは既に登録されています。" });
       }
 
       current.push(cleanId);
       updateGoogleCalendarsInYaml(current);
+      clearCalendarCache();
 
       sendJson(res, 200, { success: true, message: "カレンダーIDを追加しました。" });
     } catch (err: any) {
@@ -384,8 +385,9 @@ export async function serverHandler(req: http.IncomingMessage, res: http.ServerR
       }
       const cleanId = calendarId.trim();
 
-      const current = (config.googleCalendars || []).filter((id: string) => id !== cleanId);
+      const current = getGoogleCalendars().filter((id: string) => id !== cleanId);
       updateGoogleCalendarsInYaml(current);
+      clearCalendarCache();
 
       sendJson(res, 200, { success: true, message: "カレンダーIDを削除しました。" });
     } catch (err: any) {

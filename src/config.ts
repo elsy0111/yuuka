@@ -34,6 +34,10 @@ function getSettingArray(key: string, defaultValue: string[] = []): string[] {
   return val.split(",").map(id => id.trim()).filter(Boolean);
 }
 
+export function getGoogleCalendars(): string[] {
+  return getSettingArray("GOOGLE_CALENDARS");
+}
+
 function requireSetting(key: string): string {
   const value = getSetting(key);
   if (!value) {
