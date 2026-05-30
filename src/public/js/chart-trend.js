@@ -7,22 +7,21 @@ function formatYen(value) {
   return `¥${value.toLocaleString()}`;
 }
 
+// データ範囲: SVG y=15(最大値)〜y=135(0) → 120px分
+const DATA_TOP = 15;
+const DATA_BOTTOM = 135;
+const DATA_RANGE = DATA_BOTTOM - DATA_TOP; // 120
+const SVG_VIEWBOX_H = 150;
+const SVG_CSS_H = 140;
+
 /**
- * maxVal を超える「きれいな」スケール上限と等間隔の刻み幅を返す。
- * 刻みは 500/1000/2000/5000/10000/... の nice number になる。
+ * 常に step*3 = niceMax になるよう設計。
+ * グリッド線4本: 0, step, step*2, step*3(=niceMax) が等間隔になる。
  */
 function computeNiceScale(maxVal) {
-  const rawStep = maxVal / 3 || 500;
-  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
-  const normalized = rawStep / magnitude;
-  let niceFactor;
-  if (normalized < 1.5) niceFactor = 1;
-  else if (normalized < 3.5) niceFactor = 2;
-  else if (normalized < 7.5) niceFactor = 5;
-  else niceFactor = 10;
-  const step = Math.max(niceFactor * magnitude, 500);
-  const niceMax = step * Math.ceil(maxVal / step || 1);
-  return { step, niceMax };
+  const candidates = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
+  const step = candidates.find((s) => s * 3 >= maxVal) ?? 100000;
+  return { step, niceMax: step * 3 };
 }
 
 function formatDateLabel(dateString, idx, lastIdx) {
@@ -60,18 +59,21 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   const xStep = rows.length > 1 ? 400 / (rows.length - 1) : 400;
   const points = rows.map((row, idx) => ({
     x: idx * xStep,
-    y: 130 - (Number(row.total || 0) / niceMax) * 100,
+    y: DATA_BOTTOM - (Number(row.total || 0) / niceMax) * DATA_RANGE,
     amount: Number(row.total || 0),
     date: row.date,
     dateLabel: formatDateLabel(row.date, idx, rows.length - 1),
   }));
 
   if (yAxis) {
-    const labels = [niceMax, niceMax - step, niceMax - 2 * step, 0];
+    // グリッド線 y=15,55,95,135 に対応する値: niceMax, step*2, step, 0
+    const gridSvgYs = [DATA_TOP, 55, 95, DATA_BOTTOM];
+    const gridValues = [niceMax, step * 2, step, 0];
     yAxis.replaceChildren(
-      ...labels.map((val) => {
+      ...gridValues.map((val, i) => {
         const span = document.createElement("span");
         span.textContent = formatYen(val);
+        span.style.top = `${(gridSvgYs[i] / SVG_VIEWBOX_H) * SVG_CSS_H}px`;
         return span;
       }),
     );
@@ -89,7 +91,7 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   );
   areaPath.setAttribute(
     "d",
-    `M 0,130 ${points.map((p) => `L ${p.x},${p.y}`).join(" ")} L 400,130 Z`,
+    `M 0,${DATA_BOTTOM} ${points.map((p) => `L ${p.x},${p.y}`).join(" ")} L 400,${DATA_BOTTOM} Z`,
   );
 
   const isLight = currentTheme() === "blue-archive";

@@ -260,11 +260,11 @@
                 </div>
                 <div class="chart-body">
                   <svg id="dashboard-trend-chart" class="trend-chart-svg" viewBox="0 0 400 150">
-                    <!-- Grid Lines -->
-                    <line x1="0" y1="20" x2="400" y2="20" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="60" x2="400" y2="60" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="100" x2="400" y2="100" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="130" x2="400" y2="130" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
+                    <!-- Grid Lines (y=15,55,95,135 → value=niceMax,2*step,step,0) -->
+                    <line x1="0" y1="15" x2="400" y2="15" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
+                    <line x1="0" y1="55" x2="400" y2="55" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
+                    <line x1="0" y1="95" x2="400" y2="95" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
+                    <line x1="0" y1="135" x2="400" y2="135" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
                     
                     <!-- Matte solid lines with no gradient area -->
                     <path id="trend-area-path" d="M0,130 L80,120 L160,110 L240,90 L320,60 L400,120 L400,130 Z" fill="transparent"/>

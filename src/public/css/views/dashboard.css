@@ -170,10 +170,9 @@
 }
 
 .chart-y-axis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
+  position: relative;
+  height: 140px;
+  align-self: flex-start;
   font-family: var(--font-family-mono);
   font-size: 0.65rem;
   color: var(--color-zinc-muted);
@@ -181,6 +180,12 @@
   width: 44px;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.chart-y-axis span {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
 }
 
 .chart-body {
