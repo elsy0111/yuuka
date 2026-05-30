@@ -70,7 +70,7 @@ export function setBotStatus(botClient: Client, status: "thinking" | "writing" |
   }
 }
 
-client.once("ready", (c) => {
+client.once("clientReady", (c) => {
   console.log(`✅ デフォルトBot: ${c.user.tag} としてログインしました`);
   setBotStatus(client, "idle");
   // リマインダーサービスを開始
@@ -290,7 +290,7 @@ export async function startCustomBotForUser(userId: string): Promise<boolean> {
   });
 
   try {
-    customClient.once("ready", (c) => {
+    customClient.once("clientReady", (c) => {
       console.log(`✅ 独自Bot (ユーザー: ${userId}): ${c.user.tag} としてログインしました`);
       setBotStatus(customClient, "idle");
     });
