@@ -178,7 +178,9 @@
   font-size: 0.65rem;
   color: var(--color-zinc-muted);
   text-align: right;
-  width: 30px;
+  width: 44px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .chart-body {

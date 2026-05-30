@@ -7,6 +7,24 @@ function formatYen(value) {
   return `¥${value.toLocaleString()}`;
 }
 
+/**
+ * maxVal を超える「きれいな」スケール上限と等間隔の刻み幅を返す。
+ * 刻みは 500/1000/2000/5000/10000/... の nice number になる。
+ */
+function computeNiceScale(maxVal) {
+  const rawStep = maxVal / 3 || 500;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const normalized = rawStep / magnitude;
+  let niceFactor;
+  if (normalized < 1.5) niceFactor = 1;
+  else if (normalized < 3.5) niceFactor = 2;
+  else if (normalized < 7.5) niceFactor = 5;
+  else niceFactor = 10;
+  const step = Math.max(niceFactor * magnitude, 500);
+  const niceMax = step * Math.ceil(maxVal / step || 1);
+  return { step, niceMax };
+}
+
 function formatDateLabel(dateString, idx, lastIdx) {
   if (idx === lastIdx) return "今日";
   if (idx === lastIdx - 1) return "昨日";
@@ -37,18 +55,18 @@ export function renderPriceTrendChart(dailyTotals, onHover, onLeave) {
   });
 
   const maxVal = Math.max(...totals, 1);
-  const scaleMax = Math.ceil(maxVal * 1.18);
+  const { step, niceMax } = computeNiceScale(maxVal);
   const xStep = rows.length > 1 ? 400 / (rows.length - 1) : 400;
   const points = rows.map((row, idx) => ({
     x: idx * xStep,
-    y: 130 - (Number(row.total || 0) / scaleMax) * 100,
+    y: 130 - (Number(row.total || 0) / niceMax) * 100,
     amount: Number(row.total || 0),
     date: row.date,
     dateLabel: formatDateLabel(row.date, idx, rows.length - 1),
   }));
 
   if (yAxis) {
-    const labels = [scaleMax, Math.round(scaleMax * 0.6), Math.round(scaleMax * 0.2), 0];
+    const labels = [niceMax, niceMax - step, niceMax - 2 * step, 0];
     yAxis.replaceChildren(
       ...labels.map((val) => {
         const span = document.createElement("span");
