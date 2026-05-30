@@ -100,7 +100,10 @@ function renderFiltered() {
 
   list.replaceChildren();
   if (filtered.length === 0) {
-    renderEmpty(list, allLogs.length === 0 ? "Botログはまだありません。" : "条件に一致するログがありません。");
+    renderEmpty(
+      list,
+      allLogs.length === 0 ? "Botログはまだありません。" : "条件に一致するログがありません。",
+    );
   } else {
     for (const log of filtered) {
       list.appendChild(makeLogRow(log));
