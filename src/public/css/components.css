@@ -136,33 +136,8 @@
   font-size: 0.95rem;
 }
 
-.field-info-popover {
-  position: fixed;
-  z-index: 10000;
-  background: var(--card-matte);
-  border: 1px solid var(--border-matte);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  max-width: 260px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  pointer-events: none;
-}
-
-.field-info-popover.hidden {
-  display: none;
-}
-
-.field-info-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-white);
-  margin-bottom: 6px;
-}
-
-.field-info-body {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.modal-field-info {
+  z-index: 10001;
 }
 
 /* ==============================================================================

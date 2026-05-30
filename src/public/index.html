@@ -110,11 +110,6 @@
         </form>
       </div>
 
-      <!-- info ポップオーバー -->
-      <div id="field-info-popover" class="field-info-popover hidden">
-        <div class="field-info-title" id="field-info-title"></div>
-        <div class="field-info-body" id="field-info-body"></div>
-      </div>
 
       <div id="login-error" class="error-msg"></div>
     </div>
@@ -1087,6 +1082,17 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- Field Info Modal (ログインフォームのⓘボタン用) -->
+  <div id="modal-field-info" class="modal modal-field-info">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3 id="field-info-modal-title"></h3>
+        <button class="btn-close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <p id="field-info-modal-body" style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7;"></p>
     </div>
   </div>
 

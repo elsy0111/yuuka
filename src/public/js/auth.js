@@ -95,37 +95,24 @@ function onLoginSuccess(data) {
 }
 
 function initInfoPopovers() {
-  const popover  = document.getElementById("field-info-popover");
-  const titleEl  = document.getElementById("field-info-title");
-  const bodyEl   = document.getElementById("field-info-body");
-  let activeBtn  = null;
+  const modal   = document.getElementById("modal-field-info");
+  const titleEl = document.getElementById("field-info-modal-title");
+  const bodyEl  = document.getElementById("field-info-modal-body");
 
   document.querySelectorAll(".btn-field-info").forEach(btn => {
-    btn.addEventListener("click", e => {
-      e.stopPropagation();
-      if (activeBtn === btn && !popover.classList.contains("hidden")) {
-        popover.classList.add("hidden");
-        activeBtn = null;
-        return;
-      }
+    btn.addEventListener("click", () => {
       titleEl.textContent = btn.dataset.infoTitle || "";
       bodyEl.textContent  = btn.dataset.infoBody  || "";
-      popover.classList.remove("hidden");
-
-      const rect = btn.getBoundingClientRect();
-      const pw   = 260;
-      let left   = rect.left;
-      let top    = rect.bottom + 6;
-      if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-      popover.style.left = `${left}px`;
-      popover.style.top  = `${top}px`;
-      activeBtn = btn;
+      modal.classList.add("active");
     });
   });
 
-  document.addEventListener("click", () => {
-    popover.classList.add("hidden");
-    activeBtn = null;
+  modal?.addEventListener("click", e => {
+    if (e.target === modal) modal.classList.remove("active");
+  });
+
+  modal?.querySelector(".btn-close")?.addEventListener("click", () => {
+    modal.classList.remove("active");
   });
 }
 
