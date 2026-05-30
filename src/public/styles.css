@@ -27,12 +27,12 @@
 
   --color-white: #fafafa;
   --color-zinc-light: #f4f4f5;
-  --color-zinc-muted: #71717a;
+  --color-zinc-muted: #9494a0;
   --color-green: #22c55e;     /* Matte success green */
   --color-red: #ef4444;       /* Matte danger red */
-  
+
   --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
+  --text-secondary: #b8b8c2;
   
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family-sans: 'Inter', sans-serif;
@@ -464,7 +464,7 @@ button, input, select, textarea {
 
 .menu-item.active {
   color: var(--accent-cyan);
-  background-color: var(--accent-cyan-dim);
+  background-color: var(--accent-cyan-faint);
   font-weight: 600;
 }
 
@@ -1371,7 +1371,7 @@ button, input, select, textarea {
 .expense-table th {
   padding: 12px 14px;
   font-size: 0.75rem;
-  color: var(--color-zinc-muted);
+  color: var(--color-white);
   font-weight: 700;
   border-bottom: 1px solid var(--border-matte);
   white-space: nowrap;
@@ -2176,12 +2176,12 @@ a:not(.menu-item):not(.btn):hover {
   /* テキスト */
   --color-white:      #1B2B3A; /* ダークネイビー（heading/icon用） */
   --color-zinc-light: #2E4A62;
-  --color-zinc-muted: #7A9BB0;
+  --color-zinc-muted: #3A6070;
   --color-green: #16a34a;
   --color-red:   #dc2626;
 
   --text-primary:   #1B2B3A;
-  --text-secondary: #5A7A95;
+  --text-secondary: #2A4E66;
 }
 
 /* ---- ヘッダーエリア: ゲームのパネル上部の薄青を再現 ---- */
@@ -2209,8 +2209,8 @@ a:not(.menu-item):not(.btn):hover {
 }
 
 [data-theme="blue-archive"] .menu-item.active {
-  background-color: var(--ba-cyan-dim);
-  color: #02D3FB;
+  background-color: rgba(2, 211, 251, 0.07);
+  color: #0E8CC8;
   font-weight: 700;
 }
 
@@ -2338,8 +2338,8 @@ a:not(.menu-item):not(.btn):hover {
   }
 
   [data-theme="blue-archive"] .menu-item.active {
-    color: #02D3FB;
-    background-color: var(--ba-cyan-dim);
+    color: #0E8CC8;
+    background-color: rgba(2, 211, 251, 0.07);
   }
 }
 
@@ -2646,6 +2646,12 @@ a:not(.menu-item):not(.btn):hover {
   max-width: 100px;
 }
 
+#filter-q,
+#filter-purchase-source {
+  flex: 1;
+  min-width: 160px;
+}
+
 .filter-select {
   background: var(--bg-secondary);
   border: 1px solid var(--border-matte);
@@ -2657,6 +2663,11 @@ a:not(.menu-item):not(.btn):hover {
 
 .filter-actions {
   padding-top: 6px;
+}
+
+.filter-actions .btn {
+  padding: 7px 18px;
+  font-size: 0.78rem;
 }
 
 .filter-count {
