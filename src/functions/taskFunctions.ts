@@ -50,6 +50,18 @@ export function completeTask(
   });
 }
 
+export function reopenTask(userId: string, args: { task_id: number }): string {
+  const task = taskRepo.reopenTask(args.task_id, userId);
+  if (!task) {
+    return JSON.stringify({ success: false, message: "タスクが見つかりません。" });
+  }
+  return JSON.stringify({
+    success: true,
+    message: `タスク「${task.title}」を未完了に戻しました。`,
+    task,
+  });
+}
+
 export function deleteTask(
   userId: string,
   args: { task_id: number }

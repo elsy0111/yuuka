@@ -53,6 +53,14 @@ export function completeTask(id: number, userId: string): Task | undefined {
   return getTaskById(id);
 }
 
+export function reopenTask(id: number, userId: string): Task | undefined {
+  const db = getDb();
+  db.prepare(
+    "UPDATE tasks SET status = 'pending', updated_at = datetime('now', 'localtime') WHERE id = ? AND user_id = ?"
+  ).run(id, userId);
+  return db.prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?").get(id, userId) as Task | undefined;
+}
+
 export function deleteTask(id: number, userId: string): boolean {
   const db = getDb();
   const result = db.prepare("DELETE FROM tasks WHERE id = ? AND user_id = ?").run(id, userId);

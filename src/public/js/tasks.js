@@ -31,7 +31,7 @@ function makeTaskCard(task) {
   checkbox.type         = "checkbox";
   checkbox.className    = "checkbox-custom";
   checkbox.checked      = task.status === "done";
-  checkbox.addEventListener("change", () => toggleTaskCompletion(task.id));
+  checkbox.addEventListener("change", () => toggleTaskCompletion(task.id, task.status));
 
   const text     = document.createElement("div");
   text.className = "card-text";
@@ -85,9 +85,10 @@ function makeTrashButton(onClick) {
   return btn;
 }
 
-async function toggleTaskCompletion(id) {
+async function toggleTaskCompletion(id, currentStatus) {
+  const endpoint = currentStatus === "done" ? "/api/tasks/reopen" : "/api/tasks/complete";
   try {
-    await fetch("/api/tasks/complete", {
+    await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),

@@ -62,6 +62,17 @@ export const functionDeclarations: FunctionDeclaration[] = [
     },
   },
   {
+    name: "reopenTask",
+    description: "完了済みのタスクを未完了（pending）に戻す",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        task_id: { type: SchemaType.NUMBER, description: "未完了に戻すタスクのID" },
+      },
+      required: ["task_id"],
+    },
+  },
+  {
     name: "deleteTask",
     description: "タスクを削除する",
     parameters: {
@@ -500,6 +511,8 @@ export async function dispatchFunction(
       return taskFn.listTasks(userId, args as Parameters<typeof taskFn.listTasks>[1]);
     case "completeTask":
       return taskFn.completeTask(userId, args as Parameters<typeof taskFn.completeTask>[1]);
+    case "reopenTask":
+      return taskFn.reopenTask(userId, args as Parameters<typeof taskFn.reopenTask>[1]);
     case "deleteTask":
       return taskFn.deleteTask(userId, args as Parameters<typeof taskFn.deleteTask>[1]);
 
