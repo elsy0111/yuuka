@@ -1,16 +1,23 @@
-import { config } from "../../config.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import {
   createSession,
   deleteSessionToken,
   getBearerSessionToken,
   getCookieSessionToken,
+  getSessionDiscordId,
   LOGIN_LOCKOUT_MS,
   loginAttempts,
   MAX_LOGIN_ATTEMPTS,
   persistSessions,
   SESSION_TTL,
 } from "../session.js";
+import {
+  createUser,
+  getUserByDiscordId,
+  updateUsername,
+  verifyPassword,
+} from "../../db/userRepo.js";
+import { validateAndConsumeCode } from "../../db/inviteRepo.js";
 import type { RouteHandler } from "../types.js";
 
 export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) => {
@@ -26,19 +33,25 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
 
   try {
     const body = await getRequestBody(req);
-    const { passcode } = JSON.parse(body);
+    const { discordId, password } = JSON.parse(body);
 
-    if (passcode !== config.adminToken) {
+    if (!discordId || !password) {
+      sendError(res, 400, "Discord ID とパスワードを入力してください。");
+      return true;
+    }
+
+    const user = getUserByDiscordId(discordId);
+    if (!user || !verifyPassword(password, user.password_hash)) {
       const current = loginAttempts.get(clientIp) || { count: 0, resetAt: 0 };
       current.count += 1;
       current.resetAt = Date.now() + LOGIN_LOCKOUT_MS;
       loginAttempts.set(clientIp, current);
-      sendError(res, 401, "パスコードが正しくありません。");
+      sendError(res, 401, "Discord ID またはパスワードが正しくありません。");
       return true;
     }
 
     loginAttempts.delete(clientIp);
-    const sessionToken = createSession();
+    const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
       `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
@@ -48,6 +61,51 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
       message: "ログインに成功しました！",
       sessionToken,
       expiresAt: Date.now() + SESSION_TTL,
+      discordId: user.discord_id,
+      username: user.username,
+    });
+  } catch {
+    sendError(res, 400, "リクエストフォーマットが不正です。");
+  }
+  return true;
+};
+
+export const handleRegister: RouteHandler = async ({ req, res, pathname, method }) => {
+  if (pathname !== "/api/register" || method !== "POST") return false;
+
+  try {
+    const body = await getRequestBody(req);
+    const { discordId, username, password, inviteCode } = JSON.parse(body);
+
+    if (!discordId || !username || !password || !inviteCode) {
+      sendError(res, 400, "全ての項目を入力してください。");
+      return true;
+    }
+
+    const existing = getUserByDiscordId(discordId);
+    if (existing) {
+      sendError(res, 400, "このDiscord IDは既に登録されています。");
+      return true;
+    }
+
+    if (!validateAndConsumeCode(inviteCode, discordId)) {
+      sendError(res, 400, "招待コードが無効または使用済みです。");
+      return true;
+    }
+
+    const user = createUser(discordId, username, password);
+    const sessionToken = createSession(user.discord_id);
+    res.setHeader(
+      "Set-Cookie",
+      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`
+    );
+    sendJson(res, 200, {
+      success: true,
+      message: "アカウントを作成しました！",
+      sessionToken,
+      expiresAt: Date.now() + SESSION_TTL,
+      discordId: user.discord_id,
+      username: user.username,
     });
   } catch {
     sendError(res, 400, "リクエストフォーマットが不正です。");
@@ -66,5 +124,36 @@ export const handleLogout: RouteHandler = ({ req, res, pathname, method }) => {
     `__Host-yuuka-session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
   );
   sendJson(res, 200, { success: true, message: "ログアウトしました。" });
+  return true;
+};
+
+export const handleProfile: RouteHandler = async ({ req, res, pathname, method }) => {
+  if (pathname !== "/api/profile" || method !== "PATCH") return false;
+
+  const discordId = getSessionDiscordId(req);
+  if (!discordId) {
+    sendError(res, 401, "セッションが無効です。");
+    return true;
+  }
+
+  try {
+    const body = await getRequestBody(req);
+    const { username } = JSON.parse(body);
+
+    if (!username || typeof username !== "string" || !username.trim()) {
+      sendError(res, 400, "ユーザー名を入力してください。");
+      return true;
+    }
+
+    const ok = updateUsername(discordId, username.trim());
+    if (!ok) {
+      sendError(res, 404, "ユーザーが見つかりません。");
+      return true;
+    }
+
+    sendJson(res, 200, { success: true, username: username.trim() });
+  } catch {
+    sendError(res, 400, "リクエストフォーマットが不正です。");
+  }
   return true;
 };

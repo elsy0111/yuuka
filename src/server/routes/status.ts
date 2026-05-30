@@ -1,6 +1,8 @@
 import { config, getGoogleCalendars } from "../../config.js";
 import { getDb } from "../../db/database.js";
+import { getUserByDiscordId } from "../../db/userRepo.js";
 import { sendError, sendJson } from "../http.js";
+import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
 function mask(str: string): string {
@@ -70,9 +72,17 @@ export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, met
   return true;
 };
 
-export const handleUsers: RouteHandler = ({ res, pathname, method }) => {
+export const handleUsers: RouteHandler = ({ req, res, pathname, method }) => {
   if (pathname !== "/api/users" || method !== "GET") return false;
   try {
+    const discordId = getSessionDiscordId(req);
+    if (discordId) {
+      const user = getUserByDiscordId(discordId);
+      if (user) {
+        sendJson(res, 200, { success: true, users: [user.discord_id], username: user.username, discordId: user.discord_id });
+        return true;
+      }
+    }
     const usersRows = getDb().prepare(`
       SELECT DISTINCT user_id FROM tasks
       UNION SELECT DISTINCT user_id FROM schedules

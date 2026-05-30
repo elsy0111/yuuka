@@ -1,7 +1,7 @@
 import http from "node:http";
 import { config } from "./config.js";
 import { sendError } from "./server/http.js";
-import { handleLogin, handleLogout } from "./server/routes/auth.js";
+import { handleLogin, handleLogout, handleRegister, handleProfile } from "./server/routes/auth.js";
 import { handleCalendarAdd, handleCalendarDelete } from "./server/routes/config.js";
 import { handleCredentials } from "./server/routes/credentials.js";
 import { handleExpenses } from "./server/routes/expenses.js";
@@ -14,9 +14,10 @@ import { isAuthenticated } from "./server/session.js";
 import { serveStaticFile } from "./server/static.js";
 import type { RouteContext, RouteHandler } from "./server/types.js";
 
-const publicRoutes: RouteHandler[] = [handleLogin];
+const publicRoutes: RouteHandler[] = [handleLogin, handleRegister];
 const privateRoutes: RouteHandler[] = [
   handleLogout,
+  handleProfile,
   handleStatus,
   handleCalendarAdd,
   handleCalendarDelete,
