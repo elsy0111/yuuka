@@ -17,7 +17,7 @@ import {
   updateUsername,
   verifyPassword,
 } from "../../db/userRepo.js";
-import { validateAndConsumeCode } from "../../db/inviteRepo.js";
+import { isValidCode, validateAndConsumeCode } from "../../db/inviteRepo.js";
 import type { RouteHandler } from "../types.js";
 
 export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) => {
@@ -105,12 +105,14 @@ export const handleRegister: RouteHandler = async ({ req, res, pathname, method 
       return true;
     }
 
-    if (!validateAndConsumeCode(inviteCode, discordId)) {
+    if (!isValidCode(inviteCode)) {
       sendError(res, 400, "招待コードが無効または使用済みです。");
       return true;
     }
 
+    // ユーザーを先に作成してから招待コードを消費（FK制約のため）
     const user = createUser(discordId, username, password);
+    validateAndConsumeCode(inviteCode, discordId);
     const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
