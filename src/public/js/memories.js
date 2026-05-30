@@ -68,7 +68,9 @@ function makeMemoryRow(mem) {
   content.textContent = mem.content;
   content.style.cssText = "font-size:0.85rem;color:var(--color-white);";
   const meta = document.createElement("span");
-  meta.textContent = `[${mem.module}]  ${mem.created_at}`;
+  const moduleLabels = { expenses: "家計", schedules: "予定", tasks: "タスク", general: "汎用" };
+  const moduleLabel = moduleLabels[mem.module] || mem.module;
+  meta.textContent = `[${moduleLabel}]  ${mem.created_at}`;
   meta.style.cssText = "font-size:0.68rem;color:var(--color-zinc-muted);font-family:var(--font-family-mono);";
   left.append(content, meta);
 

@@ -402,7 +402,7 @@
                   <input type="date" id="exp-date">
                 </div>
                 <div class="form-group">
-                  <label for="exp-purchase-source">購入もと</label>
+                  <label for="exp-purchase-source">購入元</label>
                   <input type="text" id="exp-purchase-source" placeholder="イオン、ファミマ、自販機など">
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">経費登録</button>
@@ -426,7 +426,7 @@
                   <tr>
                     <th>日付</th>
                     <th>カテゴリー</th>
-                    <th>メモ/詳細</th>
+                    <th>詳細</th>
                     <th>金額</th>
                   </tr>
                 </thead>
@@ -547,10 +547,10 @@
             <div style="display:flex;gap:8px;margin:14px 0 10px;">
               <select id="memory-filter-module" class="filter-select">
                 <option value="">すべて</option>
-                <option value="expenses">家計 (expenses)</option>
-                <option value="schedules">予定 (schedules)</option>
-                <option value="tasks">タスク (tasks)</option>
-                <option value="general">汎用 (general)</option>
+                <option value="expenses">家計</option>
+                <option value="schedules">予定</option>
+                <option value="tasks">タスク</option>
+                <option value="general">汎用</option>
               </select>
               <button id="btn-memory-reload" class="btn btn-secondary btn-sm">更新</button>
             </div>
@@ -562,10 +562,10 @@
             <form id="memory-add-form" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
               <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" style="flex-grow:1;min-width:200px;">
               <select id="memory-new-module" class="filter-select">
-                <option value="general">general</option>
-                <option value="expenses">expenses</option>
-                <option value="schedules">schedules</option>
-                <option value="tasks">tasks</option>
+                <option value="general">汎用</option>
+                <option value="expenses">家計</option>
+                <option value="schedules">予定</option>
+                <option value="tasks">タスク</option>
               </select>
               <button type="submit" class="btn btn-primary" style="white-space:nowrap;">追加</button>
             </form>
@@ -789,7 +789,7 @@
         </div>
         <div class="filter-row">
           <label>フリーワード</label>
-          <input type="text" id="filter-q" class="filter-input" placeholder="ID、日付、カテゴリ、メモ、購入もと、登録元、金額">
+          <input type="text" id="filter-q" class="filter-input" placeholder="日付、カテゴリ、詳細、購入元、登録元、金額">
         </div>
         <div class="filter-row filter-actions">
           <button id="btn-filter-apply" class="btn btn-primary btn-sm">検索</button>
@@ -805,8 +805,8 @@
             <tr>
               <th class="sortable-th sort-desc" data-sort="date">日付 <span class="sort-icon">▼</span></th>
               <th class="sortable-th" data-sort="category">カテゴリ <span class="sort-icon"></span></th>
-              <th class="sortable-th" data-sort="description">メモ/詳細 <span class="sort-icon"></span></th>
-              <th class="sortable-th" data-sort="purchase_source">購入もと <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="description">詳細 <span class="sort-icon"></span></th>
+              <th class="sortable-th" data-sort="purchase_source">購入元 <span class="sort-icon"></span></th>
               <th class="sortable-th" data-sort="source">登録元 <span class="sort-icon"></span></th>
               <th class="sortable-th" data-sort="amount">金額 <span class="sort-icon"></span></th>
               <th class="sortable-th" data-sort="created_at">登録日時 <span class="sort-icon"></span></th>
