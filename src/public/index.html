@@ -248,7 +248,7 @@
             <!-- Cryptographic Price Chart Style Line Chart (Matte Style) -->
             <div class="dashboard-column card">
               <div class="column-header">
-                <h3><span class="material-symbols-outlined header-icon-symbol">trending_up</span>経費支出推移 (財務チャート)</h3>
+                <h3><span class="material-symbols-outlined header-icon-symbol">trending_up</span>経費支出推移</h3>
                 <span class="hud-tag">LIVE</span>
               </div>
               <div class="chart-main-wrapper">
@@ -449,7 +449,7 @@
               <form id="expense-form">
                 <div class="form-row">
                   <div class="form-group">
-                    <label for="exp-amount">金額 (円) *</label>
+                    <label for="exp-amount">金額 *</label>
                     <input type="number" id="exp-amount" required placeholder="1200">
                   </div>
                   <div class="form-group">
@@ -488,7 +488,7 @@
           <!-- Recent Expenses List Table -->
           <div class="expense-table-card card">
             <div class="column-header">
-              <h3>直近の支出履歴 (30件)</h3>
+              <h3>直近の支出履歴</h3>
               <button id="btn-expense-detail" class="btn btn-secondary btn-sm" type="button">
                 <span class="material-symbols-outlined btn-icon-symbol">open_in_full</span>
                 詳細一覧
@@ -594,12 +594,12 @@
             <p class="description-text">先生独自の Discord Bot Token や、AIのペルソナ（システム指示）をカスタマイズできます。未設定の場合は、システムデフォルトのボットおよび「早瀬ユウカ」のペルソナが適用されます。</p>
             <form id="discord-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
               <div class="form-group" style="margin-bottom: 12px;">
-                <label for="discord-token">Discord Bot Token (任意)</label>
+                <label for="discord-token">Discord Bot Token</label>
                 <input type="password" id="discord-token" placeholder="トークンを変更・登録する場合は入力してください (マスク表示中)" autocomplete="off">
                 <span class="field-sub">※独自Botを使用しない場合は空欄にしてください。</span>
               </div>
               <div class="form-group" style="margin-bottom: 12px;">
-                <label for="discord-persona">AI ペルソナ設定 (任意)</label>
+                <label for="discord-persona">AI ペルソナ設定</label>
                 <textarea id="discord-persona" placeholder="例: あなたは優秀なAIアシスタントです。常に丁寧な関西弁で答えてください。など。空欄の場合は「早瀬ユウカ」のペルソナが適用されます。"></textarea>
                 <span class="field-sub">※キャラクター設定、話し方、行動指針などを自由に記述できます。</span>
               </div>
@@ -650,7 +650,7 @@
                 <input type="text" id="backup-folder-id" placeholder="DriveのフォルダID">
               </div>
               <div class="form-group">
-                <label for="backup-cron">実行スケジュール (Cron式)</label>
+                <label for="backup-cron">実行スケジュール</label>
                 <input type="text" id="backup-cron" placeholder="0 3 * * *">
               </div>
               <div style="display: flex; gap: 10px; margin-top: 8px;">
@@ -812,12 +812,12 @@
       </div>
       <form id="credential-form">
         <div class="form-group">
-          <label for="cred-service-name">対象サービス名 (小文字英数字・ハイフン) *</label>
+          <label for="cred-service-name">対象サービス名 *</label>
           <input type="text" id="cred-service-name" required placeholder="例: github, millennium-portal" pattern="[a-z0-9\-]+">
           <span class="field-sub">※AIに指示する際の名前になります。</span>
         </div>
         <div class="form-group">
-          <label for="cred-username">ユーザー名 (ID / メールアドレス) *</label>
+          <label for="cred-username">ユーザー名 *</label>
           <input type="text" id="cred-username" required placeholder="例: sensei_millennium">
         </div>
         <div class="form-group">
@@ -923,7 +923,7 @@
         <input type="hidden" id="exp-edit-id">
         <div class="form-row">
           <div class="form-group">
-            <label for="exp-edit-amount">金額 (¥) *</label>
+            <label for="exp-edit-amount">金額 *</label>
             <input type="number" id="exp-edit-amount" required min="1">
           </div>
           <div class="form-group">
