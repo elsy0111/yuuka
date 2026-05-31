@@ -53,6 +53,80 @@ export function runMigrations(): void {
     console.error("users テーブルのマイグレーションに失敗しました:", e);
   }
 
+  // ── users テーブル正規化: サブテーブルを作成してデータを移行 ──────────────
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS user_gemini_settings (
+      discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
+      api_key_encrypted TEXT,
+      api_key_iv TEXT,
+      api_key_tag TEXT,
+      model TEXT NOT NULL DEFAULT 'gemini-3.1-flash-lite'
+    );
+
+    CREATE TABLE IF NOT EXISTS user_google_settings (
+      discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
+      client_id TEXT,
+      client_secret TEXT,
+      refresh_token TEXT,
+      calendar_id TEXT,
+      calendars TEXT,
+      drive_backup_enabled INTEGER NOT NULL DEFAULT 0,
+      drive_backup_folder_id TEXT,
+      backup_cron TEXT NOT NULL DEFAULT '0 3 * * *'
+    );
+
+    CREATE TABLE IF NOT EXISTS user_discord_settings (
+      discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
+      token_encrypted TEXT,
+      token_iv TEXT,
+      token_tag TEXT,
+      persona TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS user_preferences (
+      discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
+      monthly_budget INTEGER NOT NULL DEFAULT 50000
+    );
+  `);
+
+  // 既存の users テーブルからサブテーブルへデータ移行（冪等）
+  try {
+    const usersTableInfo = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
+    const hasGeminiCols = usersTableInfo.some((c) => c.name === "gemini_model");
+    if (hasGeminiCols) {
+      db.exec(`
+        INSERT OR IGNORE INTO user_gemini_settings (discord_id, api_key_encrypted, api_key_iv, api_key_tag, model)
+        SELECT discord_id,
+               gemini_api_key_encrypted,
+               gemini_api_key_iv,
+               gemini_api_key_tag,
+               COALESCE(gemini_model, 'gemini-3.1-flash-lite')
+        FROM users;
+
+        INSERT OR IGNORE INTO user_google_settings (discord_id, client_id, client_secret, refresh_token, calendar_id, calendars, drive_backup_enabled, drive_backup_folder_id, backup_cron)
+        SELECT discord_id,
+               google_client_id, google_client_secret, google_refresh_token,
+               google_calendar_id, google_calendars,
+               COALESCE(google_drive_backup_enabled, 0),
+               google_drive_backup_folder_id,
+               COALESCE(backup_cron, '0 3 * * *')
+        FROM users;
+
+        INSERT OR IGNORE INTO user_discord_settings (discord_id, token_encrypted, token_iv, token_tag, persona)
+        SELECT discord_id,
+               discord_token_encrypted, discord_token_iv, discord_token_tag, persona
+        FROM users;
+
+        INSERT OR IGNORE INTO user_preferences (discord_id, monthly_budget)
+        SELECT discord_id, COALESCE(monthly_budget, 50000)
+        FROM users;
+      `);
+      console.log("ℹ️ users サブテーブルへのデータ移行が完了しました");
+    }
+  } catch (e) {
+    console.error("users サブテーブル移行に失敗しました:", e);
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS invite_codes (
       code TEXT PRIMARY KEY,

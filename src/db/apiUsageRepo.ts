@@ -35,41 +35,42 @@ export function recordApiUsage(
   }
 }
 
-export function getApiUsageSummary(model: string): ApiUsageSummary {
+export function getApiUsageSummary(model: string, userId?: string): ApiUsageSummary {
   const db = getDb();
+  const userFilter = userId ? "AND user_id = ?" : "";
+  const params = (base: unknown[]) => (userId ? [...base, userId] : base);
 
-  // SQLite の localtime 関数で統一（JS 側の UTC 変換バグを回避）
   const rpm = (
     db
       .prepare(
         `SELECT COUNT(*) as c FROM api_usage_logs
-         WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute')`,
+         WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute') ${userFilter}`,
       )
-      .get(model) as { c: number }
+      .get(...params([model])) as { c: number }
   ).c;
 
   const rpd = (
     db
       .prepare(
         `SELECT COUNT(*) as c FROM api_usage_logs
-         WHERE model = ? AND created_at >= date('now', 'localtime')`,
+         WHERE model = ? AND created_at >= date('now', 'localtime') ${userFilter}`,
       )
-      .get(model) as { c: number }
+      .get(...params([model])) as { c: number }
   ).c;
 
   const tpmRow = db
     .prepare(
       `SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs
-       WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute')`,
+       WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute') ${userFilter}`,
     )
-    .get(model) as { t: number };
+    .get(...params([model])) as { t: number };
 
   const tpdRow = db
     .prepare(
       `SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs
-       WHERE model = ? AND created_at >= date('now', 'localtime')`,
+       WHERE model = ? AND created_at >= date('now', 'localtime') ${userFilter}`,
     )
-    .get(model) as { t: number };
+    .get(...params([model])) as { t: number };
 
   return { rpm, rpd, tpm: tpmRow.t, tpd: tpdRow.t };
 }

@@ -64,6 +64,7 @@ export async function generateWithRetry(
           modelName,
           usage.promptTokenCount ?? 0,
           usage.candidatesTokenCount ?? 0,
+          userId,
         );
       }
       return result;

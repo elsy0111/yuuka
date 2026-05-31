@@ -5,10 +5,12 @@ export interface UserRecord {
   discord_id: string;
   username: string;
   password_hash: string;
+  // gemini (from user_gemini_settings)
   gemini_api_key_encrypted: string | null;
   gemini_api_key_iv: string | null;
   gemini_api_key_tag: string | null;
   gemini_model: string;
+  // google (from user_google_settings)
   google_client_id: string | null;
   google_client_secret: string | null;
   google_refresh_token: string | null;
@@ -17,10 +19,13 @@ export interface UserRecord {
   google_drive_backup_enabled: number;
   google_drive_backup_folder_id: string | null;
   backup_cron: string;
+  // discord (from user_discord_settings)
   discord_token_encrypted: string | null;
   discord_token_iv: string | null;
   discord_token_tag: string | null;
   persona: string | null;
+  // preferences (from user_preferences)
+  monthly_budget: number;
   created_at: string;
   updated_at: string;
 }
@@ -47,16 +52,13 @@ export interface GoogleConfig {
   calendars: string[];
 }
 
-// --- パスワードハッシュ (scrypt: memory-hard, Node.js built-in) ---
+// ─── パスワードハッシュ ───────────────────────────────────────────────────────
 
 const SCRYPT_KEYLEN = 64;
-const SCRYPT_COST = 16384; // N
-const SCRYPT_BLOCK_SIZE = 8; // r
-const SCRYPT_PARALLELIZATION = 1; // p
+const SCRYPT_COST = 16384;
+const SCRYPT_BLOCK_SIZE = 8;
+const SCRYPT_PARALLELIZATION = 1;
 
-/**
- * パスワードをscryptでハッシュ化する
- */
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(16).toString("hex");
   const hash = crypto
@@ -69,9 +71,6 @@ export function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
-/**
- * パスワードとハッシュを照合する（タイミング攻撃耐性あり）
- */
 export function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, hash] = storedHash.split(":");
   if (!salt || !hash) return false;
@@ -85,62 +84,117 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(derived, "hex"));
 }
 
-// --- ユーザーCRUD ---
+// ─── 内部ヘルパー ────────────────────────────────────────────────────────────
 
-/**
- * ユーザーを新規登録する
- */
+const USER_JOIN_SQL = `
+  SELECT
+    u.discord_id, u.username, u.password_hash, u.created_at, u.updated_at,
+    COALESCE(g.api_key_encrypted, NULL)  AS gemini_api_key_encrypted,
+    COALESCE(g.api_key_iv, NULL)         AS gemini_api_key_iv,
+    COALESCE(g.api_key_tag, NULL)        AS gemini_api_key_tag,
+    COALESCE(g.model, 'gemini-3.1-flash-lite') AS gemini_model,
+    go.client_id                          AS google_client_id,
+    go.client_secret                      AS google_client_secret,
+    go.refresh_token                      AS google_refresh_token,
+    go.calendar_id                        AS google_calendar_id,
+    go.calendars                          AS google_calendars,
+    COALESCE(go.drive_backup_enabled, 0)  AS google_drive_backup_enabled,
+    go.drive_backup_folder_id             AS google_drive_backup_folder_id,
+    COALESCE(go.backup_cron, '0 3 * * *') AS backup_cron,
+    d.token_encrypted                     AS discord_token_encrypted,
+    d.token_iv                            AS discord_token_iv,
+    d.token_tag                           AS discord_token_tag,
+    d.persona                             AS persona,
+    COALESCE(p.monthly_budget, 50000)     AS monthly_budget
+  FROM users u
+  LEFT JOIN user_gemini_settings g  ON u.discord_id = g.discord_id
+  LEFT JOIN user_google_settings go ON u.discord_id = go.discord_id
+  LEFT JOIN user_discord_settings d ON u.discord_id = d.discord_id
+  LEFT JOIN user_preferences p      ON u.discord_id = p.discord_id
+`;
+
+function ensureSubRows(discordId: string): void {
+  const db = getDb();
+  db.prepare("INSERT OR IGNORE INTO user_gemini_settings (discord_id) VALUES (?)").run(discordId);
+  db.prepare("INSERT OR IGNORE INTO user_google_settings (discord_id) VALUES (?)").run(discordId);
+  db.prepare("INSERT OR IGNORE INTO user_discord_settings (discord_id) VALUES (?)").run(discordId);
+  db.prepare("INSERT OR IGNORE INTO user_preferences (discord_id) VALUES (?)").run(discordId);
+}
+
+// ─── ユーザー CRUD ───────────────────────────────────────────────────────────
+
 export function createUser(discordId: string, username: string, password: string): UserRecord {
   const db = getDb();
   const passwordHash = hashPassword(password);
-  const stmt = db.prepare(`
-    INSERT INTO users (discord_id, username, password_hash)
-    VALUES (?, ?, ?)
-  `);
-  stmt.run(discordId, username, passwordHash);
+  db.prepare("INSERT INTO users (discord_id, username, password_hash) VALUES (?, ?, ?)").run(
+    discordId,
+    username,
+    passwordHash,
+  );
+  ensureSubRows(discordId);
   const user = getUserByDiscordId(discordId);
-  if (!user) {
-    throw new Error("Failed to load created user");
-  }
+  if (!user) throw new Error("Failed to load created user");
   return user;
 }
 
-/**
- * Discord IDでユーザーを取得する
- */
 export function getUserByDiscordId(discordId: string): UserRecord | undefined {
-  const db = getDb();
-  return db.prepare("SELECT * FROM users WHERE discord_id = ?").get(discordId) as
-    | UserRecord
-    | undefined;
+  return getDb()
+    .prepare(`${USER_JOIN_SQL} WHERE u.discord_id = ?`)
+    .get(discordId) as UserRecord | undefined;
 }
 
-/**
- * ユーザーが登録済みかどうか高速に判定する（Botのメッセージフィルタ用）
- */
 export function isRegisteredUser(discordId: string): boolean {
-  const db = getDb();
-  const row = db.prepare("SELECT 1 FROM users WHERE discord_id = ? LIMIT 1").get(discordId);
+  const row = getDb()
+    .prepare("SELECT 1 FROM users WHERE discord_id = ? LIMIT 1")
+    .get(discordId);
   return !!row;
 }
 
-/**
- * ユーザーネームを変更する
- */
 export function updateUsername(discordId: string, newUsername: string): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(`
-    UPDATE users SET username = ?, updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
+  const result = getDb()
+    .prepare(
+      "UPDATE users SET username = ?, updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
     .run(newUsername, discordId);
   return result.changes > 0;
 }
 
-/**
- * ユーザーのGemini設定を更新する
- */
+export function listAllUserIds(): string[] {
+  const rows = getDb()
+    .prepare("SELECT discord_id FROM users ORDER BY created_at ASC")
+    .all() as { discord_id: string }[];
+  return rows.map((r) => r.discord_id);
+}
+
+export function deleteUser(discordId: string): boolean {
+  const result = getDb().prepare("DELETE FROM users WHERE discord_id = ?").run(discordId);
+  return result.changes > 0;
+}
+
+// ─── Gemini 設定 ─────────────────────────────────────────────────────────────
+
+export function getUserGeminiConfig(discordId: string): GeminiConfig | null {
+  const row = getDb()
+    .prepare(
+      "SELECT api_key_encrypted, api_key_iv, api_key_tag, model FROM user_gemini_settings WHERE discord_id = ?",
+    )
+    .get(discordId) as
+    | {
+        api_key_encrypted: string | null;
+        api_key_iv: string | null;
+        api_key_tag: string | null;
+        model: string;
+      }
+    | undefined;
+  if (!row) return null;
+  return {
+    apiKeyEncrypted: row.api_key_encrypted,
+    apiKeyIv: row.api_key_iv,
+    apiKeyTag: row.api_key_tag,
+    model: row.model,
+  };
+}
+
 export function updateGeminiSettings(
   discordId: string,
   apiKeyEncrypted: string | null,
@@ -148,24 +202,60 @@ export function updateGeminiSettings(
   apiKeyTag: string | null,
   model: string,
 ): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(`
-    UPDATE users SET
-      gemini_api_key_encrypted = ?,
-      gemini_api_key_iv = ?,
-      gemini_api_key_tag = ?,
-      gemini_model = ?,
-      updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
-    .run(apiKeyEncrypted, apiKeyIv, apiKeyTag, model, discordId);
+  ensureSubRows(discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_gemini_settings (discord_id, api_key_encrypted, api_key_iv, api_key_tag, model)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET
+         api_key_encrypted = excluded.api_key_encrypted,
+         api_key_iv = excluded.api_key_iv,
+         api_key_tag = excluded.api_key_tag,
+         model = excluded.model`,
+    )
+    .run(discordId, apiKeyEncrypted, apiKeyIv, apiKeyTag, model);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
   return result.changes > 0;
 }
 
-/**
- * ユーザーのGoogle OAuth設定を更新する
- */
+// ─── Google 設定 ─────────────────────────────────────────────────────────────
+
+export function getUserGoogleConfig(discordId: string): GoogleConfig | null {
+  const row = getDb()
+    .prepare(
+      "SELECT client_id, client_secret, refresh_token, calendar_id, calendars FROM user_google_settings WHERE discord_id = ?",
+    )
+    .get(discordId) as
+    | {
+        client_id: string | null;
+        client_secret: string | null;
+        refresh_token: string | null;
+        calendar_id: string | null;
+        calendars: string | null;
+      }
+    | undefined;
+  if (!row) return null;
+  let calendars: string[] = [];
+  if (row.calendars) {
+    try {
+      calendars = JSON.parse(row.calendars);
+    } catch {
+      calendars = [];
+    }
+  }
+  return {
+    clientId: row.client_id,
+    clientSecret: row.client_secret,
+    refreshToken: row.refresh_token,
+    calendarId: row.calendar_id,
+    calendars,
+  };
+}
+
 export function updateGoogleSettings(
   discordId: string,
   clientId: string | null,
@@ -174,152 +264,94 @@ export function updateGoogleSettings(
   calendarId: string | null,
   calendars: string[],
 ): boolean {
-  const db = getDb();
+  ensureSubRows(discordId);
   const calendarsJson = calendars.length > 0 ? JSON.stringify(calendars) : null;
-  const result = db
-    .prepare(`
-    UPDATE users SET
-      google_client_id = ?,
-      google_client_secret = ?,
-      google_refresh_token = ?,
-      google_calendar_id = ?,
-      google_calendars = ?,
-      updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
-    .run(clientId, clientSecret, refreshToken, calendarId, calendarsJson, discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_google_settings (discord_id, client_id, client_secret, refresh_token, calendar_id, calendars)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET
+         client_id = excluded.client_id,
+         client_secret = excluded.client_secret,
+         refresh_token = excluded.refresh_token,
+         calendar_id = excluded.calendar_id,
+         calendars = excluded.calendars`,
+    )
+    .run(discordId, clientId, clientSecret, refreshToken, calendarId, calendarsJson);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
   return result.changes > 0;
 }
 
-/**
- * ユーザーのバックアップ設定を更新する
- */
+export function updateGoogleRefreshToken(discordId: string, refreshToken: string): boolean {
+  ensureSubRows(discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_google_settings (discord_id, refresh_token)
+       VALUES (?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET refresh_token = excluded.refresh_token`,
+    )
+    .run(discordId, refreshToken);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
+  return result.changes > 0;
+}
+
 export function updateBackupSettings(
   discordId: string,
   enabled: boolean,
   folderId: string | null,
   cron: string,
 ): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(`
-    UPDATE users SET
-      google_drive_backup_enabled = ?,
-      google_drive_backup_folder_id = ?,
-      backup_cron = ?,
-      updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
-    .run(enabled ? 1 : 0, folderId, cron, discordId);
+  ensureSubRows(discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_google_settings (discord_id, drive_backup_enabled, drive_backup_folder_id, backup_cron)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET
+         drive_backup_enabled = excluded.drive_backup_enabled,
+         drive_backup_folder_id = excluded.drive_backup_folder_id,
+         backup_cron = excluded.backup_cron`,
+    )
+    .run(discordId, enabled ? 1 : 0, folderId, cron);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
   return result.changes > 0;
 }
 
-/**
- * ユーザーのGemini設定のみ取得する
- */
-export function getUserGeminiConfig(discordId: string): GeminiConfig | null {
-  const db = getDb();
-  const row = db
-    .prepare(`
-    SELECT gemini_api_key_encrypted, gemini_api_key_iv, gemini_api_key_tag, gemini_model
-    FROM users WHERE discord_id = ?
-  `)
+// ─── Discord Bot 設定 ────────────────────────────────────────────────────────
+
+export function getUserDiscordBotConfig(discordId: string): DiscordBotConfig | null {
+  const row = getDb()
+    .prepare(
+      "SELECT token_encrypted, token_iv, token_tag, persona FROM user_discord_settings WHERE discord_id = ?",
+    )
     .get(discordId) as
     | {
-        gemini_api_key_encrypted: string | null;
-        gemini_api_key_iv: string | null;
-        gemini_api_key_tag: string | null;
-        gemini_model: string;
+        token_encrypted: string | null;
+        token_iv: string | null;
+        token_tag: string | null;
+        persona: string | null;
       }
     | undefined;
-
   if (!row) return null;
   return {
-    apiKeyEncrypted: row.gemini_api_key_encrypted,
-    apiKeyIv: row.gemini_api_key_iv,
-    apiKeyTag: row.gemini_api_key_tag,
-    model: row.gemini_model,
+    tokenEncrypted: row.token_encrypted,
+    tokenIv: row.token_iv,
+    tokenTag: row.token_tag,
+    persona: row.persona,
   };
 }
 
-/**
- * ユーザーのGoogle OAuth設定のみ取得する
- */
-export function getUserGoogleConfig(discordId: string): GoogleConfig | null {
-  const db = getDb();
-  const row = db
-    .prepare(`
-    SELECT google_client_id, google_client_secret, google_refresh_token,
-           google_calendar_id, google_calendars
-    FROM users WHERE discord_id = ?
-  `)
-    .get(discordId) as
-    | {
-        google_client_id: string | null;
-        google_client_secret: string | null;
-        google_refresh_token: string | null;
-        google_calendar_id: string | null;
-        google_calendars: string | null;
-      }
-    | undefined;
-
-  if (!row) return null;
-
-  let calendars: string[] = [];
-  if (row.google_calendars) {
-    try {
-      calendars = JSON.parse(row.google_calendars);
-    } catch {
-      calendars = [];
-    }
-  }
-
-  return {
-    clientId: row.google_client_id,
-    clientSecret: row.google_client_secret,
-    refreshToken: row.google_refresh_token,
-    calendarId: row.google_calendar_id,
-    calendars,
-  };
-}
-
-/**
- * 登録済みユーザーID一覧を取得する
- */
-export function listAllUserIds(): string[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT discord_id FROM users ORDER BY created_at ASC").all() as {
-    discord_id: string;
-  }[];
-  return rows.map((r) => r.discord_id);
-}
-
-/**
- * ユーザーを削除する
- */
-export function deleteUser(discordId: string): boolean {
-  const db = getDb();
-  const result = db.prepare("DELETE FROM users WHERE discord_id = ?").run(discordId);
-  return result.changes > 0;
-}
-
-/**
- * Google Refresh Tokenのみ更新する（OAuthコールバック用）
- */
-export function updateGoogleRefreshToken(discordId: string, refreshToken: string): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(`
-    UPDATE users SET google_refresh_token = ?, updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
-    .run(refreshToken, discordId);
-  return result.changes > 0;
-}
-
-/**
- * ユーザーの独自Discord Botおよびペルソナ設定を更新する
- */
 export function updateDiscordBotSettings(
   discordId: string,
   tokenEncrypted: string | null,
@@ -327,24 +359,54 @@ export function updateDiscordBotSettings(
   tokenTag: string | null,
   persona: string | null,
 ): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(`
-    UPDATE users SET
-      discord_token_encrypted = ?,
-      discord_token_iv = ?,
-      discord_token_tag = ?,
-      persona = ?,
-      updated_at = datetime('now', 'localtime')
-    WHERE discord_id = ?
-  `)
-    .run(tokenEncrypted, tokenIv, tokenTag, persona, discordId);
+  ensureSubRows(discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_discord_settings (discord_id, token_encrypted, token_iv, token_tag, persona)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET
+         token_encrypted = excluded.token_encrypted,
+         token_iv = excluded.token_iv,
+         token_tag = excluded.token_tag,
+         persona = excluded.persona`,
+    )
+    .run(discordId, tokenEncrypted, tokenIv, tokenTag, persona);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
   return result.changes > 0;
 }
 
-/**
- * 全テーブルの user_id を fromId から toId に移行する
- */
+// ─── ユーザー設定（preferences）────────────────────────────────────────────
+
+export function getMonthlyBudget(discordId: string): number {
+  const row = getDb()
+    .prepare("SELECT monthly_budget FROM user_preferences WHERE discord_id = ?")
+    .get(discordId) as { monthly_budget: number | null } | undefined;
+  return row?.monthly_budget ?? 50000;
+}
+
+export function updateMonthlyBudget(discordId: string, budget: number): boolean {
+  ensureSubRows(discordId);
+  const result = getDb()
+    .prepare(
+      `INSERT INTO user_preferences (discord_id, monthly_budget)
+       VALUES (?, ?)
+       ON CONFLICT(discord_id) DO UPDATE SET monthly_budget = excluded.monthly_budget`,
+    )
+    .run(discordId, budget);
+  getDb()
+    .prepare(
+      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
+    )
+    .run(discordId);
+  return result.changes > 0;
+}
+
+// ─── ユーザーID移行 ──────────────────────────────────────────────────────────
+
 export function migrateUserId(fromId: string, toId: string): { migrated: number } {
   const db = getDb();
   let total = 0;
@@ -360,56 +422,4 @@ export function migrateUserId(fromId: string, toId: string): { migrated: number 
     }
   }
   return { migrated: total };
-}
-
-/**
- * ユーザーの月次予算上限を取得する（未設定時は50000）
- */
-export function getMonthlyBudget(discordId: string): number {
-  const db = getDb();
-  const row = db.prepare("SELECT monthly_budget FROM users WHERE discord_id = ?").get(discordId) as
-    | { monthly_budget: number | null }
-    | undefined;
-  return row?.monthly_budget ?? 50000;
-}
-
-/**
- * ユーザーの月次予算上限を更新する
- */
-export function updateMonthlyBudget(discordId: string, budget: number): boolean {
-  const db = getDb();
-  const result = db
-    .prepare(
-      "UPDATE users SET monthly_budget = ?, updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
-    .run(budget, discordId);
-  return result.changes > 0;
-}
-
-/**
- * ユーザーの独自Discord Botおよびペルソナ設定を取得する
- */
-export function getUserDiscordBotConfig(discordId: string): DiscordBotConfig | null {
-  const db = getDb();
-  const row = db
-    .prepare(`
-    SELECT discord_token_encrypted, discord_token_iv, discord_token_tag, persona
-    FROM users WHERE discord_id = ?
-  `)
-    .get(discordId) as
-    | {
-        discord_token_encrypted: string | null;
-        discord_token_iv: string | null;
-        discord_token_tag: string | null;
-        persona: string | null;
-      }
-    | undefined;
-
-  if (!row) return null;
-  return {
-    tokenEncrypted: row.discord_token_encrypted,
-    tokenIv: row.discord_token_iv,
-    tokenTag: row.discord_token_tag,
-    persona: row.persona,
-  };
 }

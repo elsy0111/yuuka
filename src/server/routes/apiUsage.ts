@@ -13,7 +13,7 @@ export const handleApiUsage: RouteHandler = async ({ req, res, pathname, method 
       const discordId = getSessionDiscordId(req);
       const userCfg = discordId ? getUserGeminiConfig(discordId) : null;
       const model = userCfg?.model || config.geminiModel || "gemini-2.0-flash-lite";
-      const summary = getApiUsageSummary(model);
+      const summary = getApiUsageSummary(model, discordId ?? undefined);
       const quota = getModelQuota(model);
       sendJson(res, 200, { success: true, model, usage: summary, quota });
     } catch (error) {
