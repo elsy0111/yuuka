@@ -401,8 +401,9 @@
   font-size: 0.72rem;
   padding: 2px 8px;
   border-radius: 999px;
-  background: var(--bg-tertiary, #444);
-  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-matte);
+  color: var(--color-zinc-muted);
 }
 
 .btn-icon-sm {
