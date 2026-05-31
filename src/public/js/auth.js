@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { switchTab } from "./router.js";
 import { initConfigAfterAuth } from "./config.js";
+import { openModal, getModal } from "./modal.js";
 
 const SESSION_STORAGE_KEY = "yuuka-admin-session";
 const nativeFetch = window.fetch.bind(window);
@@ -68,16 +69,43 @@ export async function loadUserProfiles() {
 
       const displayName =
         data.username || readStoredSession()?.username || state.activeUserId || "—";
-      renderProfileDropdown(displayName);
+      renderProfileDropdown(displayName, data);
     }
   } catch (err) {
     console.error("ユーザー情報の読み込みに失敗:", err);
   }
 }
 
-export function renderProfileDropdown(displayName) {
+export function renderProfileDropdown(displayName, userData = {}) {
   const display = document.getElementById("current-user-display");
   if (display) display.textContent = displayName || state.activeUserId || "—";
+
+  const usernameEl = document.getElementById("profile-username");
+  const discordIdEl = document.getElementById("profile-discord-id");
+  const createdAtEl = document.getElementById("profile-created-at");
+  if (usernameEl) usernameEl.textContent = userData.username || displayName || "—";
+  if (discordIdEl) discordIdEl.textContent = userData.discordId || state.activeUserId || "—";
+  if (createdAtEl && userData.createdAt) {
+    const d = new Date(userData.createdAt);
+    createdAtEl.textContent = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+  }
+}
+
+function initProfileDropdown() {
+  document.getElementById("btn-user-profile")?.addEventListener("click", () => {
+    openModal(getModal("profile"));
+  });
+
+  document.getElementById("btn-copy-discord-id")?.addEventListener("click", () => {
+    const id = document.getElementById("profile-discord-id")?.textContent;
+    if (!id || id === "—") return;
+    const btn = document.getElementById("btn-copy-discord-id");
+    navigator.clipboard.writeText(id).catch(() => {});
+    btn.querySelector(".material-symbols-outlined").textContent = "check";
+    setTimeout(() => {
+      btn.querySelector(".material-symbols-outlined").textContent = "content_copy";
+    }, 1500);
+  });
 }
 
 function showLoginOverlay(msg = "") {
@@ -124,6 +152,7 @@ function initInfoPopovers() {
 export function initAuth() {
   installAuthenticatedFetch();
   initInfoPopovers();
+  initProfileDropdown();
 
   // タブ切り替え
   document.getElementById("btn-tab-login")?.addEventListener("click", () => {

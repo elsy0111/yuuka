@@ -107,6 +107,7 @@ export const handleUsers: RouteHandler = ({ req, res, pathname, method }) => {
           users: [user.discord_id],
           username: user.username,
           discordId: user.discord_id,
+          createdAt: user.created_at,
         });
         return true;
       }

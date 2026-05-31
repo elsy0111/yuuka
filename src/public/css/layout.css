@@ -147,6 +147,63 @@
   flex-shrink: 0;
 }
 
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--card-matte);
+  border: 1px solid var(--border-matte);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: var(--font-family-sans);
+  transition: var(--transition-smooth);
+  white-space: nowrap;
+}
+
+.user-profile-badge:hover {
+  border-color: var(--border-focus);
+  background-color: var(--bg-secondary);
+}
+
+/* Profile modal */
+.profile-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.profile-modal-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-modal-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-zinc-muted);
+  letter-spacing: 0.05em;
+}
+
+.profile-modal-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.profile-modal-mono {
+  font-family: var(--font-family-mono);
+}
+
+.profile-modal-id-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .user-select-dropdown {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-matte);

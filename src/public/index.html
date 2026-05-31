@@ -161,10 +161,10 @@
         
         <!-- Interactive Controls (Switch Profiles & Logout) -->
         <div class="header-controls">
-          <div class="user-profile-badge">
+          <button type="button" class="user-profile-badge" id="btn-user-profile">
             <span class="material-symbols-outlined icon-small">person</span>
             <span id="current-user-display">ロード中...</span>
-          </div>
+          </button>
           <button id="btn-logout" class="btn btn-secondary btn-sm" title="ログアウト">
             <span class="material-symbols-outlined icon-button-left">logout</span> ログアウト
           </button>
@@ -867,6 +867,37 @@
         </div>
         <button type="submit" class="btn btn-primary btn-block">認証情報を保存</button>
       </form>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="modal-profile" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>アカウント情報</h3>
+        <button type="button" class="modal-close" data-modal="profile">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="profile-modal-body">
+        <div class="profile-modal-row">
+          <span class="profile-modal-label">ユーザー名</span>
+          <span class="profile-modal-value" id="profile-username">—</span>
+        </div>
+        <div class="profile-modal-row">
+          <span class="profile-modal-label">Discord ID</span>
+          <div class="profile-modal-id-row">
+            <span class="profile-modal-value profile-modal-mono" id="profile-discord-id">—</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-discord-id">
+              <span class="material-symbols-outlined">content_copy</span>
+            </button>
+          </div>
+        </div>
+        <div class="profile-modal-row">
+          <span class="profile-modal-label">登録日</span>
+          <span class="profile-modal-value" id="profile-created-at">—</span>
+        </div>
+      </div>
     </div>
   </div>
 
