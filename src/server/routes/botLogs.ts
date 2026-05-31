@@ -1,11 +1,24 @@
-import { listBotLogs, type BotLogLevel } from "../../db/botLogRepo.js";
+import { type BotLogLevel, clearBotLogs, listBotLogs } from "../../db/botLogRepo.js";
 import { sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
 const LEVELS = new Set(["debug", "info", "warn", "error"]);
 
 export const handleBotLogs: RouteHandler = ({ res, parsedUrl, pathname, method }) => {
-  if (pathname !== "/api/bot-logs" || method !== "GET") return false;
+  if (pathname !== "/api/bot-logs") return false;
+
+  if (method === "DELETE") {
+    try {
+      clearBotLogs();
+      sendJson(res, 200, { success: true });
+    } catch (error) {
+      console.error("[bot-logs] ログ削除に失敗しました:", error);
+      sendError(res, 500, "Botログの削除に失敗しました。");
+    }
+    return true;
+  }
+
+  if (method !== "GET") return false;
 
   const rawLevel = parsedUrl.searchParams.get("level") || undefined;
   if (rawLevel && !LEVELS.has(rawLevel)) {
@@ -14,7 +27,9 @@ export const handleBotLogs: RouteHandler = ({ res, parsedUrl, pathname, method }
   }
 
   const rawLimit = parsedUrl.searchParams.get("limit");
-  const limit = rawLimit ? Number.parseInt(rawLimit, 10) : 50;
+  // limit=0 or search mode → no limit (全件取得)
+  const hasSearch = !!parsedUrl.searchParams.get("search");
+  const limit = hasSearch ? 0 : rawLimit ? Number.parseInt(rawLimit, 10) : 10;
   const userId = parsedUrl.searchParams.get("userId") || undefined;
 
   try {

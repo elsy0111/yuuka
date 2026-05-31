@@ -1,3 +1,4 @@
+import { confirmModal } from "./modal.js";
 import { state } from "./state.js";
 
 const levelLabels = { debug: "DEBUG", info: "INFO", warn: "WARN", error: "ERROR" };
@@ -24,8 +25,11 @@ export function initBotLogs() {
   });
 
   document.getElementById("bot-log-search")?.addEventListener("input", (e) => {
+    const prev = searchQuery;
     searchQuery = e.target.value.trim().toLowerCase();
-    renderFiltered();
+    // 検索開始・終了時は全件取得し直す
+    if ((prev === "") !== (searchQuery === "")) fetchBotLogs();
+    else renderFiltered();
   });
 
   document.getElementById("bot-log-limit")?.addEventListener("change", fetchBotLogs);
@@ -33,6 +37,13 @@ export function initBotLogs() {
   document.getElementById("btn-bot-logs-autorefresh")?.addEventListener("click", toggleAutoRefresh);
 
   document.getElementById("btn-bot-logs-reload")?.addEventListener("click", fetchBotLogs);
+
+  document.getElementById("btn-bot-logs-clear")?.addEventListener("click", async () => {
+    if (!(await confirmModal("すべてのBotログを削除しますか？"))) return;
+    await fetch("/api/bot-logs", { method: "DELETE" });
+    allLogs = [];
+    renderFiltered();
+  });
 }
 
 function toggleAutoRefresh() {
@@ -56,12 +67,13 @@ export async function fetchBotLogs() {
 
   try {
     const limitEl = document.getElementById("bot-log-limit");
-    const limit = limitEl ? limitEl.value : "50";
+    const limit = limitEl ? limitEl.value : "10";
 
     const params = new URLSearchParams({
       userId: state.activeUserId,
       limit,
       includeSystem: "1",
+      ...(searchQuery ? { search: searchQuery } : {}),
     });
 
     const res = await fetch(`/api/bot-logs?${params}`);

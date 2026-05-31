@@ -1,11 +1,11 @@
-import { state } from "./state.js";
-import { fetchDashboardStats, fetchGeminiUsage } from "./dashboard.js";
-import { fetchTasksList } from "./tasks.js";
-import { fetchSchedulesList } from "./schedules.js";
-import { fetchExpensesList } from "./expenses.js";
-import { fetchConfigSettings } from "./config.js";
-import { fetchMemories } from "./memories.js";
 import { fetchBotLogs } from "./bot-logs.js";
+import { fetchConfigSettings } from "./config.js";
+import { fetchDashboardStats, fetchGeminiUsage } from "./dashboard.js";
+import { fetchExpensesList } from "./expenses.js";
+import { fetchMemories } from "./memories.js";
+import { fetchSchedulesList } from "./schedules.js";
+import { state } from "./state.js";
+import { fetchTasksList } from "./tasks.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",

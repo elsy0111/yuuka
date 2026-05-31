@@ -2,17 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import type { FunctionDeclaration } from "@google/generative-ai";
 import { config } from "../config.js";
-import * as taskFn from "./taskFunctions.js";
-import * as scheduleFn from "./scheduleFunctions.js";
-import * as expenseFn from "./expenseFunctions.js";
 import * as browserFn from "./browserFunctions.js";
 import * as credentialFn from "./credentialFunctions.js";
-import * as playbookFn from "./playbookFunctions.js";
-import * as memoryFn from "./memoryFunctions.js";
-import { taskDeclarations } from "./declarations/tasks.js";
-import { scheduleDeclarations } from "./declarations/schedules.js";
 import { expenseDeclarations } from "./declarations/expenses.js";
+import { scheduleDeclarations } from "./declarations/schedules.js";
 import { systemDeclarations } from "./declarations/system.js";
+import { taskDeclarations } from "./declarations/tasks.js";
+import * as expenseFn from "./expenseFunctions.js";
+import * as memoryFn from "./memoryFunctions.js";
+import * as playbookFn from "./playbookFunctions.js";
+import * as scheduleFn from "./scheduleFunctions.js";
+import * as taskFn from "./taskFunctions.js";
 
 type FunctionArgs = Record<string, unknown>;
 

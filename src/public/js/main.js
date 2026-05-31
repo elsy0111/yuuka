@@ -20,18 +20,18 @@
   );
 })();
 
-import { initTheme } from "./theme.js";
-import { initModals } from "./modal.js";
-import { initRouter } from "./router.js";
-import { initAuth, checkSessionHandshake } from "./auth.js";
-import { initTasks } from "./tasks.js";
-import { initSchedules } from "./schedules.js";
-import { initExpenses, initBudgetEdit } from "./expenses.js";
-import { initGeminiQuotaEdit } from "./dashboard.js";
-import { initExpenseDetail } from "./expense-detail.js";
+import { checkSessionHandshake, initAuth } from "./auth.js";
+import { initBotLogs } from "./bot-logs.js";
 import { initConfig } from "./config.js";
 import { initCredentials } from "./credentials.js";
-import { initBotLogs } from "./bot-logs.js";
+import { initGeminiQuotaEdit } from "./dashboard.js";
+import { initExpenseDetail } from "./expense-detail.js";
+import { initBudgetEdit, initExpenses } from "./expenses.js";
+import { initModals } from "./modal.js";
+import { initRouter } from "./router.js";
+import { initSchedules } from "./schedules.js";
+import { initTasks } from "./tasks.js";
+import { initTheme } from "./theme.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();

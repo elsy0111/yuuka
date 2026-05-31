@@ -1,5 +1,5 @@
 import * as credentialRepo from "../db/credentialRepo.js";
-import { encryptText, decryptText } from "../utils/crypto.js";
+import { decryptText, encryptText } from "../utils/crypto.js";
 
 /**
  * 資格情報を安全に登録または更新する

@@ -1,9 +1,9 @@
-import { state } from "./state.js";
-import { currentTheme } from "./theme.js";
 import { renderDonutChart } from "./chart-donut.js";
 import { renderPriceTrendChart } from "./chart-trend.js";
 import { renderUrgentDashboardList } from "./dashboard-urgent.js";
-import { openModal, getModal, closeModal } from "./modal.js";
+import { closeModal, getModal, openModal } from "./modal.js";
+import { state } from "./state.js";
+import { currentTheme } from "./theme.js";
 
 export function updateYuukaSpeechBubble() {
   const el = document.getElementById("yuuka-bubble-text");

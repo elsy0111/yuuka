@@ -1,11 +1,11 @@
 import {
   addExpense,
   deleteExpense,
+  getDailyExpenseTotals,
   getMonthlyCategoryBreakdown,
-  getMonthlyTotal,
   getMonthlyCount,
   getMonthlyMaxDay,
-  getDailyExpenseTotals,
+  getMonthlyTotal,
   listFilteredExpenses,
   listRecentExpenses,
   updateExpense,

@@ -871,16 +871,19 @@
               </div>
               <input type="search" id="bot-log-search" class="filter-input" placeholder="検索...">
               <select id="bot-log-limit" class="filter-select">
-                <option value="50" selected>50件</option>
+                <option value="10" selected>10件</option>
+                <option value="50">50件</option>
                 <option value="100">100件</option>
                 <option value="200">200件</option>
-                <option value="500">500件</option>
               </select>
               <button type="button" id="btn-bot-logs-autorefresh" class="btn btn-secondary btn-sm">
                 <span class="material-symbols-outlined">autorenew</span>自動更新
               </button>
               <button type="button" id="btn-bot-logs-reload" class="btn btn-secondary btn-sm">
                 <span class="material-symbols-outlined">refresh</span>更新
+              </button>
+              <button type="button" id="btn-bot-logs-clear" class="btn btn-secondary btn-sm" style="color:var(--color-red);border-color:var(--color-red);">
+                <span class="material-symbols-outlined">delete_sweep</span>全削除
               </button>
             </div>
             <div id="bot-log-status" class="bot-log-status"></div>

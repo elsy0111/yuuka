@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { createInviteCode, deleteInviteCode, listInviteCodes } from "../../db/inviteRepo.js";
-import { getSessionDiscordId } from "../session.js";
 import { sendError, sendJson } from "../http.js";
+import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
 export const handleInviteCodes: RouteHandler = ({ req, res, pathname, method }) => {

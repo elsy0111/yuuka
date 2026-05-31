@@ -1,6 +1,6 @@
 import * as expenseRepo from "../db/expenseRepo.js";
 import { getMonthlyBudget, updateMonthlyBudget } from "../db/userRepo.js";
-import { formatCurrency, formatDate, currentMonthLabel } from "../utils/formatters.js";
+import { currentMonthLabel, formatCurrency, formatDate } from "../utils/formatters.js";
 
 export function addExpense(
   userId: string,

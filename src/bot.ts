@@ -1,12 +1,11 @@
-import { Client, GatewayIntentBits, Partials, ActivityType, type Message } from "discord.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { ActivityType, Client, GatewayIntentBits, type Message, Partials } from "discord.js";
 import { config } from "./config.js";
-import { processMessage, type ChatMessage } from "./gemini.js";
+import { addBotLog, type BotLogLevel, pruneBotLogs } from "./db/botLogRepo.js";
+import { isRegisteredUser } from "./db/userRepo.js";
+import { type ChatMessage, processMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
-import { addBotLog, pruneBotLogs, type BotLogLevel } from "./db/botLogRepo.js";
-import { isRegisteredUser } from "./db/userRepo.js";
-import { decryptText } from "./utils/crypto.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 type TypingChannel = Message["channel"] & {
   sendTyping: () => Promise<unknown>;

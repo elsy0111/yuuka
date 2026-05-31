@@ -1,10 +1,10 @@
-import { runMigrations } from "./db/migrations.js";
 import { startBot, stopBot } from "./bot.js";
-import { closeDb } from "./db/database.js";
-import { startWebServer, stopWebServer } from "./server.js";
-import { initRedis, closeRedis } from "./db/redis.js";
 import { config } from "./config.js";
+import { closeDb } from "./db/database.js";
 import { seedInitialCodes } from "./db/inviteRepo.js";
+import { runMigrations } from "./db/migrations.js";
+import { closeRedis, initRedis } from "./db/redis.js";
+import { startWebServer, stopWebServer } from "./server.js";
 
 async function main() {
   console.log("🚀 Yuuka 起動中...");

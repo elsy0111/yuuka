@@ -1,7 +1,7 @@
+import { getMainBotInviteUrl } from "../../bot.js";
 import { config } from "../../config.js";
 import { getDb } from "../../db/database.js";
 import { getUserByDiscordId, getUserGoogleConfig } from "../../db/userRepo.js";
-import { getMainBotInviteUrl } from "../../bot.js";
 import { sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";

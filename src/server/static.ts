@@ -1,6 +1,6 @@
 import fs from "node:fs";
-import path from "node:path";
 import type http from "node:http";
+import path from "node:path";
 import { writeStaticHeaders } from "./http.js";
 
 const PUBLIC_DIR = path.resolve(process.cwd(), "src", "public");

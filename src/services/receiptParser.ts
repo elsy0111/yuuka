@@ -1,5 +1,5 @@
-import { processMessage } from "../gemini.js";
 import type { ChatMessage } from "../gemini.js";
+import { processMessage } from "../gemini.js";
 
 /**
  * レシート画像を解析して支出を記録する。

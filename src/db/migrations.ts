@@ -1,6 +1,6 @@
-import { getDb } from "./database.js";
 import fs from "node:fs";
 import path from "node:path";
+import { getDb } from "./database.js";
 
 export function runMigrations(): void {
   const db = getDb();

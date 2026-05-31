@@ -1,7 +1,7 @@
-import { state } from "./state.js";
-import { switchTab } from "./router.js";
 import { initConfigAfterAuth } from "./config.js";
-import { openModal, getModal } from "./modal.js";
+import { getModal, openModal } from "./modal.js";
+import { switchTab } from "./router.js";
+import { state } from "./state.js";
 
 const SESSION_STORAGE_KEY = "yuuka-admin-session";
 const nativeFetch = window.fetch.bind(window);

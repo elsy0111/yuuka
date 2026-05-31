@@ -1,3 +1,10 @@
+import { isValidCode, validateAndConsumeCode } from "../../db/inviteRepo.js";
+import {
+  createUser,
+  getUserByDiscordId,
+  updateUsername,
+  verifyPassword,
+} from "../../db/userRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import {
   createSession,
@@ -11,13 +18,6 @@ import {
   persistSessions,
   SESSION_TTL,
 } from "../session.js";
-import {
-  createUser,
-  getUserByDiscordId,
-  updateUsername,
-  verifyPassword,
-} from "../../db/userRepo.js";
-import { isValidCode, validateAndConsumeCode } from "../../db/inviteRepo.js";
 import type { RouteHandler } from "../types.js";
 
 export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) => {

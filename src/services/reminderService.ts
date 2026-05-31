@@ -1,8 +1,8 @@
 import cron from "node-cron";
+import { getBotClientForUser } from "../bot.js";
+import { config } from "../config.js";
 import { getUnremindedSchedules, markReminded } from "../db/scheduleRepo.js";
 import { buildReminderEmbed } from "../utils/embeds.js";
-import { config } from "../config.js";
-import { getBotClientForUser } from "../bot.js";
 
 let task: cron.ScheduledTask | null = null;
 

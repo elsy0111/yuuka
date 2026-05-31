@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI, type Content } from "@google/generative-ai";
+import { type Content, GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../config.js";
-import { getAllFunctionDeclarations } from "../functions/index.js";
-import { buildSystemInstruction } from "./systemInstruction.js";
 import { recordApiUsage } from "../db/apiUsageRepo.js";
 import { getUserGeminiConfig } from "../db/userRepo.js";
+import { getAllFunctionDeclarations } from "../functions/index.js";
+import { buildSystemInstruction } from "./systemInstruction.js";
 
 export const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 

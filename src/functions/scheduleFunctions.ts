@@ -1,11 +1,11 @@
 import * as scheduleRepo from "../db/scheduleRepo.js";
-import { formatDateTime } from "../utils/formatters.js";
 import {
-  isCalendarEnabled,
   createCalendarEvent,
   deleteCalendarEvent,
+  isCalendarEnabled,
   syncGoogleCalendarToLocal,
 } from "../services/googleCalendarService.js";
+import { formatDateTime } from "../utils/formatters.js";
 
 export async function addSchedule(
   userId: string,

@@ -1,14 +1,14 @@
-import { clearCalendarCache } from "../../services/googleCalendarService.js";
+import type http from "node:http";
 import {
   getUserGeminiConfig,
-  updateGeminiSettings,
   getUserGoogleConfig,
+  updateGeminiSettings,
   updateGoogleSettings,
 } from "../../db/userRepo.js";
-import { encryptText, decryptText } from "../../utils/crypto.js";
-import { getSessionDiscordId } from "../session.js";
+import { clearCalendarCache } from "../../services/googleCalendarService.js";
+import { decryptText, encryptText } from "../../utils/crypto.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
-import type http from "node:http";
+import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
 async function readCalendarId(req: http.IncomingMessage): Promise<string | undefined> {
@@ -33,7 +33,7 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
     if (cfg?.apiKeyEncrypted && cfg.apiKeyIv && cfg.apiKeyTag) {
       try {
         const plain = decryptText(cfg.apiKeyEncrypted, cfg.apiKeyIv, cfg.apiKeyTag);
-        apiKeyPrefix = plain.slice(0, 8) + "...";
+        apiKeyPrefix = `${plain.slice(0, 8)}...`;
       } catch {}
     }
     sendJson(res, 200, {

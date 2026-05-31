@@ -27,7 +27,7 @@ export interface AddBotLogInput {
 }
 
 export interface ListBotLogsOptions {
-  limit?: number;
+  limit?: number; // 0 or undefined = no limit
   level?: BotLogLevel;
   userId?: string;
   includeSystem?: boolean;
@@ -82,11 +82,20 @@ export function listBotLogs(options: ListBotLogsOptions = {}): BotLogEntry[] {
     conditions.push("(user_id IS NULL OR user_id = '')");
   }
 
-  const limit = Math.max(1, Math.min(options.limit ?? 200, 500));
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const limit = options.limit ?? 0;
+  if (limit > 0) {
+    return db
+      .prepare(`SELECT * FROM bot_logs ${where} ORDER BY id DESC LIMIT ?`)
+      .all(...params, limit) as BotLogEntry[];
+  }
   return db
-    .prepare(`SELECT * FROM bot_logs ${where} ORDER BY id DESC LIMIT ?`)
-    .all(...params, limit) as BotLogEntry[];
+    .prepare(`SELECT * FROM bot_logs ${where} ORDER BY id DESC`)
+    .all(...params) as BotLogEntry[];
+}
+
+export function clearBotLogs(): void {
+  getDb().prepare("DELETE FROM bot_logs").run();
 }
 
 export function pruneBotLogs(maxRows = 5000): void {

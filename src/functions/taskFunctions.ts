@@ -1,5 +1,5 @@
 import * as taskRepo from "../db/taskRepo.js";
-import { formatPriority, formatDate, statusEmoji } from "../utils/formatters.js";
+import { formatDate, formatPriority, statusEmoji } from "../utils/formatters.js";
 
 export function addTask(
   userId: string,
