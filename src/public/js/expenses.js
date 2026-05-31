@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 import { openModal, getModal, closeModal } from "./modal.js";
+import { toast } from "./toast.js";
 
 export async function fetchExpensesList() {
   const tbody = document.getElementById("expenses-table-body");
@@ -348,7 +349,7 @@ function initReceiptDropzone() {
 
 function processReceiptFile(file) {
   if (!file.type.startsWith("image/")) {
-    alert("エラー: 画像ファイル(PNG, JPEG等)のみ対応しています。");
+    toast.error("画像ファイル（PNG, JPEG等）のみ対応しています。");
     return;
   }
   const scanStatus = document.getElementById("scan-status");
@@ -381,7 +382,7 @@ function processReceiptFile(file) {
       }
     } catch (err) {
       scanStatus.classList.add("hidden");
-      alert(`解析エラーが発生しました:\n${err.message}`);
+      toast.error(`解析エラー: ${err.message}`);
     }
   };
   reader.readAsDataURL(file);

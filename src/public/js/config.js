@@ -2,6 +2,7 @@ import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
 import { fetchCredentialsSettings } from "./credentials.js";
 import { initMemories } from "./memories.js";
 import { renderProfileDropdown } from "./auth.js";
+import { toast } from "./toast.js";
 
 export async function fetchConfigSettings() {
   const grid = document.getElementById("config-settings-grid");
@@ -70,12 +71,12 @@ export function initConfig() {
       if (data.success) {
         document.getElementById("gemini-api-key").value = "";
         await loadGeminiForm();
-        alert("Gemini設定を保存しました。");
+        toast.success("Gemini設定を保存しました。");
       } else {
-        alert(data.message || "保存に失敗しました。");
+        toast.error(data.message || "保存に失敗しました。");
       }
     } catch {
-      alert("サーバー接続に失敗しました。");
+      toast.error("サーバー接続に失敗しました。");
     }
   });
 
@@ -93,12 +94,12 @@ export function initConfig() {
       const data = await res.json();
       if (data.success) {
         renderProfileDropdown(data.username);
-        alert(`表示名を「${data.username}」に変更しました。`);
+        toast.success(`表示名を「${data.username}」に変更しました。`);
       } else {
-        alert(data.message || "保存に失敗しました。");
+        toast.error(data.message || "保存に失敗しました。");
       }
     } catch {
-      alert("サーバー接続に失敗しました。");
+      toast.error("サーバー接続に失敗しました。");
     }
   });
 }

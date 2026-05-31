@@ -1,3 +1,4 @@
+import { toast } from "./toast.js";
 import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchCredentialsSettings() {
@@ -93,10 +94,10 @@ async function handleDeleteCredential(serviceName) {
     });
     const data = await res.json();
     if (data.success) fetchCredentialsSettings();
-    else alert("削除に失敗しました。");
+    else toast.error("削除に失敗しました。");
   } catch (err) {
     console.error(err);
-    alert("通信エラーが発生しました。");
+    toast.error("通信エラーが発生しました。");
   }
 }
 
@@ -130,11 +131,11 @@ export function initCredentials() {
         document.getElementById("credential-form").reset();
         fetchCredentialsSettings();
       } else {
-        alert(`登録に失敗しました: ${data.message}`);
+        toast.error(`登録に失敗しました: ${data.message}`);
       }
     } catch (err) {
       console.error(err);
-      alert("通信エラーが発生しました。");
+      toast.error("通信エラーが発生しました。");
     }
   });
 }

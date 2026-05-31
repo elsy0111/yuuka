@@ -1,3 +1,4 @@
+import { toast } from "./toast.js";
 export function renderCalendarsList(calendars, onChanged) {
   const list = document.getElementById("config-calendars-list");
   if (!list) return;
@@ -34,11 +35,11 @@ export function initCalendarForm(onChanged) {
         input.value = "";
         onChanged();
       } else {
-        alert(`追加に失敗しました: ${data.message}`);
+        toast.error(`追加に失敗しました: ${data.message}`);
       }
     } catch (e) {
       console.error(e);
-      alert("通信エラーが発生しました。");
+      toast.error("通信エラーが発生しました。");
     }
   });
 }
@@ -84,9 +85,9 @@ async function handleDeleteCalendarId(calendarId, onChanged) {
     });
     const data = await res.json();
     if (data.success) onChanged();
-    else alert(`削除に失敗しました: ${data.message}`);
+    else toast.error(`削除に失敗しました: ${data.message}`);
   } catch (e) {
     console.error(e);
-    alert("通信エラーが発生しました。");
+    toast.error("通信エラーが発生しました。");
   }
 }

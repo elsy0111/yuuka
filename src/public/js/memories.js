@@ -1,3 +1,4 @@
+import { toast } from "./toast.js";
 import { state } from "./state.js";
 
 export function initMemories() {
@@ -17,13 +18,16 @@ export function initMemories() {
         body: JSON.stringify({ userId: state.activeUserId, content, module }),
       });
       const data = await res.json();
-      if (!data.success) return alert(`追加失敗: ${data.message}`);
+      if (!data.success) {
+        toast.error(`追加失敗: ${data.message}`);
+        return;
+      }
 
       document.getElementById("memory-new-content").value = "";
       fetchMemories();
     } catch (e) {
       console.error(e);
-      alert("通信エラーが発生しました。");
+      toast.error("通信エラーが発生しました。");
     }
   });
 }
@@ -181,9 +185,9 @@ async function handleDeleteMemory(id) {
     });
     const data = await res.json();
     if (data.success) fetchMemories();
-    else alert(`削除失敗: ${data.message}`);
+    else toast.error(`削除失敗: ${data.message}`);
   } catch (e) {
     console.error(e);
-    alert("通信エラーが発生しました。");
+    toast.error("通信エラーが発生しました。");
   }
 }

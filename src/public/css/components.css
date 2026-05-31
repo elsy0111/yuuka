@@ -263,6 +263,113 @@
   margin-bottom: 12px;
 }
 
+/* ============================================================
+   TOAST NOTIFICATIONS (Sonner-like)
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-matte);
+  background-color: var(--card-matte);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: none;
+}
+
+.toast-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.toast-out {
+  animation: toast-fade-out 0.18s ease forwards;
+}
+
+@keyframes toast-fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.97);
+  }
+}
+
+.toast-icon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+  color: var(--color-green);
+}
+.toast-error .toast-icon {
+  color: var(--color-red);
+}
+.toast-warning .toast-icon {
+  color: var(--accent-yellow);
+}
+.toast-default .toast-icon {
+  color: var(--accent-cyan);
+}
+
+.toast-message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-zinc-muted);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+}
+
+.toast-close .material-symbols-outlined {
+  font-size: 0.95rem;
+}
+
+/* モバイル: 下部ナビの上に出す */
+@media (max-width: 768px) {
+  #toast-container {
+    bottom: 80px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
+
 a:not(.menu-item):not(.btn) {
   color: var(--accent-lavender);
 }
