@@ -5,6 +5,7 @@ import { addBotLog, type BotLogLevel, pruneBotLogs } from "./db/botLogRepo.js";
 import { isRegisteredUser } from "./db/userRepo.js";
 import { resolveApiKeyForUser, resolveModelForUser } from "./gemini/retry.js";
 import { type ChatMessage, processMessage } from "./gemini.js";
+import { buildSystemInstruction } from "./gemini/systemInstruction.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
 
@@ -271,7 +272,12 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         );
       } else if (fullText.trim()) {
         const chatMessage: ChatMessage = { text: fullText };
-        logBotEvent("debug", "prompt_text", message, { prompt: fullText.slice(0, 500) });
+        const systemInstruction = await buildSystemInstruction(userId);
+        logBotEvent("debug", "prompt_text", message, {
+          prompt: fullText.slice(0, 500),
+          systemInstruction: systemInstruction.slice(0, 500),
+          model: resolveModelForUser(userId),
+        });
         response = await processMessage(userId, chatMessage, statusCallback);
       } else {
         response =
