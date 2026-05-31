@@ -90,7 +90,7 @@
           </div>
           <div class="form-group">
             <label for="reg-invite-code">招待コード *
-              <button type="button" class="btn-field-info" data-info-title="招待コードについて" data-info-body="サーバー管理者が config.yaml の INVITE_CODES に設定した文字列です。1回使い切りで、使用後は無効になります。"><span class="material-symbols-outlined">info</span></button>
+              <button type="button" class="btn-field-info" data-info-title="招待コードについて" data-info-body="管理者が設定画面から発行したコードです。1回使い切りで、使用後は無効になります。"><span class="material-symbols-outlined">info</span></button>
             </label>
             <input type="text" id="reg-invite-code" required placeholder="管理者から受け取ったコード">
           </div>
@@ -629,38 +629,6 @@
             </form>
           </div>
 
-          <!-- Discord Bot & Persona Settings -->
-          <div id="discord-bot-settings" class="config-card card" style="margin-top: 24px;">
-            <div class="column-header">
-              <h3><span class="material-symbols-outlined header-icon-symbol">robot_2</span>Discord 独自Bot ＆ ペルソナ設定</h3>
-              <span class="hud-tag" style="background: var(--accent-pink-dim); color: var(--accent-pink);">自分のサーバーで使うには必須</span>
-            </div>
-            <p class="description-text">自分の Discord サーバーでボットを動かすには、専用の Bot Token が必要です。AIのペルソナ（システム指示）もここでカスタマイズできます。</p>
-            <details style="margin-bottom: 12px;">
-              <summary class="description-text" style="cursor: pointer; user-select: none;">独自Botトークンの取得手順を表示</summary>
-              <ol class="description-text" style="margin: 8px 0 0; padding-left: 1.4em; line-height: 2;">
-                <li><a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a> にアクセスし、「New Application」でアプリを作成する</li>
-                <li>左メニューの「Bot」を開き、「Reset Token」でトークンを発行してコピーする</li>
-                <li>同じページで「Message Content Intent」を ON にする</li>
-                <li>左メニューの「OAuth2」→「URL Generator」で scope: <code>bot</code>、permission: <code>Send Messages / Add Reactions / Read Message History</code> を選択し、生成されたURLでBotをサーバーに招待する</li>
-                <li>上のフォームにトークンを貼り付けて保存する</li>
-              </ol>
-            </details>
-            <form id="discord-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-              <div class="form-group" style="margin-bottom: 12px;">
-                <label for="discord-token">Discord Bot Token</label>
-                <input type="password" id="discord-token" placeholder="トークンを変更・登録する場合は入力してください (マスク表示中)" autocomplete="off">
-                <span class="field-sub">※独自Botを使用しない場合は空欄にしてください。</span>
-              </div>
-              <div class="form-group" style="margin-bottom: 12px;">
-                <label for="discord-persona">AI ペルソナ設定</label>
-                <textarea id="discord-persona" placeholder="例: あなたは優秀なAIアシスタントです。常に丁寧な関西弁で答えてください。など。空欄の場合は「早瀬ユウカ」のペルソナが適用されます。"></textarea>
-                <span class="field-sub">※キャラクター設定、話し方、行動指針などを自由に記述できます。</span>
-              </div>
-              <button type="submit" class="btn btn-primary">Discord ＆ ペルソナ設定を保存</button>
-            </form>
-          </div>
-
           <!-- Google OAuth settings -->
           <div class="config-card card" style="margin-top: 24px;">
             <div class="column-header">
@@ -823,7 +791,7 @@
               <li>友達がこの管理画面のURLにアクセスし、「アカウント作成」タブを開く</li>
               <li>Discord ユーザーID・ユーザー名・パスワード・招待コードを入力して登録</li>
               <li>友達がログイン後、設定画面で自分の Gemini API Key を登録する</li>
-              <li>友達が自分の Discord サーバー用に Bot を作成し、<a href="#discord-bot-settings" onclick="document.getElementById('discord-bot-settings').scrollIntoView({behavior:'smooth'});return false;">このページ下部の「Discord 独自Bot設定」</a>にトークンを登録する</li>
+              <li>友達が自分の Discord サーバーに Bot 招待URLでBotを追加する（招待URLは上の「Bot 招待URL」カードから取得）</li>
             </ol>
             <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px; margin-bottom: 18px;"></div>
             <div style="display: flex; justify-content: flex-end;">

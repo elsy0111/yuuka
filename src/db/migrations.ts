@@ -22,10 +22,6 @@ export function runMigrations(): void {
       google_drive_backup_enabled INTEGER DEFAULT 0,
       google_drive_backup_folder_id TEXT,
       backup_cron TEXT DEFAULT '0 3 * * *',
-      discord_token_encrypted TEXT,
-      discord_token_iv TEXT,
-      discord_token_tag TEXT,
-      persona TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
     );
@@ -37,10 +33,6 @@ export function runMigrations(): void {
   try {
     const tableInfo = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
     const columnsToAdd: { name: string; def: string }[] = [
-      { name: "discord_token_encrypted", def: "TEXT" },
-      { name: "discord_token_iv", def: "TEXT" },
-      { name: "discord_token_tag", def: "TEXT" },
-      { name: "persona", def: "TEXT" },
       { name: "monthly_budget", def: "INTEGER NOT NULL DEFAULT 50000" },
     ];
     for (const col of columnsToAdd) {
@@ -75,14 +67,6 @@ export function runMigrations(): void {
       backup_cron TEXT NOT NULL DEFAULT '0 3 * * *'
     );
 
-    CREATE TABLE IF NOT EXISTS user_discord_settings (
-      discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
-      token_encrypted TEXT,
-      token_iv TEXT,
-      token_tag TEXT,
-      persona TEXT
-    );
-
     CREATE TABLE IF NOT EXISTS user_preferences (
       discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
       monthly_budget INTEGER NOT NULL DEFAULT 50000
@@ -110,11 +94,6 @@ export function runMigrations(): void {
                COALESCE(google_drive_backup_enabled, 0),
                google_drive_backup_folder_id,
                COALESCE(backup_cron, '0 3 * * *')
-        FROM users;
-
-        INSERT OR IGNORE INTO user_discord_settings (discord_id, token_encrypted, token_iv, token_tag, persona)
-        SELECT discord_id,
-               discord_token_encrypted, discord_token_iv, discord_token_tag, persona
         FROM users;
 
         INSERT OR IGNORE INTO user_preferences (discord_id, monthly_budget)
