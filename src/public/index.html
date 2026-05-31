@@ -1071,14 +1071,9 @@
     <div class="modal-content card">
       <div class="modal-header">
         <h3><span class="material-symbols-outlined header-icon-symbol">receipt_long</span>支出の詳細 / 編集</h3>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button id="btn-expense-delete" class="btn btn-secondary btn-sm" type="button" style="color:var(--color-red);border-color:var(--color-red);">
-            <span class="material-symbols-outlined" style="font-size:0.9rem;vertical-align:middle;">delete</span> 削除
-          </button>
-          <button class="btn-close">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
+        <button class="btn-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <form id="expense-edit-form">
         <input type="hidden" id="exp-edit-id">
@@ -1116,7 +1111,12 @@
           <label for="exp-edit-description">詳細</label>
           <input type="text" id="exp-edit-description" placeholder="例: コンビニでの買い物">
         </div>
-        <button type="submit" class="btn btn-primary btn-block">更新する</button>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">更新する</button>
+          <button id="btn-expense-delete" class="btn btn-secondary" type="button" style="color:var(--color-red);border-color:var(--color-red);">
+            <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">delete</span>削除
+          </button>
+        </div>
       </form>
     </div>
   </div>

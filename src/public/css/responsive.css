@@ -245,12 +245,18 @@
     padding: 10px 0;
   }
 
-  /* Table responsiveness and clean details */
-  .expense-table th:nth-child(3),
-  .expense-table td:nth-child(3),
+  /* Table responsiveness: hide amount col on mobile, show description */
   .expense-table th:nth-child(4),
   .expense-table td:nth-child(4) {
-    display: none; /* Hide Description & Source on small mobile devices to prevent overflow */
+    display: none;
+  }
+
+  /* description を truncate 表示 */
+  .expense-table td:nth-child(3) {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .expense-table th,
@@ -259,9 +265,10 @@
     font-size: 0.75rem;
   }
 
-  /* 詳細モーダル内のテーブルをモバイルで小さく */
+  /* 詳細一覧モーダルは全列表示 */
   #expense-detail-modal .expense-table th,
   #expense-detail-modal .expense-table td {
+    display: table-cell;
     font-size: 0.65rem;
     padding: 6px 4px;
     white-space: nowrap;
