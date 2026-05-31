@@ -104,17 +104,3 @@ export const config = {
   baseUrl: getSetting("BASE_URL", ""),
 } as const;
 
-export function getGoogleCalendars(): string[] {
-  return getSettingArray("GOOGLE_CALENDARS");
-}
-
-export function updateGoogleCalendarsInYaml(calendars: string[]): void {
-  if (!fs.existsSync(CONFIG_PATH)) return;
-  const content = fs.readFileSync(CONFIG_PATH, "utf-8");
-  const updated = content.replace(
-    /^GOOGLE_CALENDARS:.*$/m,
-    `GOOGLE_CALENDARS: ${calendars.join(",")}`,
-  );
-  fs.writeFileSync(CONFIG_PATH, updated, "utf-8");
-  parsedConfig.GOOGLE_CALENDARS = calendars;
-}

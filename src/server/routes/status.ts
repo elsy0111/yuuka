@@ -1,6 +1,6 @@
-import { config, getGoogleCalendars } from "../../config.js";
+import { config } from "../../config.js";
 import { getDb } from "../../db/database.js";
-import { getUserByDiscordId } from "../../db/userRepo.js";
+import { getUserByDiscordId, getUserGoogleConfig } from "../../db/userRepo.js";
 import { sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
@@ -19,11 +19,12 @@ function countForDate(sql: string, userId: string, dateStr: string): number {
   return row?.count ?? row?.total ?? 0;
 }
 
-export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, method }) => {
+export const handleStatus: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
   if (pathname !== "/api/status" || method !== "GET") return false;
 
   try {
     const db = getDb();
+    const discordId = getSessionDiscordId(req);
     const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
     const taskCount = db
       .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ?")
@@ -85,7 +86,7 @@ export const handleStatus: RouteHandler = async ({ res, parsedUrl, pathname, met
         googleCalendarId: config.googleCalendarId,
         googleServiceAccountEmail: mask(config.googleServiceAccountEmail),
         googleClientId: mask(config.googleClientId),
-        googleCalendars: getGoogleCalendars().map((id) => ({ id, summary: id })),
+        googleCalendars: (discordId ? (getUserGoogleConfig(discordId)?.calendars ?? []) : []).map((id) => ({ id, summary: id })),
       },
     });
   } catch (err) {

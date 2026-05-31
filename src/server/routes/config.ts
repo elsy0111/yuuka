@@ -1,6 +1,10 @@
-import { getGoogleCalendars, updateGoogleCalendarsInYaml } from "../../config.js";
 import { clearCalendarCache } from "../../services/googleCalendarService.js";
-import { getUserGeminiConfig, updateGeminiSettings } from "../../db/userRepo.js";
+import {
+  getUserGeminiConfig,
+  updateGeminiSettings,
+  getUserGoogleConfig,
+  updateGoogleSettings,
+} from "../../db/userRepo.js";
 import { encryptText } from "../../utils/crypto.js";
 import { getSessionDiscordId } from "../session.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
@@ -46,7 +50,6 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
       let iv = existing?.apiKeyIv ?? null;
       let tag = existing?.apiKeyTag ?? null;
 
-      // apiKey が送られてきた場合のみ上書き（空欄なら既存キーを維持）
       if (apiKey?.trim()) {
         const result = encryptText(apiKey.trim());
         encrypted = result.encrypted;
@@ -69,19 +72,30 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
 export const handleCalendarAdd: RouteHandler = async ({ req, res, pathname, method }) => {
   if (pathname !== "/api/config/calendars/add" || method !== "POST") return false;
   try {
+    const discordId = getSessionDiscordId(req);
+    if (!discordId) { sendError(res, 401, "認証されていません。"); return true; }
+
     const cleanId = await readCalendarId(req);
     if (!cleanId) {
       sendError(res, 400, "有効なカレンダーIDを指定してください。");
       return true;
     }
 
-    const current = [...getGoogleCalendars()];
+    const googleCfg = getUserGoogleConfig(discordId);
+    const current = googleCfg?.calendars ?? [];
     if (current.includes(cleanId)) {
       sendJson(res, 200, { success: true, message: "このカレンダーIDは既に登録されています。" });
       return true;
     }
 
-    updateGoogleCalendarsInYaml([...current, cleanId]);
+    updateGoogleSettings(
+      discordId,
+      googleCfg?.clientId ?? null,
+      googleCfg?.clientSecret ?? null,
+      googleCfg?.refreshToken ?? null,
+      googleCfg?.calendarId ?? null,
+      [...current, cleanId],
+    );
     clearCalendarCache();
     sendJson(res, 200, { success: true, message: "カレンダーIDを追加しました。" });
   } catch (err) {
@@ -94,13 +108,25 @@ export const handleCalendarAdd: RouteHandler = async ({ req, res, pathname, meth
 export const handleCalendarDelete: RouteHandler = async ({ req, res, pathname, method }) => {
   if (pathname !== "/api/config/calendars/delete" || method !== "POST") return false;
   try {
+    const discordId = getSessionDiscordId(req);
+    if (!discordId) { sendError(res, 401, "認証されていません。"); return true; }
+
     const cleanId = await readCalendarId(req);
     if (!cleanId) {
       sendError(res, 400, "有効なカレンダーIDを指定してください。");
       return true;
     }
 
-    updateGoogleCalendarsInYaml(getGoogleCalendars().filter((id) => id !== cleanId));
+    const googleCfg = getUserGoogleConfig(discordId);
+    const updated = (googleCfg?.calendars ?? []).filter((id) => id !== cleanId);
+    updateGoogleSettings(
+      discordId,
+      googleCfg?.clientId ?? null,
+      googleCfg?.clientSecret ?? null,
+      googleCfg?.refreshToken ?? null,
+      googleCfg?.calendarId ?? null,
+      updated,
+    );
     clearCalendarCache();
     sendJson(res, 200, { success: true, message: "カレンダーIDを削除しました。" });
   } catch (err) {

@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { config, getGoogleCalendars } from "../config.js";
+import { config } from "../config.js";
 import * as scheduleRepo from "../db/scheduleRepo.js";
 import { getUserGoogleConfig } from "../db/userRepo.js";
 
@@ -62,12 +62,12 @@ export async function fetchAvailableCalendars(
   if (!calendar) return [];
   const googleConfig = getUserGoogleConfig(userId);
 
-  // 1. config.yaml に GOOGLE_CALENDARS が指定されている場合はそちらを最優先
-  const envCalendarIds = getGoogleCalendars();
+  // 1. DBに GOOGLE_CALENDARS が指定されている場合はそちらを最優先
+  const savedCalendarIds = googleConfig?.calendars ?? [];
 
-  if (envCalendarIds.length > 0) {
+  if (savedCalendarIds.length > 0) {
     const list: { id: string; summary: string }[] = [];
-    for (const id of envCalendarIds) {
+    for (const id of savedCalendarIds) {
       try {
         const response = await calendar.calendars.get({ calendarId: id });
         if (response.data.summary) {
