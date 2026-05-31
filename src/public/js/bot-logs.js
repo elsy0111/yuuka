@@ -56,7 +56,7 @@ export async function fetchBotLogs() {
 
   try {
     const limitEl = document.getElementById("bot-log-limit");
-    const limit = limitEl ? limitEl.value : "200";
+    const limit = limitEl ? limitEl.value : "50";
 
     const params = new URLSearchParams({
       userId: state.activeUserId,

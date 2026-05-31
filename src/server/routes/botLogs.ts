@@ -14,7 +14,7 @@ export const handleBotLogs: RouteHandler = ({ res, parsedUrl, pathname, method }
   }
 
   const rawLimit = parsedUrl.searchParams.get("limit");
-  const limit = rawLimit ? Number.parseInt(rawLimit, 10) : 200;
+  const limit = rawLimit ? Number.parseInt(rawLimit, 10) : 50;
   const userId = parsedUrl.searchParams.get("userId") || undefined;
 
   try {
