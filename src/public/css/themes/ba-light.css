@@ -16,7 +16,7 @@
   /* 追加アクセント — ゲーム本編の MomoTalk / 優先度 / 警告色を再現 */
   --ba-pink: #fb90a4; /* MomoTalk バナー・優先度高 */
   --ba-pink-dim: rgba(251, 144, 164, 0.15);
-  --ba-lavender: #a3baff; /* ゲーム内リンク色 */
+  --ba-lavender: #3b8fc5; /* リンク・低優先度色 */
   --ba-yellow: #ffd966; /* 警告/注意 */
   --ba-yellow-dim: rgba(255, 217, 102, 0.15);
 
