@@ -636,6 +636,16 @@
               <span class="hud-tag">任意設定</span>
             </div>
             <p class="description-text">先生独自の Discord Bot Token や、AIのペルソナ（システム指示）をカスタマイズできます。未設定の場合は、システムデフォルトのボットおよび「早瀬ユウカ」のペルソナが適用されます。</p>
+            <details style="margin-bottom: 12px;">
+              <summary class="description-text" style="cursor: pointer; user-select: none;">独自Botトークンの取得手順を表示</summary>
+              <ol class="description-text" style="margin: 8px 0 0; padding-left: 1.4em; line-height: 2;">
+                <li><a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a> にアクセスし、「New Application」でアプリを作成する</li>
+                <li>左メニューの「Bot」を開き、「Reset Token」でトークンを発行してコピーする</li>
+                <li>同じページで「Message Content Intent」を ON にする</li>
+                <li>左メニューの「OAuth2」→「URL Generator」で scope: <code>bot</code>、permission: <code>Send Messages / Add Reactions / Read Message History</code> を選択し、生成されたURLでBotをサーバーに招待する</li>
+                <li>上のフォームにトークンを貼り付けて保存する</li>
+              </ol>
+            </details>
             <form id="discord-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
               <div class="form-group" style="margin-bottom: 12px;">
                 <label for="discord-token">Discord Bot Token</label>
@@ -802,6 +812,7 @@
               <li>友達がこの管理画面のURLにアクセスし、「アカウント作成」タブを開く</li>
               <li>Discord ユーザーID・ユーザー名・パスワード・招待コードを入力して登録</li>
               <li>友達がログイン後、設定画面で自分の Gemini API Key を登録する</li>
+              <li>友達の Discord アカウントをシステムのボットが稼働しているサーバーに招待する（ボット自体は共有なので友達側での設定不要）</li>
             </ol>
             <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;"></div>
           </div>
