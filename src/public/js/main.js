@@ -27,6 +27,7 @@ import { initAuth, checkSessionHandshake } from "./auth.js";
 import { initTasks } from "./tasks.js";
 import { initSchedules } from "./schedules.js";
 import { initExpenses, initBudgetEdit } from "./expenses.js";
+import { initGeminiQuotaEdit } from "./dashboard.js";
 import { initExpenseDetail } from "./expense-detail.js";
 import { initConfig } from "./config.js";
 import { initCredentials } from "./credentials.js";
@@ -41,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSchedules();
   initExpenses();
   initBudgetEdit();
+  initGeminiQuotaEdit();
   initExpenseDetail();
   initConfig();
   initCredentials();

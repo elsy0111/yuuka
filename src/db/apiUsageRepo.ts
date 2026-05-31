@@ -78,3 +78,25 @@ export function pruneApiUsageLogs(): void {
     )
     .run();
 }
+
+export interface ApiQuota {
+  rpm: number;
+  rpd: number;
+  tpm: number;
+}
+
+export function getModelQuota(model: string): ApiQuota {
+  const row = getDb().prepare("SELECT rpm, rpd, tpm FROM api_quotas WHERE model = ?").get(model) as
+    | ApiQuota
+    | undefined;
+  return row ?? { rpm: 0, rpd: 0, tpm: 0 };
+}
+
+export function setModelQuota(model: string, quota: ApiQuota): void {
+  getDb()
+    .prepare(
+      `INSERT INTO api_quotas (model, rpm, rpd, tpm) VALUES (?, ?, ?, ?)
+       ON CONFLICT(model) DO UPDATE SET rpm=excluded.rpm, rpd=excluded.rpd, tpm=excluded.tpm`,
+    )
+    .run(model, quota.rpm, quota.rpd, quota.tpm);
+}

@@ -247,7 +247,19 @@
           <div class="card gemini-usage-card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">speed</span>Gemini API レート使用状況</h3>
-              <span class="hud-tag" id="gemini-usage-model">—</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="hud-tag" id="gemini-usage-model">—</span>
+                <button type="button" class="btn-budget-edit" id="btn-gemini-quota-edit" title="クォータを設定">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+              </div>
+            </div>
+            <div id="gemini-quota-form" class="budget-edit-form" style="display:none;">
+              <input type="number" id="gemini-quota-rpm" class="filter-input" placeholder="RPM" min="0" style="width:70px;">
+              <input type="number" id="gemini-quota-rpd" class="filter-input" placeholder="RPD" min="0" style="width:70px;">
+              <input type="number" id="gemini-quota-tpm" class="filter-input" placeholder="TPM" min="0" style="width:90px;">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-gemini-quota-save">保存</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-gemini-quota-cancel">キャンセル</button>
             </div>
             <div class="gemini-usage-grid">
               <div class="gemini-usage-item">

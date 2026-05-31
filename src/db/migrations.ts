@@ -261,6 +261,13 @@ export function runMigrations(): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_api_usage_created ON api_usage_logs(created_at);
+
+    CREATE TABLE IF NOT EXISTS api_quotas (
+      model TEXT PRIMARY KEY,
+      rpm INTEGER NOT NULL DEFAULT 0,
+      rpd INTEGER NOT NULL DEFAULT 0,
+      tpm INTEGER NOT NULL DEFAULT 0
+    );
   `);
 
   // 既存の Playbook ファイルからの DB マイグレーション

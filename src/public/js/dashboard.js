@@ -35,12 +35,17 @@ function setUsageBar(barId, valId, used, limit) {
   val.textContent = `${formatNum(used)} / ${formatNum(limit)}`;
 }
 
+let _geminiCurrentModel = "";
+let _geminiCurrentQuota = { rpm: 0, rpd: 0, tpm: 0 };
+
 export async function fetchGeminiUsage() {
   try {
     const res = await fetch("/api/gemini-usage");
     const data = await res.json();
     if (!data.success) return;
     const { usage, quota, model } = data;
+    _geminiCurrentModel = model;
+    _geminiCurrentQuota = quota;
     const modelEl = document.getElementById("gemini-usage-model");
     if (modelEl) modelEl.textContent = model;
     setUsageBar("gemini-bar-rpm", "gemini-val-rpm", usage.rpm, quota.rpm);
@@ -49,6 +54,44 @@ export async function fetchGeminiUsage() {
   } catch (e) {
     console.error("Gemini使用量取得エラー:", e);
   }
+}
+
+export function initGeminiQuotaEdit() {
+  const editBtn = document.getElementById("btn-gemini-quota-edit");
+  const form = document.getElementById("gemini-quota-form");
+  const saveBtn = document.getElementById("btn-gemini-quota-save");
+  const cancelBtn = document.getElementById("btn-gemini-quota-cancel");
+
+  editBtn?.addEventListener("click", () => {
+    document.getElementById("gemini-quota-rpm").value = _geminiCurrentQuota.rpm || "";
+    document.getElementById("gemini-quota-rpd").value = _geminiCurrentQuota.rpd || "";
+    document.getElementById("gemini-quota-tpm").value = _geminiCurrentQuota.tpm || "";
+    form.style.display = "flex";
+    editBtn.style.display = "none";
+  });
+
+  cancelBtn?.addEventListener("click", () => {
+    form.style.display = "none";
+    editBtn.style.display = "";
+  });
+
+  saveBtn?.addEventListener("click", async () => {
+    const rpm = Number(document.getElementById("gemini-quota-rpm").value);
+    const rpd = Number(document.getElementById("gemini-quota-rpd").value);
+    const tpm = Number(document.getElementById("gemini-quota-tpm").value);
+    try {
+      await fetch("/api/gemini-usage/quota", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: _geminiCurrentModel, rpm, rpd, tpm }),
+      });
+      form.style.display = "none";
+      editBtn.style.display = "";
+      fetchGeminiUsage();
+    } catch (e) {
+      console.error(e);
+    }
+  });
 }
 
 export async function fetchDashboardStats() {
