@@ -34,7 +34,9 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
       try {
         const plain = decryptText(cfg.apiKeyEncrypted, cfg.apiKeyIv, cfg.apiKeyTag);
         apiKeyPrefix = `${plain.slice(0, 8)}...`;
-      } catch {}
+      } catch (e) {
+        console.error("[config/gemini] APIキー復号失敗:", e);
+      }
     }
     sendJson(res, 200, {
       success: true,
