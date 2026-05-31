@@ -36,6 +36,7 @@ export function initConfigAfterAuth() {
   initMemories();
   loadProfileForm();
   loadGeminiForm();
+  loadInviteCodes();
 }
 
 async function loadGeminiForm() {
@@ -44,18 +45,80 @@ async function loadGeminiForm() {
     const data = await res.json();
     if (!data.success) return;
     const keyInput = document.getElementById("gemini-api-key");
+    const keyHint = document.getElementById("gemini-api-key-hint");
     const modelSelect = document.getElementById("gemini-model-select");
     if (keyInput) {
       keyInput.placeholder = data.hasApiKey
-        ? "設定済み（変更する場合のみ入力）"
+        ? "変更する場合のみ入力"
         : "APIキーを入力してください";
+    }
+    if (keyHint) {
+      keyHint.textContent = data.apiKeyPrefix ? `現在の設定: ${data.apiKeyPrefix}` : "";
     }
     if (modelSelect && data.model) modelSelect.value = data.model;
   } catch {}
 }
 
+async function loadInviteCodes() {
+  const list = document.getElementById("invite-codes-list");
+  if (!list) return;
+  try {
+    const res = await fetch("/api/invite-codes");
+    const data = await res.json();
+    if (!data.success) return;
+    renderInviteCodes(data.codes);
+  } catch {}
+}
+
+function renderInviteCodes(codes) {
+  const list = document.getElementById("invite-codes-list");
+  if (!list) return;
+  list.replaceChildren();
+  if (!codes.length) {
+    const empty = document.createElement("p");
+    empty.className = "description-text";
+    empty.textContent = "招待コードはまだ発行されていません。";
+    list.appendChild(empty);
+    return;
+  }
+  codes.forEach(({ code, used_by, created_at }) => {
+    const row = document.createElement("div");
+    row.className = "invite-code-row";
+    const codeSpan = document.createElement("span");
+    codeSpan.className = "invite-code-value";
+    codeSpan.textContent = code;
+    const statusSpan = document.createElement("span");
+    statusSpan.className = used_by ? "invite-code-used" : "invite-code-unused";
+    statusSpan.textContent = used_by ? "使用済み" : "未使用";
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "btn-icon-sm";
+    copyBtn.title = "コピー";
+    copyBtn.innerHTML = '<span class="material-symbols-outlined">content_copy</span>';
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(code).then(() => toast.success("コピーしました"));
+    });
+    row.append(codeSpan, statusSpan, used_by ? document.createTextNode("") : copyBtn);
+    list.appendChild(row);
+  });
+}
+
 export function initConfig() {
   initCalendarForm(fetchConfigSettings);
+
+  document.getElementById("btn-generate-invite")?.addEventListener("click", async () => {
+    try {
+      const res = await fetch("/api/invite-codes", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`招待コードを発行しました: ${data.code}`);
+        loadInviteCodes();
+      } else {
+        toast.error("発行に失敗しました。");
+      }
+    } catch {
+      toast.error("サーバー接続に失敗しました。");
+    }
+  });
 
   document.getElementById("gemini-config-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
