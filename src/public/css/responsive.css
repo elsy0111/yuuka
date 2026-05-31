@@ -173,6 +173,10 @@
     gap: 16px;
   }
 
+  .expense-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .hud-card h2 {
     font-size: 1.9rem;
   }
@@ -341,6 +345,12 @@
   /* Theme options - allow wrapping & full width */
   .theme-option {
     flex: 1 1 130px;
+  }
+}
+
+@media (max-width: 480px) {
+  .expense-stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 
