@@ -20,7 +20,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses" && method === "GET") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
       const now = new Date();
       const year = parseInt(parsedUrl.searchParams.get("year") || String(now.getFullYear()), 10);
       const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
@@ -51,7 +54,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/all" && method === "GET") {
     const userId = getSessionDiscordId(req);
-    if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+    if (!userId) {
+      sendError(res, 401, "認証されていません。");
+      return true;
+    }
     const numberParam = (name: string) =>
       parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
     const expenses = listFilteredExpenses(userId, {
@@ -70,7 +76,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/add" && method === "POST") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
       const { amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
@@ -97,7 +106,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/update" && method === "POST") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
       const { id, amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
@@ -122,7 +134,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/delete" && method === "POST") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
       const { id } = JSON.parse(await getRequestBody(req));
       if (!id) {
         sendError(res, 400, "IDが必要です。");
@@ -138,7 +153,10 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/budget" && method === "POST") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
       const { budget } = JSON.parse(await getRequestBody(req));
       if (typeof budget !== "number" || budget < 0) {
         sendError(res, 400, "正の整数の budget が必要です。");
@@ -155,20 +173,16 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   if (pathname === "/api/expenses/upload-receipt" && method === "POST") {
     try {
       const userId = getSessionDiscordId(req);
-      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
-      const { imageBase64, mimeType, additionalText } = JSON.parse(
-        await getRequestBody(req),
-      );
+      if (!userId) {
+        sendError(res, 401, "認証されていません。");
+        return true;
+      }
+      const { imageBase64, mimeType, additionalText } = JSON.parse(await getRequestBody(req));
       if (!imageBase64 || !mimeType) {
         sendError(res, 400, "画像データ(base64)とMIMEタイプが必要です。");
         return true;
       }
-      const response = await parseReceipt(
-        userId,
-        imageBase64,
-        mimeType,
-        additionalText,
-      );
+      const response = await parseReceipt(userId, imageBase64, mimeType, additionalText);
       sendJson(res, 200, { success: true, response });
     } catch (err) {
       console.error("WEBレシート解析エラー:", err);
