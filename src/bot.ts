@@ -367,7 +367,10 @@ async function reactWithEmoji(message: Message): Promise<void> {
       .map((s) => s.segment)
       .filter((s) => s.trim())
       .slice(0, 3);
-    logBotEvent("debug", "reaction_attempt", message, { emojis: emojis.join(""), prompt });
+    logBotEvent("debug", "reaction_attempt", message, {
+      emojis: emojis.join(""),
+      prompt: finalPrompt,
+    });
     for (const emoji of emojis) {
       await message.react(emoji).catch((error: unknown) => {
         logBotEvent("warn", "reaction_emoji_failed", message, {
