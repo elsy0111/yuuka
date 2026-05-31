@@ -82,7 +82,7 @@
   background: transparent;
   cursor: pointer;
   transition: var(--transition-smooth);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 600;
   font-family: var(--font-family-sans);
@@ -90,12 +90,10 @@
 
 .theme-option:hover {
   border-color: var(--border-focus);
-  color: var(--text-primary);
 }
 
 .theme-option.active {
   border-color: var(--accent-cyan);
-  color: var(--text-primary);
 }
 
 .theme-preview {
