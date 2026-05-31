@@ -144,7 +144,7 @@
           <span class="material-symbols-outlined menu-icon-symbol">settings</span> <span class="menu-text">システム設定</span>
         </a>
         <a href="#bot-logs" class="menu-item" data-tab="bot-logs">
-          <span class="material-symbols-outlined menu-icon-symbol">terminal</span> <span class="menu-text">Botログ</span>
+          <span class="material-symbols-outlined menu-icon-symbol">terminal</span> <span class="menu-text">開発者</span>
         </a>
       </nav>
     </aside>
@@ -244,47 +244,6 @@
           </div>
 
           <!-- Gemini API Rate Limit Card -->
-          <div class="card gemini-usage-card">
-            <div class="column-header">
-              <h3><span class="material-symbols-outlined header-icon-symbol">speed</span>Gemini API レート使用状況</h3>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <span class="hud-tag" id="gemini-usage-model">—</span>
-                <button type="button" class="btn-budget-edit" id="btn-gemini-quota-edit" title="クォータを設定">
-                  <span class="material-symbols-outlined">edit</span>
-                </button>
-              </div>
-            </div>
-            <div class="gemini-usage-grid">
-              <div class="gemini-usage-item">
-                <div class="gemini-usage-label">分あたりリクエスト (RPM)</div>
-                <div class="gemini-usage-bar-row">
-                  <div class="gemini-usage-bar-track">
-                    <div class="gemini-usage-bar" id="gemini-bar-rpm"></div>
-                  </div>
-                  <span class="gemini-usage-val" id="gemini-val-rpm">0 / —</span>
-                </div>
-              </div>
-              <div class="gemini-usage-item">
-                <div class="gemini-usage-label">日あたりリクエスト (RPD)</div>
-                <div class="gemini-usage-bar-row">
-                  <div class="gemini-usage-bar-track">
-                    <div class="gemini-usage-bar" id="gemini-bar-rpd"></div>
-                  </div>
-                  <span class="gemini-usage-val" id="gemini-val-rpd">0 / —</span>
-                </div>
-              </div>
-              <div class="gemini-usage-item">
-                <div class="gemini-usage-label">分あたりトークン (TPM)</div>
-                <div class="gemini-usage-bar-row">
-                  <div class="gemini-usage-bar-track">
-                    <div class="gemini-usage-bar" id="gemini-bar-tpm"></div>
-                  </div>
-                  <span class="gemini-usage-val" id="gemini-val-tpm">0 / —</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Dashboard Charts / High-tech Analytical Columns -->
           <div class="dashboard-columns">
             
@@ -839,9 +798,52 @@
         </section>
 
         <!-- ==========================================
-             6. BOT LOGS VIEW
+             6. DEVELOPER VIEW
              ========================================== -->
         <section id="tab-bot-logs" class="tab-view">
+          <!-- Gemini API Usage -->
+          <div class="config-card card">
+            <div class="column-header">
+              <h3><span class="material-symbols-outlined header-icon-symbol">speed</span>Gemini API レート使用状況</h3>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="hud-tag" id="gemini-usage-model">—</span>
+                <button type="button" class="btn-budget-edit" id="btn-gemini-quota-edit" title="クォータを設定">
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+              </div>
+            </div>
+            <div class="gemini-usage-grid">
+              <div class="gemini-usage-item">
+                <div class="gemini-usage-label">分あたりリクエスト (RPM)</div>
+                <div class="gemini-usage-bar-row">
+                  <div class="gemini-usage-bar-track">
+                    <div class="gemini-usage-bar" id="gemini-bar-rpm"></div>
+                  </div>
+                  <span class="gemini-usage-val" id="gemini-val-rpm">0 / —</span>
+                </div>
+              </div>
+              <div class="gemini-usage-item">
+                <div class="gemini-usage-label">日あたりリクエスト (RPD)</div>
+                <div class="gemini-usage-bar-row">
+                  <div class="gemini-usage-bar-track">
+                    <div class="gemini-usage-bar" id="gemini-bar-rpd"></div>
+                  </div>
+                  <span class="gemini-usage-val" id="gemini-val-rpd">0 / —</span>
+                </div>
+              </div>
+              <div class="gemini-usage-item">
+                <div class="gemini-usage-label">分あたりトークン (TPM)</div>
+                <div class="gemini-usage-bar-row">
+                  <div class="gemini-usage-bar-track">
+                    <div class="gemini-usage-bar" id="gemini-bar-tpm"></div>
+                  </div>
+                  <span class="gemini-usage-val" id="gemini-val-tpm">0 / —</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bot Logs -->
           <div class="config-card card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">terminal</span>Discord Botログ</h3>

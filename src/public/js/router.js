@@ -13,14 +13,13 @@ const TAB_TITLES = {
   schedules: "予定スケジュール（Googleカレンダー同期）",
   expenses: "家計管理",
   config: "システム設定情報",
-  "bot-logs": "Discord Botログ",
+  "bot-logs": "開発者",
 };
 
 export function loadDataForActiveTab() {
   switch (state.activeTab) {
     case "dashboard":
       fetchDashboardStats();
-      fetchGeminiUsage();
       break;
     case "tasks":
       fetchTasksList();
@@ -37,6 +36,7 @@ export function loadDataForActiveTab() {
       break;
     case "bot-logs":
       fetchBotLogs();
+      fetchGeminiUsage();
       break;
   }
 }
