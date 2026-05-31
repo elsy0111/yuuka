@@ -87,6 +87,16 @@ export function runMigrations(): void {
                COALESCE(gemini_model, 'gemini-3.1-flash-lite')
         FROM users;
 
+        UPDATE user_gemini_settings
+        SET api_key_encrypted = u.gemini_api_key_encrypted,
+            api_key_iv        = u.gemini_api_key_iv,
+            api_key_tag       = u.gemini_api_key_tag,
+            model             = COALESCE(u.gemini_model, 'gemini-3.1-flash-lite')
+        FROM users u
+        WHERE user_gemini_settings.discord_id = u.discord_id
+          AND u.gemini_api_key_encrypted IS NOT NULL
+          AND user_gemini_settings.api_key_encrypted IS NULL;
+
         INSERT OR IGNORE INTO user_google_settings (discord_id, client_id, client_secret, refresh_token, calendar_id, calendars, drive_backup_enabled, drive_backup_folder_id, backup_cron)
         SELECT discord_id,
                google_client_id, google_client_secret, google_refresh_token,

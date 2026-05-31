@@ -29,8 +29,7 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
 
   if (pathname === "/api/config/gemini" && method === "GET") {
     const cfg = getUserGeminiConfig(discordId);
-    console.log(`[config/gemini] discordId=${discordId} hasRow=${!!cfg} hasKey=${!!cfg?.apiKeyEncrypted}`);
-    let apiKeyPrefix: string | null = null;
+let apiKeyPrefix: string | null = null;
     if (cfg?.apiKeyEncrypted && cfg.apiKeyIv && cfg.apiKeyTag) {
       try {
         const plain = decryptText(cfg.apiKeyEncrypted, cfg.apiKeyIv, cfg.apiKeyTag);
