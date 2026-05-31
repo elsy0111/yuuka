@@ -35,7 +35,7 @@ export function recordApiUsage(
   }
 }
 
-export function getApiUsageSummary(): ApiUsageSummary {
+export function getApiUsageSummary(model: string): ApiUsageSummary {
   const db = getDb();
   const now = new Date();
   const minuteAgo = new Date(now.getTime() - 60 * 1000)
@@ -48,24 +48,32 @@ export function getApiUsageSummary(): ApiUsageSummary {
     .slice(0, 19);
 
   const rpm = (
-    db.prepare("SELECT COUNT(*) as c FROM api_usage_logs WHERE created_at >= ?").get(minuteAgo) as {
-      c: number;
-    }
+    db
+      .prepare(
+        "SELECT COUNT(*) as c FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+      )
+      .get(model, minuteAgo) as { c: number }
   ).c;
 
   const rpd = (
-    db.prepare("SELECT COUNT(*) as c FROM api_usage_logs WHERE created_at >= ?").get(dayStart) as {
-      c: number;
-    }
+    db
+      .prepare(
+        "SELECT COUNT(*) as c FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+      )
+      .get(model, dayStart) as { c: number }
   ).c;
 
   const tpmRow = db
-    .prepare("SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE created_at >= ?")
-    .get(minuteAgo) as { t: number };
+    .prepare(
+      "SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+    )
+    .get(model, minuteAgo) as { t: number };
 
   const tpdRow = db
-    .prepare("SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE created_at >= ?")
-    .get(dayStart) as { t: number };
+    .prepare(
+      "SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+    )
+    .get(model, dayStart) as { t: number };
 
   return { rpm, rpd, tpm: tpmRow.t, tpd: tpdRow.t };
 }

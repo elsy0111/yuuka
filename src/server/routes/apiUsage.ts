@@ -9,7 +9,7 @@ export const handleApiUsage: RouteHandler = async ({ req, res, pathname, method 
   if (pathname === "/api/gemini-usage" && method === "GET") {
     try {
       const model = config.geminiModel || "gemini-2.0-flash-lite";
-      const summary = getApiUsageSummary();
+      const summary = getApiUsageSummary(model);
       const quota = getModelQuota(model);
       sendJson(res, 200, { success: true, model, usage: summary, quota });
     } catch (error) {
