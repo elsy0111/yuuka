@@ -19,7 +19,7 @@ export function addExpense(
     args.category,
     args.description,
     args.date,
-    args.source ?? "manual",
+    args.source ?? "discord",
     args.purchase_source ?? "不明",
   );
   return JSON.stringify({
