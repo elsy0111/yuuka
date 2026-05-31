@@ -1,6 +1,10 @@
 /* ==============================================================================
    5. CONFIG TAB GRID LAYOUT
    ============================================================================== */
+.config-card + .config-card {
+  margin-top: 24px;
+}
+
 .config-items-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -82,7 +86,7 @@
   background: transparent;
   cursor: pointer;
   transition: var(--transition-smooth);
-  color: var(--color-white);
+  color: #fafafa;
   font-size: 0.78rem;
   font-weight: 600;
   font-family: var(--font-family-sans);
@@ -94,6 +98,10 @@
 
 .theme-option.active {
   border-color: var(--accent-cyan);
+}
+
+[data-theme="blue-archive"] .theme-option {
+  color: #1b2b3a;
 }
 
 .theme-preview {

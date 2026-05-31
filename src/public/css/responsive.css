@@ -171,19 +171,34 @@
   .expense-hud-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   .expense-stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   .expense-daily-card,
   .expense-actions-columns,
   .expense-table-card {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* 全タブ共通: セクション間を16pxに統一 */
+  .view-actions-card {
+    margin-bottom: 16px;
+  }
+
+  .welcome-card,
+  .stats-grid,
+  .dashboard-columns {
+    margin-bottom: 16px;
+  }
+
+  .config-card + .config-card {
+    margin-top: 16px;
   }
 
   .hud-card h2 {
