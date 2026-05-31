@@ -157,6 +157,10 @@ export function initAuth() {
       });
       const data = await res.json();
       if (data.success) {
+        if (window.PasswordCredential) {
+          const cred = new window.PasswordCredential({ id: discordId, password });
+          navigator.credentials.store(cred).catch(() => {});
+        }
         onLoginSuccess(data);
       } else {
         errorEl.textContent = data.message || "ログインに失敗しました。";
