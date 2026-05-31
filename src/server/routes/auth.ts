@@ -131,6 +131,11 @@ export const handleRegister: RouteHandler = async ({ req, res, pathname, method 
       username: user.username,
     });
   } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (code === "SQLITE_CONSTRAINT_UNIQUE") {
+      sendError(res, 400, "このユーザー名は既に使用されています。別の名前を試してください。");
+      return true;
+    }
     console.error("[register] ユーザー作成エラー:", err);
     sendError(res, 500, "アカウントの作成に失敗しました。サーバーエラーです。");
   }
