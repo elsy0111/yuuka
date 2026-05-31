@@ -630,7 +630,7 @@
           </div>
 
           <!-- Discord Bot & Persona Settings -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div id="discord-bot-settings" class="config-card card" style="margin-top: 24px;">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">robot_2</span>Discord 独自Bot ＆ ペルソナ設定</h3>
               <span class="hud-tag" style="background: var(--accent-pink-dim); color: var(--accent-pink);">自分のサーバーで使うには必須</span>
@@ -812,7 +812,7 @@
               <li>友達がこの管理画面のURLにアクセスし、「アカウント作成」タブを開く</li>
               <li>Discord ユーザーID・ユーザー名・パスワード・招待コードを入力して登録</li>
               <li>友達がログイン後、設定画面で自分の Gemini API Key を登録する</li>
-              <li>友達が自分の Discord サーバー用に Bot を作成し、下記「独自Bot設定」にトークンを登録する</li>
+              <li>友達が自分の Discord サーバー用に Bot を作成し、<a href="#discord-bot-settings" onclick="document.getElementById('discord-bot-settings').scrollIntoView({behavior:'smooth'});return false;">このページ下部の「Discord 独自Bot設定」</a>にトークンを登録する</li>
             </ol>
             <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;"></div>
           </div>
