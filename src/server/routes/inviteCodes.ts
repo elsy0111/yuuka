@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { createInviteCode, listInviteCodes } from "../../db/inviteRepo.js";
+import { createInviteCode, deleteInviteCode, listInviteCodes } from "../../db/inviteRepo.js";
 import { getSessionDiscordId } from "../session.js";
 import { sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
@@ -23,6 +23,13 @@ export const handleInviteCodes: RouteHandler = ({ req, res, pathname, method }) 
     const code = crypto.randomBytes(6).toString("hex").toUpperCase();
     createInviteCode(code, discordId);
     sendJson(res, 200, { success: true, code });
+    return true;
+  }
+
+  const deleteMatch = pathname.match(/^\/api\/invite-codes\/([A-F0-9]+)$/);
+  if (deleteMatch && method === "DELETE") {
+    const ok = deleteInviteCode(deleteMatch[1]);
+    sendJson(res, 200, { success: ok });
     return true;
   }
 

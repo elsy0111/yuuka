@@ -54,6 +54,11 @@ export function listInviteCodes(): InviteCode[] {
   return db.prepare("SELECT * FROM invite_codes ORDER BY created_at DESC").all() as InviteCode[];
 }
 
+export function deleteInviteCode(code: string): boolean {
+  const result = getDb().prepare("DELETE FROM invite_codes WHERE code = ?").run(code);
+  return result.changes > 0;
+}
+
 /**
  * config.yamlから初期招待コードをDBに投入する（未登録のもののみ）
  */

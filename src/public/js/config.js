@@ -98,7 +98,17 @@ function renderInviteCodes(codes) {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard.writeText(code).then(() => toast.success("コピーしました"));
     });
-    row.append(codeSpan, statusSpan, used_by ? document.createTextNode("") : copyBtn);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "btn-icon-sm";
+    deleteBtn.title = "削除";
+    deleteBtn.style.color = "var(--accent-pink)";
+    deleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm(`招待コード「${code}」を削除しますか？`)) return;
+      await fetch(`/api/invite-codes/${code}`, { method: "DELETE" });
+      loadInviteCodes();
+    });
+    row.append(codeSpan, statusSpan, ...(used_by ? [] : [copyBtn]), deleteBtn);
     list.appendChild(row);
   });
 }
