@@ -316,9 +316,9 @@ async function reactWithEmoji(message: Message): Promise<void> {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: resolveModelForUser(userId),
+      model: "gemini-2.0-flash-lite",
     });
-    const prompt =
+    const textPrompt =
       `あなたは「早瀬ユウカ」です。ミレニアムサイエンススクールの生徒会会計で、冷静・論理的・世話焼きな性格です。` +
       `先生（ユーザー）を信頼しており、呆れながらも温かく見守っています。照れやすく、感情は豊かですが理性的に振る舞います。\n\n` +
       `以下の先生のメッセージを読んで、ユウカとしての反応を表すUnicode絵文字を**1〜3文字**で返してください。\n` +
@@ -346,7 +346,25 @@ async function reactWithEmoji(message: Message): Promise<void> {
       `- 会話・日常（上記に当てはまらない時） → 💬 📝 🗒️\n\n` +
       `例: 勉強してると言われたら → ✏️😊 / 疲れたと言われたら → 🛌💦 / コーヒー飲んでると言われたら → ☕💙\n\n` +
       `先生のメッセージ: "${message.content.slice(0, 200)}"`;
-    const result = await model.generateContent(prompt);
+
+    // 画像添付があればインラインデータとして渡す
+    const imageAttachments = [...message.attachments.values()].filter((a) =>
+      a.contentType?.startsWith("image/"),
+    );
+    const imageParts = await Promise.all(
+      imageAttachments.slice(0, 3).map(async (a) => {
+        const res = await fetch(a.url);
+        const buf = await res.arrayBuffer();
+        return {
+          inlineData: {
+            mimeType: a.contentType as string,
+            data: Buffer.from(buf).toString("base64"),
+          },
+        };
+      }),
+    );
+
+    const result = await model.generateContent([textPrompt, ...imageParts]);
     const raw = result.response.text().trim().replace(/\s/g, "");
     // 絵文字を1文字ずつ分割（サロゲートペア・異体字セレクタ・ZWJ対応）
     const emojis = [...new Intl.Segmenter("ja", { granularity: "grapheme" }).segment(raw)]
