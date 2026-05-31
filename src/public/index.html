@@ -66,7 +66,7 @@
         <form id="login-form">
           <div class="form-group">
             <label for="login-discord-id">Discord ユーザーID *</label>
-            <input type="text" id="login-discord-id" name="username" required placeholder="例: 123456789012345678" autocomplete="username">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="login-discord-id" name="username" required placeholder="例: 123456789012345678" autocomplete="username">
           </div>
           <div class="form-group">
             <label for="login-password">パスワード *</label>
@@ -84,9 +84,9 @@
           <div class="reg-group-label">アカウント確認</div>
           <div class="form-group">
             <label for="reg-discord-id">Discord ユーザーID *
-              <button type="button" class="btn-field-info" data-info-title="Discord ユーザーID の確認方法" data-info-body="Discordアプリで自分のユーザー名を右クリック（モバイルは長押し）→「ユーザーIDをコピー」で取得できます。開発者モードが必要な場合は、設定 → 詳細設定 → 開発者モードをオンにしてください。"><span class="material-symbols-outlined">info</span></button>
+              <button type="button" class="btn-field-info" data-info-title="Discord ユーザーID の確認方法" data-info-body="【PC】設定 → 詳細設定 → 開発者モード ON → 自分のアイコンを右クリック →「ユーザーIDをコピー」&#10;【スマホ】設定 → 外観 → 詳細設定 → 開発者モード ON → 自分のプロフィールをタップ → 「・・・」→「IDをコピー」"><span class="material-symbols-outlined">info</span></button>
             </label>
-            <input type="text" id="reg-discord-id" required placeholder="例: 123456789012345678">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="reg-discord-id" required placeholder="例: 123456789012345678">
           </div>
           <div class="form-group">
             <label for="reg-invite-code">招待コード *
