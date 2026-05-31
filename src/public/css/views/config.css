@@ -98,6 +98,15 @@
   color: var(--text-primary);
 }
 
+.theme-option[data-theme="blue-archive"] span {
+  color: #02d3fb;
+}
+
+.theme-option[data-theme="blue-archive"]:hover span,
+.theme-option[data-theme="blue-archive"].active span {
+  color: #02d3fb;
+}
+
 .theme-preview {
   width: 88px;
   height: 56px;
