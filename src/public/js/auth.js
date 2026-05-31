@@ -135,7 +135,7 @@ function initInfoPopovers() {
   document.querySelectorAll(".btn-field-info").forEach((btn) => {
     btn.addEventListener("click", () => {
       titleEl.textContent = btn.dataset.infoTitle || "";
-      bodyEl.textContent = btn.dataset.infoBody || "";
+      bodyEl.innerHTML = btn.dataset.infoBody || "";
       modal.classList.add("active");
     });
   });
