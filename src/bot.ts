@@ -393,7 +393,11 @@ async function reactWithEmoji(message: Message): Promise<void> {
       logBotEvent("debug", "reaction_added", message, { emojis: emojis.join("") });
     }
   } catch (error) {
-    logBotEvent("warn", "reaction_generation_failed", message, { error: serializeError(error) });
+    const isQuotaError =
+      error instanceof Error && (error.message.includes("429") || error.message.includes("quota"));
+    logBotEvent(isQuotaError ? "debug" : "warn", "reaction_generation_failed", message, {
+      error: serializeError(error),
+    });
     await message.react("👀").catch((fallbackError: unknown) => {
       logBotEvent("warn", "reaction_fallback_failed", message, {
         error: serializeError(fallbackError),
