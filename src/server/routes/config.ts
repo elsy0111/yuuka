@@ -5,6 +5,7 @@ import {
   updateGeminiSettings,
   updateGoogleSettings,
 } from "../../db/userRepo.js";
+import { config } from "../../config.js";
 import { clearCalendarCache } from "../../services/googleCalendarService.js";
 import { decryptText, encryptText } from "../../utils/crypto.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
@@ -29,7 +30,7 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
 
   if (pathname === "/api/config/gemini" && method === "GET") {
     const cfg = getUserGeminiConfig(discordId);
-let apiKeyPrefix: string | null = null;
+    let apiKeyPrefix: string | null = null;
     if (cfg?.apiKeyEncrypted && cfg.apiKeyIv && cfg.apiKeyTag) {
       try {
         const plain = decryptText(cfg.apiKeyEncrypted, cfg.apiKeyIv, cfg.apiKeyTag);
@@ -37,10 +38,13 @@ let apiKeyPrefix: string | null = null;
       } catch (e) {
         console.error("[config/gemini] APIキー復号失敗:", e);
       }
+    } else if (config.geminiApiKey) {
+      // ユーザー個別キー未設定の場合はグローバルキーのプレフィックスを表示
+      apiKeyPrefix = `${config.geminiApiKey.slice(0, 8)}... (共有キー)`;
     }
     sendJson(res, 200, {
       success: true,
-      hasApiKey: !!cfg?.apiKeyEncrypted,
+      hasApiKey: !!cfg?.apiKeyEncrypted || !!config.geminiApiKey,
       apiKeyPrefix,
       model: cfg?.model ?? "gemini-2.0-flash-lite",
     });
