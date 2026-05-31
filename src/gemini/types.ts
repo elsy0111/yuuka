@@ -1,7 +1,10 @@
+export interface ImageData {
+  data: string;
+  mimeType: string;
+}
+
 export interface ChatMessage {
   text: string;
-  imageData?: {
-    data: string;
-    mimeType: string;
-  };
+  imageData?: ImageData;
+  imagesData?: ImageData[];
 }

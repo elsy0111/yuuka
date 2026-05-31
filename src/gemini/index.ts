@@ -4,7 +4,7 @@ import { dispatchFunction } from "../functions/index.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
 import type { ChatMessage } from "./types.js";
 
-export type { ChatMessage } from "./types.js";
+export type { ChatMessage, ImageData } from "./types.js";
 
 /**
  * メッセージを処理し、Function Callingループを含む完全な応答を返す
@@ -45,28 +45,19 @@ export async function processMessage(
   }
 
   // 4. 最新のメッセージに画像がある場合、直近のユーザーコンテンツにパーツとして追加する
-  if (message.imageData) {
+  const allImages = [
+    ...(message.imageData ? [message.imageData] : []),
+    ...(message.imagesData ?? []),
+  ];
+  if (allImages.length > 0) {
     const lastContent = contents[contents.length - 1];
+    const inlineParts = allImages.map((img) => ({
+      inlineData: { data: img.data, mimeType: img.mimeType },
+    }));
     if (lastContent && lastContent.role === "user") {
-      lastContent.parts.push({
-        inlineData: {
-          data: message.imageData.data,
-          mimeType: message.imageData.mimeType,
-        },
-      });
+      lastContent.parts.push(...inlineParts);
     } else {
-      contents.push({
-        role: "user",
-        parts: [
-          { text: "" },
-          {
-            inlineData: {
-              data: message.imageData.data,
-              mimeType: message.imageData.mimeType,
-            },
-          },
-        ],
-      });
+      contents.push({ role: "user", parts: [{ text: "" }, ...inlineParts] });
     }
   }
 

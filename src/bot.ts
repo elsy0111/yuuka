@@ -237,39 +237,36 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       // クリーンな入力テキスト
       const fullText = contextPrefix + text;
 
-      // 画像添付があるかチェック（現在のメッセージ、または返信先メッセージ）
-      let imageAttachment = message.attachments.find((a) => a.contentType?.startsWith("image/"));
-      if (!imageAttachment && referencedMsg) {
-        imageAttachment = referencedMsg.attachments.find((a) =>
-          a.contentType?.startsWith("image/"),
-        );
-      }
+      // 現在のメッセージ＋返信先メッセージから全画像を収集
+      const allImageAttachments = [
+        ...[...message.attachments.values()].filter((a) => a.contentType?.startsWith("image/")),
+        ...(referencedMsg
+          ? [...referencedMsg.attachments.values()].filter((a) =>
+              a.contentType?.startsWith("image/"),
+            )
+          : []),
+      ];
 
       let response: string;
       const statusCallback = (status: "thinking" | "writing" | "idle") => {
         setBotStatus(botClient, status);
       };
 
-      if (imageAttachment) {
-        console.log(`📷 画像受信 (返信先含む): ${imageAttachment.name} from ${message.author.tag}`);
+      if (allImageAttachments.length > 0) {
         logBotEvent("info", "image_attachment_received", message, {
-          name: imageAttachment.name,
-          contentType: imageAttachment.contentType,
-          size: imageAttachment.size,
+          count: allImageAttachments.length,
+          names: allImageAttachments.map((a) => a.name),
         });
 
-        const imageResponse = await fetch(imageAttachment.url);
-        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-        const imageBase64 = imageBuffer.toString("base64");
-        const mimeType = imageAttachment.contentType || "image/jpeg";
-
-        response = await parseReceipt(
-          userId,
-          imageBase64,
-          mimeType,
-          text || undefined,
-          statusCallback,
+        const imagesData = await Promise.all(
+          allImageAttachments.map(async (a) => {
+            const res = await fetch(a.url);
+            const buf = Buffer.from(await res.arrayBuffer());
+            return { data: buf.toString("base64"), mimeType: a.contentType || "image/jpeg" };
+          }),
         );
+
+        response = await parseReceipt(userId, imagesData, text || undefined, statusCallback);
       } else if (fullText.trim()) {
         const chatMessage: ChatMessage = { text: fullText };
         const systemInstruction = await buildSystemInstruction(userId);
@@ -356,24 +353,14 @@ async function reactWithEmoji(message: Message): Promise<void> {
       `例: 勉強してると言われたら → ✏️😊 / 疲れたと言われたら → 🛌💦 / コーヒー飲んでると言われたら → ☕💙\n\n` +
       `先生のメッセージ: "${message.content.slice(0, 200)}"`;
 
-    // 画像添付があればインラインデータとして渡す
-    const imageAttachments = [...message.attachments.values()].filter((a) =>
+    // 画像は見ない。枚数だけプロンプトに追記する
+    const imageCount = [...message.attachments.values()].filter((a) =>
       a.contentType?.startsWith("image/"),
-    );
-    const imageParts = await Promise.all(
-      imageAttachments.slice(0, 3).map(async (a) => {
-        const res = await fetch(a.url);
-        const buf = await res.arrayBuffer();
-        return {
-          inlineData: {
-            mimeType: a.contentType as string,
-            data: Buffer.from(buf).toString("base64"),
-          },
-        };
-      }),
-    );
+    ).length;
+    const finalPrompt =
+      imageCount > 0 ? `【画像が${imageCount}枚添付されています】\n\n${textPrompt}` : textPrompt;
 
-    const result = await model.generateContent([textPrompt, ...imageParts]);
+    const result = await model.generateContent(finalPrompt);
     const raw = result.response.text().trim().replace(/\s/g, "");
     // 絵文字を1文字ずつ分割（サロゲートペア・異体字セレクタ・ZWJ対応）
     const emojis = [...new Intl.Segmenter("ja", { granularity: "grapheme" }).segment(raw)]
