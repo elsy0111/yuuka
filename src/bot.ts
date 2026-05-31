@@ -324,12 +324,13 @@ async function reactWithEmoji(message: Message): Promise<void> {
       `絵文字以外は絶対に出力しないでください。\n\n` +
       `【選択の指針（ユウカらしい絵文字を選ぶこと）】\n` +
       `- 嬉しい・頼りにされた・温かい気持ち → 😊 💙 🌸\n` +
-      `- 呆れ・ため息（「はぁ……」な感じ） → 😮‍💨 💨 🫤\n` +
       `- 照れ・誤魔化したいとき → 😳 🙈\n` +
       `- 心配・不安・気がかり → 😟 💦\n` +
       `- 納得・把握・仕事モード → ✅ 📋 💡\n` +
       `- 無茶な先生を静かに見守る → 💭 👁️ 📎\n` +
+      `- 呆れ・ため息（本当に無茶な時だけ、多用禁止） → 😮‍💨 🫤\n` +
       `- 珍しい怒り・本気で困った → 😤 ⚡\n\n` +
+      `※ 呆れ・ため息系（😮‍💨 🫤）は滅多に使わないこと。大半のメッセージには嬉しい・納得・見守り系で反応すること。\n\n` +
       `先生のメッセージ: "${message.content.slice(0, 200)}"`;
     const result = await model.generateContent(prompt);
     const emoji = result.response.text().trim().replace(/\s/g, "");
