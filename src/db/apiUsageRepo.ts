@@ -37,43 +37,39 @@ export function recordApiUsage(
 
 export function getApiUsageSummary(model: string): ApiUsageSummary {
   const db = getDb();
-  const now = new Date();
-  const minuteAgo = new Date(now.getTime() - 60 * 1000)
-    .toISOString()
-    .replace("T", " ")
-    .slice(0, 19);
-  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    .toISOString()
-    .replace("T", " ")
-    .slice(0, 19);
 
+  // SQLite の localtime 関数で統一（JS 側の UTC 変換バグを回避）
   const rpm = (
     db
       .prepare(
-        "SELECT COUNT(*) as c FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+        `SELECT COUNT(*) as c FROM api_usage_logs
+         WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute')`,
       )
-      .get(model, minuteAgo) as { c: number }
+      .get(model) as { c: number }
   ).c;
 
   const rpd = (
     db
       .prepare(
-        "SELECT COUNT(*) as c FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+        `SELECT COUNT(*) as c FROM api_usage_logs
+         WHERE model = ? AND created_at >= date('now', 'localtime')`,
       )
-      .get(model, dayStart) as { c: number }
+      .get(model) as { c: number }
   ).c;
 
   const tpmRow = db
     .prepare(
-      "SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+      `SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs
+       WHERE model = ? AND created_at >= datetime('now', 'localtime', '-1 minute')`,
     )
-    .get(model, minuteAgo) as { t: number };
+    .get(model) as { t: number };
 
   const tpdRow = db
     .prepare(
-      "SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE model = ? AND created_at >= ?",
+      `SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs
+       WHERE model = ? AND created_at >= date('now', 'localtime')`,
     )
-    .get(model, dayStart) as { t: number };
+    .get(model) as { t: number };
 
   return { rpm, rpd, tpm: tpmRow.t, tpd: tpdRow.t };
 }
