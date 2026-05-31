@@ -78,7 +78,7 @@
   gap: 8px;
   padding: 12px 16px;
   border: 2px solid var(--border-matte);
-  border-radius: 6px;
+  border-radius: var(--radius);
   background: transparent;
   cursor: pointer;
   transition: var(--transition-smooth);
@@ -96,15 +96,6 @@
 .theme-option.active {
   border-color: var(--accent-cyan);
   color: var(--text-primary);
-}
-
-.theme-option[data-theme="blue-archive"] span {
-  color: #02d3fb;
-}
-
-.theme-option[data-theme="blue-archive"]:hover span,
-.theme-option[data-theme="blue-archive"].active span {
-  color: #02d3fb;
 }
 
 .theme-preview {
@@ -147,6 +138,10 @@
 
 .dark-preview .preview-card {
   background-color: #27272a;
+}
+
+.dark-preview .preview-card-accent {
+  background-color: #38d5ff;
 }
 
 /* Blue Archive theme preview */
