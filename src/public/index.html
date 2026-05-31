@@ -71,7 +71,9 @@
             <input type="text" inputmode="numeric" pattern="[0-9]*" id="login-discord-id" name="username" required placeholder="例: 123456789012345678" autocomplete="username">
           </div>
           <div class="form-group">
-            <label for="login-password">パスワード *</label>
+            <label for="login-password">パスワード *
+              <button type="button" class="btn-field-info" data-info-title="パスワードについて" data-info-body="アカウント登録時に設定したパスワードを入力してください。&lt;br&gt;&lt;br&gt;パスワードを忘れた場合は管理者に問い合わせてください。"><span class="material-symbols-outlined">info</span></button>
+            </label>
             <input type="password" id="login-password" name="password" required placeholder="••••••••••••" autocomplete="current-password">
           </div>
           <button type="submit" class="btn btn-primary btn-block">アクセスを承認する</button>
@@ -100,11 +102,15 @@
           <!-- ログイン設定 -->
           <div class="reg-group-label">ログイン設定</div>
           <div class="form-group">
-            <label for="reg-username">表示名 *</label>
+            <label for="reg-username">表示名 *
+              <button type="button" class="btn-field-info" data-info-title="表示名について" data-info-body="管理画面に表示される名前です。ログインには使用しません。&lt;br&gt;&lt;br&gt;登録後に設定画面からいつでも変更できます。"><span class="material-symbols-outlined">info</span></button>
+            </label>
             <input type="text" id="reg-username" required placeholder="例: シャーレの先生">
           </div>
           <div class="form-group">
-            <label for="reg-password">パスワード *</label>
+            <label for="reg-password">パスワード *
+              <button type="button" class="btn-field-info" data-info-title="パスワードについて" data-info-body="ログイン時に使用するパスワードを設定してください。&lt;br&gt;&lt;br&gt;⚠️ リセット機能はありません。忘れないよう管理してください。"><span class="material-symbols-outlined">info</span></button>
+            </label>
             <input type="password" id="reg-password" required placeholder="••••••••••••" autocomplete="new-password">
           </div>
 
