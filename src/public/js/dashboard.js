@@ -3,6 +3,7 @@ import { currentTheme } from "./theme.js";
 import { renderDonutChart } from "./chart-donut.js";
 import { renderPriceTrendChart } from "./chart-trend.js";
 import { renderUrgentDashboardList } from "./dashboard-urgent.js";
+import { openModal, getModal, closeModal } from "./modal.js";
 
 export function updateYuukaSpeechBubble() {
   const el = document.getElementById("yuuka-bubble-text");
@@ -57,25 +58,16 @@ export async function fetchGeminiUsage() {
 }
 
 export function initGeminiQuotaEdit() {
-  const editBtn = document.getElementById("btn-gemini-quota-edit");
-  const form = document.getElementById("gemini-quota-form");
-  const saveBtn = document.getElementById("btn-gemini-quota-save");
-  const cancelBtn = document.getElementById("btn-gemini-quota-cancel");
-
-  editBtn?.addEventListener("click", () => {
+  document.getElementById("btn-gemini-quota-edit")?.addEventListener("click", () => {
+    const label = document.getElementById("gemini-quota-model-label");
+    if (label) label.textContent = _geminiCurrentModel || "—";
     document.getElementById("gemini-quota-rpm").value = _geminiCurrentQuota.rpm || "";
     document.getElementById("gemini-quota-rpd").value = _geminiCurrentQuota.rpd || "";
     document.getElementById("gemini-quota-tpm").value = _geminiCurrentQuota.tpm || "";
-    form.style.display = "flex";
-    editBtn.style.display = "none";
+    openModal(getModal("gemini-quota"));
   });
 
-  cancelBtn?.addEventListener("click", () => {
-    form.style.display = "none";
-    editBtn.style.display = "";
-  });
-
-  saveBtn?.addEventListener("click", async () => {
+  document.getElementById("btn-gemini-quota-save")?.addEventListener("click", async () => {
     const rpm = Number(document.getElementById("gemini-quota-rpm").value);
     const rpd = Number(document.getElementById("gemini-quota-rpd").value);
     const tpm = Number(document.getElementById("gemini-quota-tpm").value);
@@ -85,8 +77,7 @@ export function initGeminiQuotaEdit() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: _geminiCurrentModel, rpm, rpd, tpm }),
       });
-      form.style.display = "none";
-      editBtn.style.display = "";
+      closeModal(getModal("gemini-quota"));
       fetchGeminiUsage();
     } catch (e) {
       console.error(e);

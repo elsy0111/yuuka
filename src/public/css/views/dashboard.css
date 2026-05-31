@@ -56,6 +56,40 @@
   background-color: var(--color-red);
 }
 
+.gemini-quota-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.gemini-quota-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gemini-quota-field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gemini-quota-field-sub {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-zinc-muted);
+}
+
+.gemini-quota-field .filter-input {
+  width: 100%;
+  font-family: var(--font-family-mono);
+  font-size: 0.9rem;
+}
+
 .gemini-usage-val {
   font-family: var(--font-family-mono);
   font-size: 0.72rem;

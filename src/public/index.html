@@ -254,13 +254,6 @@
                 </button>
               </div>
             </div>
-            <div id="gemini-quota-form" class="budget-edit-form" style="display:none;">
-              <input type="number" id="gemini-quota-rpm" class="filter-input" placeholder="RPM" min="0" style="width:70px;">
-              <input type="number" id="gemini-quota-rpd" class="filter-input" placeholder="RPD" min="0" style="width:70px;">
-              <input type="number" id="gemini-quota-tpm" class="filter-input" placeholder="TPM" min="0" style="width:90px;">
-              <button type="button" class="btn btn-primary btn-sm" id="btn-gemini-quota-save">保存</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-gemini-quota-cancel">キャンセル</button>
-            </div>
             <div class="gemini-usage-grid">
               <div class="gemini-usage-item">
                 <div class="gemini-usage-label">分あたりリクエスト (RPM)</div>
@@ -948,6 +941,35 @@
           <span class="profile-modal-label">登録日</span>
           <span class="profile-modal-value" id="profile-created-at">—</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gemini Quota Modal -->
+  <div id="modal-gemini-quota" class="modal">
+    <div class="modal-content card">
+      <div class="modal-header">
+        <h3>無料枠クォータを設定</h3>
+        <button class="btn-close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <p class="description-text">現在のモデル: <strong id="gemini-quota-model-label">—</strong></p>
+      <p class="description-text" style="margin-top:-8px;">Google AI Studio で確認できる無料枠の上限値を入力してください。0 のままにするとバーが表示されません。</p>
+      <div class="gemini-quota-form-grid">
+        <div class="gemini-quota-field">
+          <label class="gemini-quota-field-label">RPM <span class="gemini-quota-field-sub">Requests per Minute（分あたりのリクエスト上限）</span></label>
+          <input type="number" id="gemini-quota-rpm" class="filter-input" min="0" placeholder="例: 15">
+        </div>
+        <div class="gemini-quota-field">
+          <label class="gemini-quota-field-label">RPD <span class="gemini-quota-field-sub">Requests per Day（1日あたりのリクエスト上限）</span></label>
+          <input type="number" id="gemini-quota-rpd" class="filter-input" min="0" placeholder="例: 500">
+        </div>
+        <div class="gemini-quota-field">
+          <label class="gemini-quota-field-label">TPM <span class="gemini-quota-field-sub">Tokens per Minute（分あたりのトークン上限）</span></label>
+          <input type="number" id="gemini-quota-tpm" class="filter-input" min="0" placeholder="例: 250000">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-gemini-quota-save">保存</button>
       </div>
     </div>
   </div>

@@ -11,6 +11,7 @@ export function closeModal(modal) {
 export function initModals() {
   modals = {
     profile: document.getElementById("modal-profile"),
+    "gemini-quota": document.getElementById("modal-gemini-quota"),
     task: document.getElementById("modal-task"),
     "task-edit": document.getElementById("modal-task-edit"),
     schedule: document.getElementById("modal-schedule"),
