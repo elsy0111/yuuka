@@ -56,6 +56,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-family-sans);
   min-height: 100vh;
+  /* biome-ignore lint/suspicious/noDuplicateProperties: dvh fallback for older browsers */
   min-height: 100dvh;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);

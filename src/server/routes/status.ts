@@ -20,7 +20,7 @@ function countForDate(sql: string, userId: string, dateStr: string): number {
   return row?.count ?? row?.total ?? 0;
 }
 
-export const handleStatus: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
+export const handleStatus: RouteHandler = async ({ req, res, pathname, method }) => {
   if (pathname !== "/api/status" || method !== "GET") return false;
 
   try {
