@@ -2,10 +2,24 @@ import { type Content, GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../config.js";
 import { recordApiUsage } from "../db/apiUsageRepo.js";
 import { getUserGeminiConfig } from "../db/userRepo.js";
+import { decryptText } from "../utils/crypto.js";
 import { getAllFunctionDeclarations } from "../functions/index.js";
 import { buildSystemInstruction } from "./systemInstruction.js";
 
-export const genAI = new GoogleGenerativeAI(config.geminiApiKey);
+/** ユーザーのAPIキーをDBから復号して取得。未設定ならグローバルキーにフォールバック */
+export function resolveApiKeyForUser(userId?: string): string {
+  if (userId) {
+    const userCfg = getUserGeminiConfig(userId);
+    if (userCfg?.apiKeyEncrypted && userCfg.apiKeyIv && userCfg.apiKeyTag) {
+      try {
+        return decryptText(userCfg.apiKeyEncrypted, userCfg.apiKeyIv, userCfg.apiKeyTag);
+      } catch (e) {
+        console.error(`[gemini] ユーザー ${userId} のAPIキー復号失敗、グローバルキーで代替:`, e);
+      }
+    }
+  }
+  return config.geminiApiKey;
+}
 
 /** ユーザーのDB設定モデル名を取得。未設定なら global config にフォールバック */
 export function resolveModelForUser(userId?: string): string {
@@ -47,7 +61,8 @@ export async function generateWithRetry(
   userId?: string,
 ): Promise<import("@google/generative-ai").GenerateContentResult> {
   const modelName = resolveModelForUser(userId);
-  // 毎回最新の日時でsystem instructionを更新
+  const apiKey = resolveApiKeyForUser(userId);
+  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
     systemInstruction: await buildSystemInstruction(),

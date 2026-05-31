@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { resolveApiKeyForUser, resolveModelForUser } from "./gemini/retry.js";
 import { ActivityType, Client, GatewayIntentBits, type Message, Partials } from "discord.js";
 import { config } from "./config.js";
 import { addBotLog, type BotLogLevel, pruneBotLogs } from "./db/botLogRepo.js";
@@ -305,14 +306,16 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
  * 失敗時は👀でフォールバック。プロンプト内容はログに含む。
  */
 async function reactWithEmoji(message: Message): Promise<void> {
-  if (!config.geminiApiKey) {
+  const userId = message.author.id;
+  const apiKey = resolveApiKeyForUser(userId);
+  if (!apiKey) {
     logBotEvent("debug", "reaction_skipped_no_gemini_key", message);
     return;
   }
   try {
-    const genAI = new GoogleGenerativeAI(config.geminiApiKey);
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: config.geminiModel || "gemini-2.0-flash-lite",
+      model: resolveModelForUser(userId),
     });
     const prompt =
       `あなたは「早瀬ユウカ」です。ミレニアムサイエンススクールの生徒会会計で、冷静・論理的・世話焼きな性格です。` +
