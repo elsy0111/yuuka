@@ -1,5 +1,5 @@
+import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
-import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchTasksList(filter = "all") {
   const list = document.getElementById("tasks-list");
@@ -117,7 +117,7 @@ async function toggleTaskCompletion(id, currentStatus) {
 }
 
 async function handleDeleteTask(id) {
-  if (!confirm("本当にこのタスクを削除しますか？")) return;
+  if (!(await confirmModal("本当にこのタスクを削除しますか？"))) return;
   try {
     await fetch("/api/tasks/delete", {
       method: "POST",

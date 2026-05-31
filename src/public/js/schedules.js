@@ -1,5 +1,5 @@
+import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
-import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchSchedulesList(days = 7) {
   const list = document.getElementById("schedules-list");
@@ -141,11 +141,12 @@ async function handleEditScheduleSubmit(e) {
 
 async function handleDeleteSchedule(id) {
   if (
-    !confirm(
+    !(await confirmModal(
       "本当にこの予定を削除しますか？\n(Googleカレンダーと連携している場合、自動でカレンダーからも削除されます)",
-    )
-  )
+    ))
+  ) {
     return;
+  }
   try {
     await fetch("/api/schedules/delete", {
       method: "POST",

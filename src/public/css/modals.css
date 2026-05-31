@@ -103,6 +103,31 @@
   padding-top: 12px;
 }
 
+.confirm-modal-content {
+  max-width: 420px;
+}
+
+.confirm-modal-message {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  white-space: pre-line;
+}
+
+.confirm-modal-footer {
+  gap: 8px;
+}
+
+.btn-danger {
+  background-color: var(--color-red);
+  color: var(--color-white);
+}
+
+.btn-danger:hover {
+  filter: brightness(1.08);
+}
+
 /* ==============================
    支出詳細モーダル
    ============================== */

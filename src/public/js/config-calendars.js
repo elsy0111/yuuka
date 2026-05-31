@@ -1,3 +1,4 @@
+import { confirmModal } from "./modal.js";
 import { toast } from "./toast.js";
 export function renderCalendarsList(calendars, onChanged) {
   const list = document.getElementById("config-calendars-list");
@@ -76,7 +77,8 @@ function makeCalendarRow(cal, onChanged) {
 }
 
 async function handleDeleteCalendarId(calendarId, onChanged) {
-  if (!confirm(`本当にカレンダーID "${calendarId}" を同期一覧から削除しますか？`)) return;
+  if (!(await confirmModal(`本当にカレンダーID "${calendarId}" を同期一覧から削除しますか？`)))
+    return;
   try {
     const res = await fetch("/api/config/calendars/delete", {
       method: "POST",

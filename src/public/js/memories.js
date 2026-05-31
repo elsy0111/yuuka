@@ -1,5 +1,6 @@
-import { toast } from "./toast.js";
+import { confirmModal } from "./modal.js";
 import { state } from "./state.js";
+import { toast } from "./toast.js";
 
 export function initMemories() {
   fetchMemories();
@@ -176,7 +177,7 @@ function startEditMemory(mem, _row, contentEl) {
 }
 
 async function handleDeleteMemory(id) {
-  if (!confirm(`記憶ID:${id} を削除しますか？`)) return;
+  if (!(await confirmModal(`記憶ID:${id} を削除しますか？`))) return;
   try {
     const res = await fetch("/api/memories/delete", {
       method: "POST",

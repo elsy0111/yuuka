@@ -1,5 +1,5 @@
+import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { toast } from "./toast.js";
-import { closeModal, getModal, openModal } from "./modal.js";
 
 export async function fetchCredentialsSettings() {
   const list = document.getElementById("config-credentials-list");
@@ -85,7 +85,7 @@ function handleEditCredential(cred) {
 }
 
 async function handleDeleteCredential(serviceName) {
-  if (!confirm(`本当にサービス "${serviceName}" の認証情報を削除しますか？`)) return;
+  if (!(await confirmModal(`本当にサービス "${serviceName}" の認証情報を削除しますか？`))) return;
   try {
     const res = await fetch("/api/credentials/delete", {
       method: "POST",

@@ -1,7 +1,8 @@
+import { renderProfileDropdown } from "./auth.js";
 import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
 import { fetchCredentialsSettings } from "./credentials.js";
 import { initMemories } from "./memories.js";
-import { renderProfileDropdown } from "./auth.js";
+import { confirmModal } from "./modal.js";
 import { toast } from "./toast.js";
 
 export async function fetchConfigSettings() {
@@ -82,7 +83,7 @@ function renderInviteCodes(codes) {
     list.appendChild(empty);
     return;
   }
-  codes.forEach(({ code, used_by, created_at }) => {
+  codes.forEach(({ code, used_by }) => {
     const row = document.createElement("div");
     row.className = "invite-code-row";
     const codeSpan = document.createElement("span");
@@ -104,7 +105,7 @@ function renderInviteCodes(codes) {
     deleteBtn.style.color = "var(--accent-pink)";
     deleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
     deleteBtn.addEventListener("click", async () => {
-      if (!confirm(`招待コード「${code}」を削除しますか？`)) return;
+      if (!(await confirmModal(`招待コード「${code}」を削除しますか？`))) return;
       await fetch(`/api/invite-codes/${code}`, { method: "DELETE" });
       loadInviteCodes();
     });

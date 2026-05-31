@@ -1,5 +1,5 @@
+import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
-import { openModal, getModal, closeModal } from "./modal.js";
 import { toast } from "./toast.js";
 
 export async function fetchExpensesList() {
@@ -236,7 +236,7 @@ function openEditExpenseModal(exp) {
 }
 
 export async function handleDeleteExpense(id) {
-  if (!confirm("この支出記録を削除しますか？")) return;
+  if (!(await confirmModal("この支出記録を削除しますか？"))) return;
   try {
     await fetch("/api/expenses/delete", {
       method: "POST",
