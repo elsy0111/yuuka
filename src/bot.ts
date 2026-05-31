@@ -320,30 +320,47 @@ async function reactWithEmoji(message: Message): Promise<void> {
     const prompt =
       `あなたは「早瀬ユウカ」です。ミレニアムサイエンススクールの生徒会会計で、冷静・論理的・世話焼きな性格です。` +
       `先生（ユーザー）を信頼しており、呆れながらも温かく見守っています。照れやすく、感情は豊かですが理性的に振る舞います。\n\n` +
-      `以下の先生のメッセージを読んで、ユウカとして感じた感情を表すUnicode絵文字を**1文字だけ**返してください。\n` +
-      `絵文字以外は絶対に出力しないでください。\n\n` +
-      `【選択の指針（ユウカらしい絵文字を選ぶこと）】\n` +
-      `- 嬉しい・頼りにされた・温かい気持ち → 😊 💙 🌸\n` +
-      `- 照れ・誤魔化したいとき → 😳 🙈\n` +
-      `- 心配・不安・気がかり → 😟 💦\n` +
-      `- 納得・把握・仕事モード → ✅ 📋 💡\n` +
-      `- 無茶な先生を静かに見守る → 💭 👁️ 📎\n` +
-      `- 呆れ・ため息（本当に無茶な時だけ、多用禁止） → 😮‍💨 🫤\n` +
-      `- 珍しい怒り・本気で困った → 😤 ⚡\n\n` +
-      `※ 呆れ・ため息系（😮‍💨 🫤）は滅多に使わないこと。大半のメッセージには嬉しい・納得・見守り系で反応すること。\n\n` +
+      `以下の先生のメッセージを読んで、ユウカとしての反応を表すUnicode絵文字を**1〜3文字**で返してください。\n` +
+      `絵文字以外は絶対に出力しないでください。スペースや改行も不要です。\n\n` +
+      `【感情の絵文字（ユウカらしいもの）】\n` +
+      `- 嬉しい・頼りにされた → 😊 💙 🌸\n` +
+      `- 照れ・誤魔化し → 😳 🙈\n` +
+      `- 心配・不安 → 😟 💦\n` +
+      `- 納得・仕事モード → ✅ 📋 💡\n` +
+      `- 静かに見守る → 💭 👁️ 📎\n` +
+      `- 呆れ・ため息（多用禁止） → 😮‍💨 🫤\n` +
+      `- 怒り（滅多に使わない） → 😤 ⚡\n\n` +
+      `【内容を表す絵文字（メッセージの話題に合わせて感情絵文字と組み合わせてよい）】\n` +
+      `- 飲み物・カフェ → ☕ 🧋 🥤\n` +
+      `- 食事・料理 → 🍽️ 🍜 🍱\n` +
+      `- 勉強・学業 → ✏️ 📚 🎓\n` +
+      `- 仕事・作業 → 💼 🖥️ ⌨️\n` +
+      `- 睡眠・疲れ → 😴 🛌 💤\n` +
+      `- 運動・外出 → 🏃 🚶 🎽\n` +
+      `- ゲーム・娯楽 → 🎮 🎲\n` +
+      `- 音楽 → 🎵 🎧\n` +
+      `- お金・買い物 → 💰 🛍️\n` +
+      `- 天気・自然 → ☀️ 🌧️ 🌙\n\n` +
+      `※ 感情だけ、内容だけ、または組み合わせ（例: ✏️💪 📚😊）どれでもOK。ため息系は大半のメッセージで使わないこと。\n\n` +
       `先生のメッセージ: "${message.content.slice(0, 200)}"`;
     const result = await model.generateContent(prompt);
-    const emoji = result.response.text().trim().replace(/\s/g, "");
-    logBotEvent("debug", "reaction_attempt", message, { emoji, prompt });
-    if (emoji) {
-      await message.react(emoji).catch(async (error: unknown) => {
+    const raw = result.response.text().trim().replace(/\s/g, "");
+    // 絵文字を1文字ずつ分割（サロゲートペア・異体字セレクタ・ZWJ対応）
+    const emojis = [...new Intl.Segmenter("ja", { granularity: "grapheme" }).segment(raw)]
+      .map((s) => s.segment)
+      .filter((s) => s.trim())
+      .slice(0, 3);
+    logBotEvent("debug", "reaction_attempt", message, { emojis: emojis.join(""), prompt });
+    for (const emoji of emojis) {
+      await message.react(emoji).catch((error: unknown) => {
         logBotEvent("warn", "reaction_emoji_failed", message, {
           emoji,
           error: serializeError(error),
         });
-        await message.react("👀");
       });
-      logBotEvent("debug", "reaction_added", message, { emoji });
+    }
+    if (emojis.length > 0) {
+      logBotEvent("debug", "reaction_added", message, { emojis: emojis.join("") });
     }
   } catch (error) {
     logBotEvent("warn", "reaction_generation_failed", message, { error: serializeError(error) });
