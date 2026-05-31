@@ -34,10 +34,50 @@ async function loadProfileForm() {
 export function initConfigAfterAuth() {
   initMemories();
   loadProfileForm();
+  loadGeminiForm();
+}
+
+async function loadGeminiForm() {
+  try {
+    const res = await fetch("/api/config/gemini");
+    const data = await res.json();
+    if (!data.success) return;
+    const keyInput = document.getElementById("gemini-api-key");
+    const modelSelect = document.getElementById("gemini-model-select");
+    if (keyInput) {
+      keyInput.placeholder = data.hasApiKey
+        ? "設定済み（変更する場合のみ入力）"
+        : "APIキーを入力してください";
+    }
+    if (modelSelect && data.model) modelSelect.value = data.model;
+  } catch {}
 }
 
 export function initConfig() {
   initCalendarForm(fetchConfigSettings);
+
+  document.getElementById("gemini-config-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const apiKey = document.getElementById("gemini-api-key").value;
+    const model = document.getElementById("gemini-model-select").value;
+    try {
+      const res = await fetch("/api/config/gemini", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey, model }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById("gemini-api-key").value = "";
+        await loadGeminiForm();
+        alert("Gemini設定を保存しました。");
+      } else {
+        alert(data.message || "保存に失敗しました。");
+      }
+    } catch {
+      alert("サーバー接続に失敗しました。");
+    }
+  });
 
   document.getElementById("profile-config-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
