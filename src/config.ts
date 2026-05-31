@@ -64,6 +64,9 @@ export const config = {
   /** 使用する Gemini モデル */
   geminiModel: getSetting("GEMINI_MODEL", "gemini-2.0-flash-lite"),
 
+  /** リアクション絵文字生成に使用するモデル（固定・軽量） */
+  reactionModel: getSetting("REACTION_MODEL", "gemini-3.1-flash-lite"),
+
   /** Web管理画面の管理者パスコード（シングルユーザー用） */
   adminToken: getSetting("ADMIN_TOKEN"),
 

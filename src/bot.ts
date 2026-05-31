@@ -325,7 +325,7 @@ async function reactWithEmoji(message: Message): Promise<void> {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: resolveModelForUser(),
+      model: config.reactionModel,
     });
     const textPrompt =
       `あなたは「早瀬ユウカ」です。ミレニアムサイエンススクールの生徒会会計で、冷静・論理的・世話焼きな性格です。` +
