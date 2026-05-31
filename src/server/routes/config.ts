@@ -39,8 +39,7 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
         console.error("[config/gemini] APIキー復号失敗:", e);
       }
     } else if (config.geminiApiKey) {
-      // ユーザー個別キー未設定の場合はグローバルキーのプレフィックスを表示
-      apiKeyPrefix = `${config.geminiApiKey.slice(0, 8)}... (共有キー)`;
+      apiKeyPrefix = `${config.geminiApiKey.slice(0, 8)}...`;
     }
     sendJson(res, 200, {
       success: true,
