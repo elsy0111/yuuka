@@ -126,7 +126,16 @@ export function setBotStatus(botClient: Client, status: "thinking" | "writing" |
   }
 }
 
+let mainBotClientId: string | null = null;
+
+export function getMainBotInviteUrl(): string | null {
+  if (!mainBotClientId) return null;
+  const permissions = 68672; // Send Messages + Add Reactions + Read Message History + View Channels
+  return `https://discord.com/oauth2/authorize?client_id=${mainBotClientId}&permissions=${permissions}&scope=bot`;
+}
+
 client.once("clientReady", (c) => {
+  mainBotClientId = c.user.id;
   console.log(`✅ デフォルトBot: ${c.user.tag} としてログインしました`);
   logSystemBotEvent("info", "default_bot_ready", { tag: c.user.tag, id: c.user.id });
   setBotStatus(client, "idle");

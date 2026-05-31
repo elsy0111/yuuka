@@ -16,6 +16,9 @@ export async function fetchConfigSettings() {
     renderConfigEntries(grid, data.config);
     renderCalendarsList(data.config.googleCalendars || [], fetchConfigSettings);
     fetchCredentialsSettings();
+
+    const urlInput = document.getElementById("bot-invite-url-input");
+    if (urlInput) urlInput.value = data.config.botInviteUrl ?? "";
   } catch (e) {
     console.error(e);
   }
@@ -102,6 +105,15 @@ function renderInviteCodes(codes) {
 
 export function initConfig() {
   initCalendarForm(fetchConfigSettings);
+
+  document.getElementById("btn-copy-invite-url")?.addEventListener("click", () => {
+    const url = document.getElementById("bot-invite-url-input")?.value;
+    if (!url) {
+      toast.error("Bot起動後に取得できます。");
+      return;
+    }
+    navigator.clipboard.writeText(url).then(() => toast.success("招待URLをコピーしました"));
+  });
 
   document.getElementById("btn-generate-invite")?.addEventListener("click", async () => {
     try {

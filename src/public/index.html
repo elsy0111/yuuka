@@ -799,6 +799,20 @@
             </form>
           </div>
 
+          <!-- Bot招待URL -->
+          <div class="config-card card" style="margin-top: 24px;" id="bot-invite-url-card">
+            <div class="column-header">
+              <h3><span class="material-symbols-outlined header-icon-symbol">add_link</span>Bot 招待URL</h3>
+            </div>
+            <p class="description-text">このURLを友達に共有すると、友達が自分のDiscordサーバーにBotを追加できます。</p>
+            <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center;">
+              <input type="text" id="bot-invite-url-input" readonly style="flex: 1; font-family: var(--font-family-mono); font-size: 0.8rem;" placeholder="Bot起動後に表示されます">
+              <button type="button" class="btn btn-primary btn-sm" id="btn-copy-invite-url">
+                <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>コピー
+              </button>
+            </div>
+          </div>
+
           <!-- 招待コード管理 -->
           <div class="config-card card" style="margin-top: 24px;">
             <div class="column-header">
