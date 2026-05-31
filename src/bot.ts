@@ -317,28 +317,74 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
 // Discord 絵文字コード名 → Unicode 変換テーブル（よく使うリアクション）
 const DISCORD_EMOJI_MAP: Record<string, string> = {
   // 喜び・楽しさ
-  joy: "😂", smile: "😄", grinning: "😀", laughing: "😆", sweat_smile: "😅",
-  blush: "😊", heart_eyes: "😍", star_struck: "🤩", wink: "😉", sunglasses: "😎",
-  grin: "😁", partying_face: "🥳", yum: "😋",
+  joy: "😂",
+  smile: "😄",
+  grinning: "😀",
+  laughing: "😆",
+  sweat_smile: "😅",
+  blush: "😊",
+  heart_eyes: "😍",
+  star_struck: "🤩",
+  wink: "😉",
+  sunglasses: "😎",
+  grin: "😁",
+  partying_face: "🥳",
+  yum: "😋",
   // 好意・応援
-  thumbsup: "👍", heart: "❤️", sparkling_heart: "💖", fire: "🔥", tada: "🎉",
-  clap: "👏", raised_hands: "🙌", pray: "🙏", ok_hand: "👌", muscle: "💪",
-  white_check_mark: "✅", "100": "💯", star: "⭐",
+  thumbsup: "👍",
+  heart: "❤️",
+  sparkling_heart: "💖",
+  fire: "🔥",
+  tada: "🎉",
+  clap: "👏",
+  raised_hands: "🙌",
+  pray: "🙏",
+  ok_hand: "👌",
+  muscle: "💪",
+  white_check_mark: "✅",
+  "100": "💯",
+  star: "⭐",
   // 驚き・困惑
-  open_mouth: "😮", astonished: "😲", exploding_head: "🤯", flushed: "😳",
-  scream: "😱", hushed: "😯", dizzy_face: "😵",
+  open_mouth: "😮",
+  astonished: "😲",
+  exploding_head: "🤯",
+  flushed: "😳",
+  scream: "😱",
+  hushed: "😯",
+  dizzy_face: "😵",
   // 共感・心配
-  sob: "😭", cry: "😢", pleading_face: "🥺", disappointed: "😞", pensive: "😔",
-  worried: "😟", fearful: "😨",
+  sob: "😭",
+  cry: "😢",
+  pleading_face: "🥺",
+  disappointed: "😞",
+  pensive: "😔",
+  worried: "😟",
+  fearful: "😨",
   // 呆れ・困惑（ユウカらしさ）
-  weary: "😩", face_with_hand_over_mouth: "🤭", sweat: "😓", grimacing: "😬",
-  unamused: "😒", expressionless: "😑", neutral_face: "😐", rolling_eyes: "🙄",
-  smirk: "😏", no_mouth: "😶",
+  weary: "😩",
+  face_with_hand_over_mouth: "🤭",
+  sweat: "😓",
+  grimacing: "😬",
+  unamused: "😒",
+  expressionless: "😑",
+  neutral_face: "😐",
+  rolling_eyes: "🙄",
+  smirk: "😏",
+  no_mouth: "😶",
   // 考え中・観察
-  thinking: "🤔", monocle_face: "🧐", nerd_face: "🤓", eyes: "👀",
+  thinking: "🤔",
+  monocle_face: "🧐",
+  nerd_face: "🤓",
+  eyes: "👀",
   // その他
-  thumbsdown: "👎", confused: "😕", bulb: "💡", warning: "⚠️",
-  sleeping: "😴", hot_face: "🥵", cold_face: "🥶", skull: "💀",
+  thumbsdown: "👎",
+  confused: "😕",
+  bulb: "💡",
+  warning: "⚠️",
+  sleeping: "😴",
+  hot_face: "🥵",
+  cold_face: "🥶",
+  skull: "💀",
 };
 
 function resolveDiscordEmoji(code: string): string | null {
@@ -366,7 +412,10 @@ async function reactWithEmoji(message: Message): Promise<void> {
       `コード名のみを出力し、コロン（:）は不要です。例: blush, joy, sob, thinking\n\n` +
       `メッセージ: "${message.content.slice(0, 200)}"`;
     if (failedCode) {
-      return base + `\n\n※「${failedCode}」はDiscordで使用できませんでした。別のコード名を選んでください。`;
+      return (
+        base +
+        `\n\n※「${failedCode}」はDiscordで使用できませんでした。別のコード名を選んでください。`
+      );
     }
     return base;
   };

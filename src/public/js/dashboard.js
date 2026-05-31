@@ -43,16 +43,15 @@ export async function fetchDashboardStats() {
     renderDonutChart(expenseData.breakdown, expenseData.total);
     renderUrgentDashboardList();
 
-    const expenses = expenseData.expenses || [];
-    const maxExp = expenses.length > 0 ? Math.max(...expenses.map((e) => e.amount)) : 0;
-    document.getElementById("dashboard-highest-expense").textContent =
-      `¥${maxExp.toLocaleString()}`;
     document.getElementById("dashboard-highest-category").textContent =
       expenseData.breakdown?.[0]?.category || "なし";
 
     const last7 = (expenseData.dailyTotals || []).slice(-7);
     const week7Total = last7.reduce((s, d) => s + Number(d.total || 0), 0);
     const avg7 = last7.length > 0 ? Math.round(week7Total / last7.length) : 0;
+    const todayTotal = last7.length > 0 ? Number(last7[last7.length - 1]?.total || 0) : 0;
+    document.getElementById("dashboard-today-expense").textContent =
+      `¥${todayTotal.toLocaleString()}`;
     document.getElementById("dashboard-average-expense").textContent = `¥${avg7.toLocaleString()}`;
     document.getElementById("dashboard-week-total").textContent = `¥${week7Total.toLocaleString()}`;
 
