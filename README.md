@@ -101,6 +101,7 @@ cp example.yaml config.yaml
 *   **`REDIS_URL`**: インメモリデータキャッシュ用の Redis 接続 URL。
 *   **`REMINDER_CRON`**: リマインダーをチェックする間隔（cron形式、デフォルトは毎分 `* * * * *`）。
 *   **`PORT` / `HOST`**: 管理画面サーバーがリスンするポートとホスト名設定。
+*   **`ADMIN_DISCORD_ID`**: 招待コードを管理できる Discord ユーザーID。このIDでログインしたWeb画面でのみ、招待コードの一覧表示・発行・削除ができます。
 *   **`INVITE_CODES`**: 新規ユーザー登録時に必要となる招待コードのリスト。
 *   **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`**: システム全体で共有するデフォルトの Google OAuth2 認証情報。
 *   **`BASE_URL`**: Google OAuth 認証などのリダイレクト先となる、外部からアクセス可能な HTTPS ベース URL。

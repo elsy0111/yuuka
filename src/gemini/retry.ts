@@ -2,8 +2,8 @@ import { type Content, GoogleGenerativeAI } from "@google/generative-ai";
 import { config } from "../config.js";
 import { recordApiUsage } from "../db/apiUsageRepo.js";
 import { getUserGeminiConfig } from "../db/userRepo.js";
-import { decryptText } from "../utils/crypto.js";
 import { getAllFunctionDeclarations } from "../functions/index.js";
+import { decryptText } from "../utils/crypto.js";
 import { buildSystemInstruction } from "./systemInstruction.js";
 
 /** ユーザーのAPIキーをDBから復号して取得。未設定ならグローバルキーにフォールバック */

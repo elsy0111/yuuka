@@ -67,6 +67,9 @@ export const config = {
   /** Web管理画面の管理者パスコード（シングルユーザー用） */
   adminToken: getSetting("ADMIN_TOKEN"),
 
+  /** 招待コードを管理できる管理者の Discord ユーザーID */
+  adminDiscordId: getSetting("ADMIN_DISCORD_ID"),
+
   /** サンドボックスパス */
   sandboxPath: getSetting("SANDBOX_PATH"),
 

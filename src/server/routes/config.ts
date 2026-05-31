@@ -1,11 +1,11 @@
 import type http from "node:http";
+import { config } from "../../config.js";
 import {
   getUserGeminiConfig,
   getUserGoogleConfig,
   updateGeminiSettings,
   updateGoogleSettings,
 } from "../../db/userRepo.js";
-import { config } from "../../config.js";
 import { clearCalendarCache } from "../../services/googleCalendarService.js";
 import { decryptText, encryptText } from "../../utils/crypto.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";

@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { resolveApiKeyForUser, resolveModelForUser } from "./gemini/retry.js";
 import { ActivityType, Client, GatewayIntentBits, type Message, Partials } from "discord.js";
 import { config } from "./config.js";
 import { addBotLog, type BotLogLevel, pruneBotLogs } from "./db/botLogRepo.js";
 import { isRegisteredUser } from "./db/userRepo.js";
+import { resolveApiKeyForUser, resolveModelForUser } from "./gemini/retry.js";
 import { type ChatMessage, processMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
 import { startReminderService, stopReminderService } from "./services/reminderService.js";
