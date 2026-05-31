@@ -86,7 +86,9 @@ export const handleStatus: RouteHandler = async ({ req, res, parsedUrl, pathname
         googleCalendarId: config.googleCalendarId,
         googleServiceAccountEmail: mask(config.googleServiceAccountEmail),
         googleClientId: mask(config.googleClientId),
-        googleCalendars: (discordId ? (getUserGoogleConfig(discordId)?.calendars ?? []) : []).map((id) => ({ id, summary: id })),
+        googleCalendars: (discordId ? (getUserGoogleConfig(discordId)?.calendars ?? []) : []).map(
+          (id) => ({ id, summary: id }),
+        ),
       },
     });
   } catch (err) {

@@ -81,7 +81,10 @@ export const handleCalendarAdd: RouteHandler = async ({ req, res, pathname, meth
   if (pathname !== "/api/config/calendars/add" || method !== "POST") return false;
   try {
     const discordId = getSessionDiscordId(req);
-    if (!discordId) { sendError(res, 401, "認証されていません。"); return true; }
+    if (!discordId) {
+      sendError(res, 401, "認証されていません。");
+      return true;
+    }
 
     const cleanId = await readCalendarId(req);
     if (!cleanId) {
@@ -117,7 +120,10 @@ export const handleCalendarDelete: RouteHandler = async ({ req, res, pathname, m
   if (pathname !== "/api/config/calendars/delete" || method !== "POST") return false;
   try {
     const discordId = getSessionDiscordId(req);
-    if (!discordId) { sendError(res, 401, "認証されていません。"); return true; }
+    if (!discordId) {
+      sendError(res, 401, "認証されていません。");
+      return true;
+    }
 
     const cleanId = await readCalendarId(req);
     if (!cleanId) {

@@ -103,4 +103,3 @@ export const config = {
   /** 外部公開用ベースURL */
   baseUrl: getSetting("BASE_URL", ""),
 } as const;
-

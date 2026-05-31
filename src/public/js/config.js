@@ -48,9 +48,7 @@ async function loadGeminiForm() {
     const keyHint = document.getElementById("gemini-api-key-hint");
     const modelSelect = document.getElementById("gemini-model-select");
     if (keyInput) {
-      keyInput.placeholder = data.hasApiKey
-        ? "変更する場合のみ入力"
-        : "APIキーを入力してください";
+      keyInput.placeholder = data.hasApiKey ? "変更する場合のみ入力" : "APIキーを入力してください";
     }
     if (keyHint) {
       keyHint.textContent = data.apiKeyPrefix ? `現在の設定: ${data.apiKeyPrefix}` : "";

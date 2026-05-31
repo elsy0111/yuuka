@@ -138,15 +138,13 @@ export function createUser(discordId: string, username: string, password: string
 }
 
 export function getUserByDiscordId(discordId: string): UserRecord | undefined {
-  return getDb()
-    .prepare(`${USER_JOIN_SQL} WHERE u.discord_id = ?`)
-    .get(discordId) as UserRecord | undefined;
+  return getDb().prepare(`${USER_JOIN_SQL} WHERE u.discord_id = ?`).get(discordId) as
+    | UserRecord
+    | undefined;
 }
 
 export function isRegisteredUser(discordId: string): boolean {
-  const row = getDb()
-    .prepare("SELECT 1 FROM users WHERE discord_id = ? LIMIT 1")
-    .get(discordId);
+  const row = getDb().prepare("SELECT 1 FROM users WHERE discord_id = ? LIMIT 1").get(discordId);
   return !!row;
 }
 
@@ -160,9 +158,9 @@ export function updateUsername(discordId: string, newUsername: string): boolean 
 }
 
 export function listAllUserIds(): string[] {
-  const rows = getDb()
-    .prepare("SELECT discord_id FROM users ORDER BY created_at ASC")
-    .all() as { discord_id: string }[];
+  const rows = getDb().prepare("SELECT discord_id FROM users ORDER BY created_at ASC").all() as {
+    discord_id: string;
+  }[];
   return rows.map((r) => r.discord_id);
 }
 
@@ -215,9 +213,7 @@ export function updateGeminiSettings(
     )
     .run(discordId, apiKeyEncrypted, apiKeyIv, apiKeyTag, model);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
@@ -279,9 +275,7 @@ export function updateGoogleSettings(
     )
     .run(discordId, clientId, clientSecret, refreshToken, calendarId, calendarsJson);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
@@ -296,9 +290,7 @@ export function updateGoogleRefreshToken(discordId: string, refreshToken: string
     )
     .run(discordId, refreshToken);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
@@ -321,9 +313,7 @@ export function updateBackupSettings(
     )
     .run(discordId, enabled ? 1 : 0, folderId, cron);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
@@ -372,9 +362,7 @@ export function updateDiscordBotSettings(
     )
     .run(discordId, tokenEncrypted, tokenIv, tokenTag, persona);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
@@ -398,9 +386,7 @@ export function updateMonthlyBudget(discordId: string, budget: number): boolean 
     )
     .run(discordId, budget);
   getDb()
-    .prepare(
-      "UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?",
-    )
+    .prepare("UPDATE users SET updated_at = datetime('now', 'localtime') WHERE discord_id = ?")
     .run(discordId);
   return result.changes > 0;
 }
