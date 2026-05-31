@@ -82,7 +82,7 @@
   background: transparent;
   cursor: pointer;
   transition: var(--transition-smooth);
-  color: var(--text-primary);
+  color: var(--color-white);
   font-size: 0.78rem;
   font-weight: 600;
   font-family: var(--font-family-sans);
