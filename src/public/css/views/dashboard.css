@@ -1,4 +1,71 @@
 /* ==============================================================================
+   GEMINI API USAGE CARD
+   ============================================================================= */
+.gemini-usage-card {
+  margin-bottom: 24px;
+}
+
+.gemini-usage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.gemini-usage-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gemini-usage-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-zinc-muted);
+  letter-spacing: 0.04em;
+}
+
+.gemini-usage-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gemini-usage-bar-track {
+  flex: 1;
+  height: 6px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.gemini-usage-bar {
+  height: 100%;
+  width: 0%;
+  background-color: var(--accent-cyan);
+  border-radius: var(--radius);
+  transition: width 0.4s ease;
+}
+
+.gemini-usage-bar.warn {
+  background-color: var(--accent-yellow);
+}
+
+.gemini-usage-bar.danger {
+  background-color: var(--color-red);
+}
+
+.gemini-usage-val {
+  font-family: var(--font-family-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 90px;
+  text-align: right;
+}
+
+/* ==============================================================================
    1. DASHBOARD VIEW COMPONENTS (Welcome speech Chibi & Ticker Cards)
    ============================================================================= */
 .welcome-card {

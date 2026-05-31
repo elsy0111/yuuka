@@ -1,5 +1,5 @@
 import { state } from "./state.js";
-import { fetchDashboardStats } from "./dashboard.js";
+import { fetchDashboardStats, fetchGeminiUsage } from "./dashboard.js";
 import { fetchTasksList } from "./tasks.js";
 import { fetchSchedulesList } from "./schedules.js";
 import { fetchExpensesList } from "./expenses.js";
@@ -20,6 +20,7 @@ export function loadDataForActiveTab() {
   switch (state.activeTab) {
     case "dashboard":
       fetchDashboardStats();
+      fetchGeminiUsage();
       break;
     case "tasks":
       fetchTasksList();

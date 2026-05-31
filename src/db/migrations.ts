@@ -249,6 +249,20 @@ export function runMigrations(): void {
     CREATE INDEX IF NOT EXISTS idx_memories_module ON memories(user_id, module);
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS api_usage_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT,
+      model TEXT NOT NULL,
+      prompt_tokens INTEGER NOT NULL DEFAULT 0,
+      completion_tokens INTEGER NOT NULL DEFAULT 0,
+      total_tokens INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_api_usage_created ON api_usage_logs(created_at);
+  `);
+
   // 既存の Playbook ファイルからの DB マイグレーション
   const PLAYBOOK_DIR = path.resolve(process.cwd(), "data/playbooks");
   if (fs.existsSync(PLAYBOOK_DIR)) {

@@ -17,6 +17,40 @@ export function updateYuukaSpeechBubble() {
   }
 }
 
+function formatNum(n) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function setUsageBar(barId, valId, used, limit) {
+  const bar = document.getElementById(barId);
+  const val = document.getElementById(valId);
+  if (!bar || !val) return;
+  const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+  bar.style.width = `${pct}%`;
+  bar.classList.remove("warn", "danger");
+  if (pct >= 90) bar.classList.add("danger");
+  else if (pct >= 70) bar.classList.add("warn");
+  val.textContent = `${formatNum(used)} / ${formatNum(limit)}`;
+}
+
+export async function fetchGeminiUsage() {
+  try {
+    const res = await fetch("/api/gemini-usage");
+    const data = await res.json();
+    if (!data.success) return;
+    const { usage, quota, model } = data;
+    const modelEl = document.getElementById("gemini-usage-model");
+    if (modelEl) modelEl.textContent = model;
+    setUsageBar("gemini-bar-rpm", "gemini-val-rpm", usage.rpm, quota.rpm);
+    setUsageBar("gemini-bar-rpd", "gemini-val-rpd", usage.rpd, quota.rpd);
+    setUsageBar("gemini-bar-tpm", "gemini-val-tpm", usage.tpm, quota.tpm);
+  } catch (e) {
+    console.error("Gemini使用量取得エラー:", e);
+  }
+}
+
 export async function fetchDashboardStats() {
   try {
     const [statusRes, expenseRes] = await Promise.all([

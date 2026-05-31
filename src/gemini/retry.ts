@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, type Content } from "@google/generative-ai";
 import { config } from "../config.js";
 import { getAllFunctionDeclarations } from "../functions/index.js";
 import { buildSystemInstruction } from "./systemInstruction.js";
+import { recordApiUsage } from "../db/apiUsageRepo.js";
 
 export const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 
@@ -43,7 +44,17 @@ export async function generateWithRetry(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      return await model.generateContent({ contents });
+      const result = await model.generateContent({ contents });
+      // トークン使用量を記録
+      const usage = result.response.usageMetadata;
+      if (usage) {
+        recordApiUsage(
+          config.geminiModel,
+          usage.promptTokenCount ?? 0,
+          usage.candidatesTokenCount ?? 0,
+        );
+      }
+      return result;
     } catch (error) {
       if ((isRateLimitError(error) || isServerError(error)) && attempt < maxRetries) {
         // RetryInfo からリトライ待機時間を取得、なければ指数バックオフ

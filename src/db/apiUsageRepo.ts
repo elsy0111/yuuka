@@ -1,0 +1,80 @@
+import { getDb } from "./database.js";
+
+export interface ApiUsageLog {
+  id: number;
+  user_id: string | null;
+  model: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  created_at: string;
+}
+
+export interface ApiUsageSummary {
+  rpm: number;
+  rpd: number;
+  tpm: number;
+  tpd: number;
+}
+
+export function recordApiUsage(
+  model: string,
+  promptTokens: number,
+  completionTokens: number,
+  userId?: string,
+): void {
+  try {
+    getDb()
+      .prepare(
+        `INSERT INTO api_usage_logs (user_id, model, prompt_tokens, completion_tokens, total_tokens)
+         VALUES (?, ?, ?, ?, ?)`,
+      )
+      .run(userId ?? null, model, promptTokens, completionTokens, promptTokens + completionTokens);
+  } catch {
+    // ログ失敗は無視
+  }
+}
+
+export function getApiUsageSummary(): ApiUsageSummary {
+  const db = getDb();
+  const now = new Date();
+  const minuteAgo = new Date(now.getTime() - 60 * 1000)
+    .toISOString()
+    .replace("T", " ")
+    .slice(0, 19);
+  const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    .toISOString()
+    .replace("T", " ")
+    .slice(0, 19);
+
+  const rpm = (
+    db.prepare("SELECT COUNT(*) as c FROM api_usage_logs WHERE created_at >= ?").get(minuteAgo) as {
+      c: number;
+    }
+  ).c;
+
+  const rpd = (
+    db.prepare("SELECT COUNT(*) as c FROM api_usage_logs WHERE created_at >= ?").get(dayStart) as {
+      c: number;
+    }
+  ).c;
+
+  const tpmRow = db
+    .prepare("SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE created_at >= ?")
+    .get(minuteAgo) as { t: number };
+
+  const tpdRow = db
+    .prepare("SELECT COALESCE(SUM(total_tokens), 0) as t FROM api_usage_logs WHERE created_at >= ?")
+    .get(dayStart) as { t: number };
+
+  return { rpm, rpd, tpm: tpmRow.t, tpd: tpdRow.t };
+}
+
+export function pruneApiUsageLogs(): void {
+  // 7日以上前のログを削除
+  getDb()
+    .prepare(
+      `DELETE FROM api_usage_logs WHERE created_at < datetime('now', 'localtime', '-7 days')`,
+    )
+    .run();
+}

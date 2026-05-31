@@ -3,6 +3,7 @@ import { config } from "./config.js";
 import { sendError } from "./server/http.js";
 import { handleLogin, handleLogout, handleRegister, handleProfile } from "./server/routes/auth.js";
 import { handleBotLogs } from "./server/routes/botLogs.js";
+import { handleApiUsage } from "./server/routes/apiUsage.js";
 import { handleCalendarAdd, handleCalendarDelete } from "./server/routes/config.js";
 import { handleCredentials } from "./server/routes/credentials.js";
 import { handleExpenses } from "./server/routes/expenses.js";
@@ -29,6 +30,7 @@ const privateRoutes: RouteHandler[] = [
   handleExpenses,
   handleMemories,
   handleBotLogs,
+  handleApiUsage,
   handleUserMigrate,
 ];
 
