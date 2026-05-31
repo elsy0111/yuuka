@@ -14,8 +14,6 @@ export function runMigrations(): void {
       updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
     );
 
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username);
-
     CREATE TABLE IF NOT EXISTS user_gemini_settings (
       discord_id TEXT PRIMARY KEY REFERENCES users(discord_id) ON DELETE CASCADE,
       api_key_encrypted TEXT,
@@ -41,6 +39,10 @@ export function runMigrations(): void {
       monthly_budget INTEGER NOT NULL DEFAULT 50000
     );
   `);
+
+  try {
+    db.exec("DROP INDEX IF EXISTS idx_users_username;");
+  } catch {}
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS invite_codes (
