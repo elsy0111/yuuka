@@ -413,6 +413,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   font-family: var(--font-family-mono);
+  white-space: nowrap;
 }
 
 .badge-urgent {

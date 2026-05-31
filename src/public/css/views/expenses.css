@@ -134,7 +134,7 @@
 /* Stats Grid */
 .expense-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -160,6 +160,9 @@
   font-weight: 800;
   color: var(--color-white);
   line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-sub {
