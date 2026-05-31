@@ -264,7 +264,7 @@
 
 .expense-daily-track {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   background-color: var(--bg-primary);
   border: 1px solid var(--border-matte);
   overflow: hidden;
@@ -272,7 +272,7 @@
 
 .expense-daily-bar {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius);
   background-color: var(--accent-cyan);
 }
 

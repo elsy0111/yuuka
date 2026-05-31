@@ -275,7 +275,7 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-matte);
   padding: 10px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   display: flex;
   flex-direction: column;
   gap: 2px;
