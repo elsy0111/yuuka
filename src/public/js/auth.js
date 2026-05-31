@@ -114,15 +114,14 @@ function showLoginOverlay(msg = "") {
   if (msg) document.getElementById("login-error").textContent = msg;
 }
 
-function onLoginSuccess(data) {
+async function onLoginSuccess(data) {
   storeSession(data);
   document.getElementById("login-overlay").classList.remove("active");
   document.getElementById("app-container").classList.remove("hidden");
-  loadUserProfiles().then(() => {
-    if (state.userProfiles.length > 0 && !state.activeUserId) {
-      state.activeUserId = state.userProfiles[0];
-    }
-  });
+  await loadUserProfiles();
+  if (state.userProfiles.length > 0 && !state.activeUserId) {
+    state.activeUserId = state.userProfiles[0];
+  }
   initConfigAfterAuth();
   switchTab("dashboard");
 }

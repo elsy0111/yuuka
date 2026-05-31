@@ -13,13 +13,15 @@ import {
 import { getMonthlyBudget, updateMonthlyBudget } from "../../db/userRepo.js";
 import { parseReceipt } from "../../services/receiptParser.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
+import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
 export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
   if (pathname === "/api/expenses" && method === "GET") {
     try {
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
       const now = new Date();
-      const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
       const year = parseInt(parsedUrl.searchParams.get("year") || String(now.getFullYear()), 10);
       const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
       const total = getMonthlyTotal(userId, year, month);
@@ -48,7 +50,8 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
   }
 
   if (pathname === "/api/expenses/all" && method === "GET") {
-    const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
+    const userId = getSessionDiscordId(req);
+    if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
     const numberParam = (name: string) =>
       parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
     const expenses = listFilteredExpenses(userId, {
@@ -66,7 +69,9 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/add" && method === "POST") {
     try {
-      const { userId, amount, category, description, date, purchase_source } = JSON.parse(
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      const { amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
       if (!amount || !category) {
@@ -74,7 +79,7 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
         return true;
       }
       const expense = addExpense(
-        userId || "sensei_default",
+        userId,
         amount,
         category,
         description,
@@ -91,11 +96,13 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/update" && method === "POST") {
     try {
-      const { id, userId, amount, category, description, date, purchase_source } = JSON.parse(
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      const { id, amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!id || !userId) {
-        sendError(res, 400, "IDとユーザーIDが必要です。");
+      if (!id) {
+        sendError(res, 400, "IDが必要です。");
         return true;
       }
       const expense = updateExpense(id, userId, {
@@ -114,9 +121,11 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/delete" && method === "POST") {
     try {
-      const { id, userId } = JSON.parse(await getRequestBody(req));
-      if (!id || !userId) {
-        sendError(res, 400, "IDとユーザーIDが必要です。");
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      const { id } = JSON.parse(await getRequestBody(req));
+      if (!id) {
+        sendError(res, 400, "IDが必要です。");
         return true;
       }
       sendJson(res, 200, { success: deleteExpense(id, userId) });
@@ -128,9 +137,11 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/budget" && method === "POST") {
     try {
-      const { userId, budget } = JSON.parse(await getRequestBody(req));
-      if (!userId || typeof budget !== "number" || budget < 0) {
-        sendError(res, 400, "userId と正の整数の budget が必要です。");
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      const { budget } = JSON.parse(await getRequestBody(req));
+      if (typeof budget !== "number" || budget < 0) {
+        sendError(res, 400, "正の整数の budget が必要です。");
         return true;
       }
       const ok = updateMonthlyBudget(userId, Math.round(budget));
@@ -143,7 +154,9 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
 
   if (pathname === "/api/expenses/upload-receipt" && method === "POST") {
     try {
-      const { userId, imageBase64, mimeType, additionalText } = JSON.parse(
+      const userId = getSessionDiscordId(req);
+      if (!userId) { sendError(res, 401, "認証されていません。"); return true; }
+      const { imageBase64, mimeType, additionalText } = JSON.parse(
         await getRequestBody(req),
       );
       if (!imageBase64 || !mimeType) {
@@ -151,7 +164,7 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
         return true;
       }
       const response = await parseReceipt(
-        userId || "sensei_default",
+        userId,
         imageBase64,
         mimeType,
         additionalText,

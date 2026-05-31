@@ -26,7 +26,7 @@ export const handleStatus: RouteHandler = async ({ req, res, parsedUrl, pathname
   try {
     const db = getDb();
     const discordId = getSessionDiscordId(req);
-    const userId = parsedUrl.searchParams.get("userId") || "sensei_default";
+    const userId = discordId || "sensei_default";
     const taskCount = db
       .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ?")
       .get(userId) as { count: number };
@@ -116,16 +116,10 @@ export const handleUsers: RouteHandler = ({ req, res, pathname, method }) => {
         });
         return true;
       }
+      sendError(res, 401, "ユーザーが見つかりません。再ログインしてください。");
+      return true;
     }
-    const usersRows = getDb()
-      .prepare(`
-      SELECT DISTINCT user_id FROM tasks
-      UNION SELECT DISTINCT user_id FROM schedules
-      UNION SELECT DISTINCT user_id FROM expenses
-    `)
-      .all() as { user_id: string }[];
-    const users = usersRows.map((r) => r.user_id).filter((id) => id && id.trim() !== "");
-    sendJson(res, 200, { success: true, users: users.length ? users : ["sensei_default"] });
+    sendError(res, 401, "認証されていません。");
   } catch {
     sendError(res, 500, "ユーザー一覧の取得に失敗しました。");
   }
