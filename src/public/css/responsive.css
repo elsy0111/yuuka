@@ -170,11 +170,20 @@
 
   .expense-hud-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
+    margin-bottom: 12px;
   }
 
   .expense-stats-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .expense-daily-card,
+  .expense-actions-columns,
+  .expense-table-card {
+    margin-bottom: 12px;
   }
 
   .hud-card h2 {
