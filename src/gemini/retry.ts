@@ -3,8 +3,18 @@ import { config } from "../config.js";
 import { getAllFunctionDeclarations } from "../functions/index.js";
 import { buildSystemInstruction } from "./systemInstruction.js";
 import { recordApiUsage } from "../db/apiUsageRepo.js";
+import { getUserGeminiConfig } from "../db/userRepo.js";
 
 export const genAI = new GoogleGenerativeAI(config.geminiApiKey);
+
+/** ユーザーのDB設定モデル名を取得。未設定なら global config にフォールバック */
+export function resolveModelForUser(userId?: string): string {
+  if (userId) {
+    const userCfg = getUserGeminiConfig(userId);
+    if (userCfg?.model) return userCfg.model;
+  }
+  return config.geminiModel;
+}
 
 /** レート制限エラーかどうか判定 */
 export function isRateLimitError(error: unknown): boolean {
@@ -34,10 +44,12 @@ export function sleep(ms: number): Promise<void> {
 export async function generateWithRetry(
   contents: Content[],
   maxRetries: number = 3,
+  userId?: string,
 ): Promise<import("@google/generative-ai").GenerateContentResult> {
+  const modelName = resolveModelForUser(userId);
   // 毎回最新の日時でsystem instructionを更新
   const model = genAI.getGenerativeModel({
-    model: config.geminiModel,
+    model: modelName,
     systemInstruction: await buildSystemInstruction(),
     tools: [{ functionDeclarations: getAllFunctionDeclarations() }],
   });
@@ -49,7 +61,7 @@ export async function generateWithRetry(
       const usage = result.response.usageMetadata;
       if (usage) {
         recordApiUsage(
-          config.geminiModel,
+          modelName,
           usage.promptTokenCount ?? 0,
           usage.candidatesTokenCount ?? 0,
         );

@@ -75,7 +75,7 @@ export async function processMessage(
 
   try {
     onStatusChange?.("thinking");
-    let result = await generateWithRetry(contents);
+    let result = await generateWithRetry(contents, 3, userId);
     let response = result.response;
 
     // Function Calling ループ（最大10回まで）
@@ -146,7 +146,7 @@ export async function processMessage(
       // 最後のテキスト生成の直前で書き込み中ステータスに変更
       onStatusChange?.("writing");
 
-      result = await generateWithRetry(contents);
+      result = await generateWithRetry(contents, 3, userId);
       response = result.response;
       iterations++;
     }

@@ -1,5 +1,7 @@
 import { getApiUsageSummary, getModelQuota, setModelQuota } from "../../db/apiUsageRepo.js";
 import { config } from "../../config.js";
+import { getUserGeminiConfig } from "../../db/userRepo.js";
+import { getSessionDiscordId } from "../session.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type { RouteHandler } from "../types.js";
 
@@ -8,7 +10,9 @@ export const handleApiUsage: RouteHandler = async ({ req, res, pathname, method 
 
   if (pathname === "/api/gemini-usage" && method === "GET") {
     try {
-      const model = config.geminiModel || "gemini-2.0-flash-lite";
+      const discordId = getSessionDiscordId(req);
+      const userCfg = discordId ? getUserGeminiConfig(discordId) : null;
+      const model = userCfg?.model || config.geminiModel || "gemini-2.0-flash-lite";
       const summary = getApiUsageSummary(model);
       const quota = getModelQuota(model);
       sendJson(res, 200, { success: true, model, usage: summary, quota });
