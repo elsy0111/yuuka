@@ -5,7 +5,7 @@ import {
   getUserGoogleConfig,
   updateGoogleSettings,
 } from "../../db/userRepo.js";
-import { encryptText } from "../../utils/crypto.js";
+import { encryptText, decryptText } from "../../utils/crypto.js";
 import { getSessionDiscordId } from "../session.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import type http from "node:http";
@@ -29,9 +29,17 @@ export const handleGeminiConfig: RouteHandler = async ({ req, res, pathname, met
 
   if (pathname === "/api/config/gemini" && method === "GET") {
     const cfg = getUserGeminiConfig(discordId);
+    let apiKeyPrefix: string | null = null;
+    if (cfg?.apiKeyEncrypted && cfg.apiKeyIv && cfg.apiKeyTag) {
+      try {
+        const plain = decryptText(cfg.apiKeyEncrypted, cfg.apiKeyIv, cfg.apiKeyTag);
+        apiKeyPrefix = plain.slice(0, 8) + "...";
+      } catch {}
+    }
     sendJson(res, 200, {
       success: true,
       hasApiKey: !!cfg?.apiKeyEncrypted,
+      apiKeyPrefix,
       model: cfg?.model ?? "gemini-2.0-flash-lite",
     });
     return true;
