@@ -314,138 +314,37 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
   });
 }
 
-// Discord 絵文字コード名 → Unicode 変換テーブル（よく使うリアクション）
-const DISCORD_EMOJI_MAP: Record<string, string> = {
-  // 喜び・楽しさ
-  joy: "😂",
-  smile: "😄",
-  grinning: "😀",
-  laughing: "😆",
-  sweat_smile: "😅",
-  blush: "😊",
-  heart_eyes: "😍",
-  star_struck: "🤩",
-  wink: "😉",
-  sunglasses: "😎",
-  grin: "😁",
-  partying_face: "🥳",
-  yum: "😋",
-  // 好意・応援
-  thumbsup: "👍",
-  heart: "❤️",
-  sparkling_heart: "💖",
-  fire: "🔥",
-  tada: "🎉",
-  clap: "👏",
-  raised_hands: "🙌",
-  pray: "🙏",
-  ok_hand: "👌",
-  muscle: "💪",
-  white_check_mark: "✅",
-  "100": "💯",
-  star: "⭐",
-  // 驚き・困惑
-  open_mouth: "😮",
-  astonished: "😲",
-  exploding_head: "🤯",
-  flushed: "😳",
-  scream: "😱",
-  hushed: "😯",
-  dizzy_face: "😵",
-  // 共感・心配
-  sob: "😭",
-  cry: "😢",
-  pleading_face: "🥺",
-  disappointed: "😞",
-  pensive: "😔",
-  worried: "😟",
-  fearful: "😨",
-  // 呆れ・困惑（ユウカらしさ）
-  weary: "😩",
-  face_with_hand_over_mouth: "🤭",
-  sweat: "😓",
-  grimacing: "😬",
-  unamused: "😒",
-  expressionless: "😑",
-  neutral_face: "😐",
-  rolling_eyes: "🙄",
-  smirk: "😏",
-  no_mouth: "😶",
-  // 考え中・観察
-  thinking: "🤔",
-  monocle_face: "🧐",
-  nerd_face: "🤓",
-  eyes: "👀",
-  // その他
-  thumbsdown: "👎",
-  confused: "😕",
-  bulb: "💡",
-  warning: "⚠️",
-  sleeping: "😴",
-  hot_face: "🥵",
-  cold_face: "🥶",
-  skull: "💀",
-};
-
-function resolveDiscordEmoji(code: string): string | null {
-  return DISCORD_EMOJI_MAP[code] ?? null;
-}
-
 /**
- * ユウカがメッセージを見てどう感じたかを表す絵文字でリアクション。
- * Gemini にDiscordコード名を出力させ、失敗時は1回リトライする。
+ * ユウカがメッセージを見てどう感じたかを表すUnicode絵文字でリアクション。
+ * 失敗時は👀でフォールバック。プロンプト内容はログに含む。
  */
 async function reactWithEmoji(message: Message): Promise<void> {
   if (!config.geminiApiKey) {
     logBotEvent("debug", "reaction_skipped_no_gemini_key", message);
     return;
   }
-
-  const genAI = new GoogleGenerativeAI(config.geminiApiKey);
-  const model = genAI.getGenerativeModel({
-    model: config.geminiModel || "gemini-2.0-flash-lite",
-  });
-
-  const buildPrompt = (failedCode?: string) => {
-    const base =
-      `あなたは「早瀬ユウカ」というキャラクターです。以下のDiscordメッセージを読んで、ユウカとしてどう感じたかを表すDiscord絵文字のコード名を1つだけ返してください。` +
-      `コード名のみを出力し、コロン（:）は不要です。例: blush, joy, sob, thinking\n\n` +
-      `メッセージ: "${message.content.slice(0, 200)}"`;
-    if (failedCode) {
-      return (
-        base +
-        `\n\n※「${failedCode}」はDiscordで使用できませんでした。別のコード名を選んでください。`
-      );
-    }
-    return base;
-  };
-
-  const tryReact = async (code: string): Promise<boolean> => {
-    const unicode = resolveDiscordEmoji(code);
-    const target = unicode ?? code;
-    try {
-      await message.react(target);
-      logBotEvent("debug", "reaction_added", message, { code, emoji: target });
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   try {
-    const result = await model.generateContent(buildPrompt());
-    const code = result.response.text().trim().replace(/[\s:]/g, "").toLowerCase();
-    if (!code) return;
-
-    const ok = await tryReact(code);
-    if (ok) return;
-
-    // 失敗した場合、エラーをプロンプトに入れて再試行
-    logBotEvent("warn", "reaction_emoji_failed_retry", message, { code });
-    const result2 = await model.generateContent(buildPrompt(code));
-    const code2 = result2.response.text().trim().replace(/[\s:]/g, "").toLowerCase();
-    if (code2) {
-      await tryReact(code2);
+    const genAI = new GoogleGenerativeAI(config.geminiApiKey);
+    const model = genAI.getGenerativeModel({
+      model: config.geminiModel || "gemini-2.0-flash-lite",
+    });
+    const prompt =
+      `あなたは「早瀬ユウカ」というキャラクターです。以下のDiscordメッセージを読んで、` +
+      `ユウカとしてそのメッセージを見てどう感じたかを表すUnicode絵文字を1文字だけ返してください。` +
+      `絵文字以外は絶対に出力しないでください。\n\n` +
+      `"${message.content.slice(0, 200)}"`;
+    const result = await model.generateContent(prompt);
+    const emoji = result.response.text().trim().replace(/\s/g, "");
+    logBotEvent("debug", "reaction_attempt", message, { emoji, prompt });
+    if (emoji) {
+      await message.react(emoji).catch(async (error: unknown) => {
+        logBotEvent("warn", "reaction_emoji_failed", message, {
+          emoji,
+          error: serializeError(error),
+        });
+        await message.react("👀");
+      });
+      logBotEvent("debug", "reaction_added", message, { emoji });
     }
   } catch (error) {
     logBotEvent("warn", "reaction_generation_failed", message, { error: serializeError(error) });
