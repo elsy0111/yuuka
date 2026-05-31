@@ -65,7 +65,7 @@ export async function generateWithRetry(
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
-    systemInstruction: await buildSystemInstruction(),
+    systemInstruction: await buildSystemInstruction(userId),
     tools: [{ functionDeclarations: getAllFunctionDeclarations() }],
   });
 

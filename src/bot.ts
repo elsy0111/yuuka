@@ -285,7 +285,10 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
       }
 
       await sendSplitResponse(message, response);
-      logBotEvent("info", "response_sent", message, { responseLength: response.length });
+      logBotEvent("info", "response_sent", message, {
+        responseLength: response.length,
+        response: response.slice(0, 500),
+      });
     } catch (error) {
       if (typingInterval) {
         clearInterval(typingInterval);
@@ -384,13 +387,6 @@ async function reactWithEmoji(message: Message): Promise<void> {
       logBotEvent("debug", "reaction_added", message, { emojis: emojis.join("") });
     }
   } catch (error) {
-    // 429はレート制限なのでフォールバックせず静かにスキップ
-    const isRateLimit =
-      error instanceof Error && (error.message.includes("429") || error.message.includes("quota"));
-    if (isRateLimit) {
-      logBotEvent("debug", "reaction_skipped_rate_limit", message);
-      return;
-    }
     logBotEvent("warn", "reaction_generation_failed", message, { error: serializeError(error) });
     await message.react("👀").catch((fallbackError: unknown) => {
       logBotEvent("warn", "reaction_fallback_failed", message, {
