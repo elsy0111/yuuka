@@ -271,6 +271,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         );
       } else if (fullText.trim()) {
         const chatMessage: ChatMessage = { text: fullText };
+        logBotEvent("debug", "prompt_text", message, { prompt: fullText.slice(0, 500) });
         response = await processMessage(userId, chatMessage, statusCallback);
       } else {
         response =
