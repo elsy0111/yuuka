@@ -817,9 +817,6 @@
           <div class="config-card card" style="margin-top: 24px;">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">card_giftcard</span>招待コード管理</h3>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-generate-invite">
-                <span class="material-symbols-outlined" style="font-size:16px;">add</span>新規発行
-              </button>
             </div>
             <ol class="description-text" style="margin: 0; padding-left: 1.4em; line-height: 2;">
               <li>「新規発行」でコードを生成し、コピーして友達に共有する</li>
@@ -828,7 +825,10 @@
               <li>友達がログイン後、設定画面で自分の Gemini API Key を登録する</li>
               <li>友達が自分の Discord サーバー用に Bot を作成し、<a href="#discord-bot-settings" onclick="document.getElementById('discord-bot-settings').scrollIntoView({behavior:'smooth'});return false;">このページ下部の「Discord 独自Bot設定」</a>にトークンを登録する</li>
             </ol>
-            <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px;"></div>
+            <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px; margin-bottom: 18px;"></div>
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="button" class="btn btn-primary" id="btn-generate-invite">＋ 新規発行</button>
+            </div>
           </div>
 
           <div class="config-card card alert-box">
