@@ -1,3 +1,4 @@
+import { openEditExpenseModal } from "./expenses.js";
 import { state } from "./state.js";
 
 let currentExpenses = [];
@@ -204,6 +205,8 @@ function makeDetailRow(exp) {
   tdCreated.style.fontSize = "0.72rem";
   tdCreated.textContent = exp.created_at || "—";
 
+  tr.style.cursor = "pointer";
+  tr.addEventListener("click", () => openEditExpenseModal(exp));
   tr.append(tdDate, tdCategory, tdDescription, tdPurchase, tdSource, tdAmount, tdCreated);
   return tr;
 }

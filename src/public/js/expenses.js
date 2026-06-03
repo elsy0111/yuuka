@@ -225,7 +225,7 @@ export function makeExpenseRow(exp) {
   return tr;
 }
 
-function openEditExpenseModal(exp) {
+export function openEditExpenseModal(exp) {
   document.getElementById("exp-edit-id").value = exp.id;
   document.getElementById("exp-edit-amount").value = exp.amount;
   document.getElementById("exp-edit-date").value = exp.date;
@@ -243,6 +243,7 @@ export async function handleDeleteExpense(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),
     });
+    closeModal(getModal("expense-edit"));
     fetchExpensesList();
   } catch (e) {
     console.error(e);
