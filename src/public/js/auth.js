@@ -66,6 +66,7 @@ export async function loadUserProfiles() {
       state.userProfiles = data.users;
       if (data.discordId) state.activeUserId = data.discordId;
       else if (data.users.length > 0) state.activeUserId = data.users[0];
+      state.isAdmin = data.isAdmin === true;
 
       const displayName =
         data.username || readStoredSession()?.username || state.activeUserId || "—";

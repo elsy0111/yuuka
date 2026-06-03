@@ -113,6 +113,7 @@ export const handleUsers: RouteHandler = ({ req, res, pathname, method }) => {
           username: user.username,
           discordId: user.discord_id,
           createdAt: user.created_at,
+          isAdmin: user.is_admin === 1,
         });
         return true;
       }

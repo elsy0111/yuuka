@@ -5,4 +5,5 @@ export const state = {
   userProfiles: ["sensei_default"],
   pendingTasksCount: 0,
   totalExpensesVal: 0,
+  isAdmin: false,
 };

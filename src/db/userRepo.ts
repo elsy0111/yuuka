@@ -5,6 +5,7 @@ export interface UserRecord {
   discord_id: string;
   username: string;
   password_hash: string;
+  is_admin: number;
   // gemini (from user_gemini_settings)
   gemini_api_key_encrypted: string | null;
   gemini_api_key_iv: string | null;
@@ -76,7 +77,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
 
 const USER_JOIN_SQL = `
   SELECT
-    u.discord_id, u.username, u.password_hash, u.created_at, u.updated_at,
+    u.discord_id, u.username, u.password_hash, u.is_admin, u.created_at, u.updated_at,
     COALESCE(g.api_key_encrypted, NULL)  AS gemini_api_key_encrypted,
     COALESCE(g.api_key_iv, NULL)         AS gemini_api_key_iv,
     COALESCE(g.api_key_tag, NULL)        AS gemini_api_key_tag,
