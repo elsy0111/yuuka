@@ -386,7 +386,18 @@
   font-family: var(--font-family-mono);
   font-size: 0.95rem;
   letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+.invite-code-memo {
   flex: 1;
+  background: var(--bg-input, var(--bg-tertiary));
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  min-width: 0;
 }
 
 .invite-code-unused {

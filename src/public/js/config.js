@@ -1,4 +1,5 @@
 import { renderProfileDropdown } from "./auth.js";
+import { state } from "./state.js";
 import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
 import { fetchCredentialsSettings } from "./credentials.js";
 import { initMemories } from "./memories.js";
@@ -40,7 +41,10 @@ export function initConfigAfterAuth() {
   initMemories();
   loadProfileForm();
   loadGeminiForm();
-  loadInviteCodes();
+
+  const inviteCard = document.getElementById("invite-code-management-card");
+  if (inviteCard) inviteCard.style.display = state.isAdmin ? "" : "none";
+  if (state.isAdmin) loadInviteCodes();
 }
 
 async function loadGeminiForm() {
@@ -83,15 +87,31 @@ function renderInviteCodes(codes) {
     list.appendChild(empty);
     return;
   }
-  codes.forEach(({ code, used_by }) => {
+  codes.forEach(({ code, used_by, memo }) => {
     const row = document.createElement("div");
     row.className = "invite-code-row";
+
     const codeSpan = document.createElement("span");
     codeSpan.className = "invite-code-value";
     codeSpan.textContent = code;
+
     const statusSpan = document.createElement("span");
     statusSpan.className = used_by ? "invite-code-used" : "invite-code-unused";
     statusSpan.textContent = used_by ? "使用済み" : "未使用";
+
+    const memoInput = document.createElement("input");
+    memoInput.type = "text";
+    memoInput.className = "invite-code-memo";
+    memoInput.placeholder = "メモ（任意）";
+    memoInput.value = memo || "";
+    memoInput.addEventListener("change", async () => {
+      await fetch(`/api/invite-codes/${code}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memo: memoInput.value.trim() }),
+      });
+    });
+
     const copyBtn = document.createElement("button");
     copyBtn.className = "btn-icon-sm";
     copyBtn.title = "コピー";
@@ -99,6 +119,7 @@ function renderInviteCodes(codes) {
     copyBtn.addEventListener("click", () => {
       navigator.clipboard.writeText(code).then(() => toast.success("コピーしました"));
     });
+
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "btn-icon-sm";
     deleteBtn.title = "削除";
@@ -109,7 +130,8 @@ function renderInviteCodes(codes) {
       await fetch(`/api/invite-codes/${code}`, { method: "DELETE" });
       loadInviteCodes();
     });
-    row.append(codeSpan, statusSpan, ...(used_by ? [] : [copyBtn]), deleteBtn);
+
+    row.append(codeSpan, statusSpan, memoInput, ...(used_by ? [] : [copyBtn]), deleteBtn);
     list.appendChild(row);
   });
 }

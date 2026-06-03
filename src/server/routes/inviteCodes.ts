@@ -1,5 +1,10 @@
 import crypto from "node:crypto";
-import { createInviteCode, deleteInviteCode, listInviteCodes } from "../../db/inviteRepo.js";
+import {
+  createInviteCode,
+  deleteInviteCode,
+  listInviteCodes,
+  updateInviteCodeMemo,
+} from "../../db/inviteRepo.js";
 import { sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
@@ -26,10 +31,25 @@ export const handleInviteCodes: RouteHandler = ({ req, res, pathname, method }) 
     return true;
   }
 
-  const deleteMatch = pathname.match(/^\/api\/invite-codes\/([A-F0-9]+)$/);
-  if (deleteMatch && method === "DELETE") {
-    const ok = deleteInviteCode(deleteMatch[1]);
+  const codeMatch = pathname.match(/^\/api\/invite-codes\/([A-F0-9]+)$/);
+  if (codeMatch && method === "DELETE") {
+    const ok = deleteInviteCode(codeMatch[1]);
     sendJson(res, 200, { success: ok });
+    return true;
+  }
+
+  if (codeMatch && method === "PATCH") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => (body += chunk.toString()));
+    req.on("end", () => {
+      try {
+        const { memo } = JSON.parse(body);
+        const ok = updateInviteCodeMemo(codeMatch[1], memo ?? "");
+        sendJson(res, 200, { success: ok });
+      } catch {
+        sendError(res, 400, "不正なリクエストです。");
+      }
+    });
     return true;
   }
 

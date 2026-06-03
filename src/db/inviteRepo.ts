@@ -6,6 +6,7 @@ export interface InviteCode {
   used_by: string | null;
   used_at: string | null;
   created_at: string;
+  memo: string | null;
 }
 
 /**
@@ -56,6 +57,13 @@ export function listInviteCodes(): InviteCode[] {
 
 export function deleteInviteCode(code: string): boolean {
   const result = getDb().prepare("DELETE FROM invite_codes WHERE code = ?").run(code);
+  return result.changes > 0;
+}
+
+export function updateInviteCodeMemo(code: string, memo: string): boolean {
+  const result = getDb()
+    .prepare("UPDATE invite_codes SET memo = ? WHERE code = ?")
+    .run(memo || null, code);
   return result.changes > 0;
 }
 

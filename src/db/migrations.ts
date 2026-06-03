@@ -174,6 +174,16 @@ export function runMigrations(): void {
     );
   `);
 
+  try {
+    db.exec("ALTER TABLE invite_codes ADD COLUMN memo TEXT;");
+    console.log("ℹ️ invite_codes テーブルに memo カラムを追加しました");
+  } catch (_e) {}
+
+  try {
+    db.exec("ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;");
+    console.log("ℹ️ users テーブルに is_admin カラムを追加しました");
+  } catch (_e) {}
+
   // credentials テーブルの user_id カラム追加マイグレーション（既存DBからの移行）
   try {
     const tableInfo = db.prepare("PRAGMA table_info(credentials)").all() as { name: string }[];
