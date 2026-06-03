@@ -109,11 +109,9 @@ function ensureSubRows(discordId: string): void {
 export function createUser(discordId: string, username: string, password: string): UserRecord {
   const db = getDb();
   const passwordHash = hashPassword(password);
-  db.prepare("INSERT INTO users (discord_id, username, password_hash) VALUES (?, ?, ?)").run(
-    discordId,
-    username,
-    passwordHash,
-  );
+  db.prepare(
+    "INSERT INTO users (discord_id, username, password_hash, is_admin) VALUES (?, ?, ?, 0)",
+  ).run(discordId, username, passwordHash);
   ensureSubRows(discordId);
   const user = getUserByDiscordId(discordId);
   if (!user) throw new Error("Failed to load created user");
