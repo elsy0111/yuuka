@@ -39,7 +39,9 @@
   --text-primary: #fafafa;
   --text-secondary: #b8b8c2;
 
-  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth:
+    background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease,
+    transform 0.15s ease;
   --font-family-sans: "Inter", sans-serif;
   --font-family-mono: "JetBrains Mono", monospace;
 }

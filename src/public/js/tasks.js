@@ -18,6 +18,7 @@ export async function fetchTasksList(
     const data = await apiRequest(`/api/tasks?${params}`);
     if (list._requestId !== requestId) return;
     list._tasks = data.tasks;
+    list._taskCards = new Map();
     renderTasks(list);
   } catch (e) {
     if (list._requestId !== requestId) return;
@@ -33,14 +34,20 @@ function renderTasks(list) {
     if (!query) return true;
     return `${task.title}\n${task.description || ""}`.toLocaleLowerCase().includes(query);
   });
-  list.replaceChildren();
+  const fragment = document.createDocumentFragment();
   const status = `${tasks.length}件`;
   const count = document.getElementById("tasks-count");
   if (count) count.textContent = status;
   if (tasks.length) {
     tasks.forEach((task) => {
-      list.appendChild(makeTaskCard(task));
+      let card = list._taskCards?.get(task.id);
+      if (!card) {
+        card = makeTaskCard(task);
+        list._taskCards?.set(task.id, card);
+      }
+      fragment.appendChild(card);
     });
+    list.replaceChildren(fragment);
     return;
   }
   const empty = document.createElement("div");
@@ -70,7 +77,7 @@ function renderTasks(list) {
     });
     empty.appendChild(clear);
   }
-  list.appendChild(empty);
+  list.replaceChildren(empty);
 }
 
 function setupTaskSearch() {

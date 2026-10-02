@@ -44,7 +44,7 @@ export function loadDataForActiveTab() {
   }
 }
 
-export function switchTab(tabId, recordHistory = false) {
+export function switchTab(tabId, recordHistory = false, forceReload = false) {
   if (!Object.hasOwn(TAB_TITLES, tabId)) return;
   const changed = state.activeTab !== tabId;
   state.activeTab = tabId;
@@ -72,8 +72,14 @@ export function switchTab(tabId, recordHistory = false) {
     window.scrollTo(0, 0);
     titleEl?.focus({ preventScroll: true });
   }
-  loadDataForActiveTab();
+  const loadKey = `${tabId}:${state.activeUserId}`;
+  if (state.activeUserId && (forceReload || changed || !switchTab.loadedTabs.has(loadKey))) {
+    switchTab.loadedTabs.add(loadKey);
+    loadDataForActiveTab();
+  }
 }
+
+switchTab.loadedTabs = new Set();
 
 export function initRouter() {
   document.querySelectorAll("[data-quick-add]").forEach((button) => {

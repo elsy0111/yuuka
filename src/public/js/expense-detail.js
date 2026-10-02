@@ -227,21 +227,11 @@ function renderTable() {
     showTableState("条件に一致する支出がありません。期間や検索語を変えてお試しください。");
     return;
   }
-  sorted.forEach((exp, i) => {
-    const tr = makeDetailRow(exp);
-    tr.style.opacity = "0";
-    tr.style.transform = "translateY(6px)";
-    tr.style.transition = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ? "none"
-      : `opacity 0.18s ease ${Math.min(i, 10) * 18}ms, transform 0.18s ease ${Math.min(i, 10) * 18}ms`;
-    tbody.appendChild(tr);
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => {
-        tr.style.opacity = "1";
-        tr.style.transform = "translateY(0)";
-      }),
-    );
+  const fragment = document.createDocumentFragment();
+  sorted.forEach((exp) => {
+    fragment.appendChild(makeDetailRow(exp));
   });
+  tbody.appendChild(fragment);
 }
 
 function makeDetailRow(exp) {

@@ -40,6 +40,9 @@ function setUsageBar(barId, valId, used, limit) {
 
 let _geminiCurrentModel = "";
 let _geminiCurrentQuota = { rpm: 0, rpd: 0, tpm: 0 };
+let dashboardRequest = null;
+let dashboardRequestUser = "";
+let dashboardRequestVersion = 0;
 
 export async function fetchGeminiUsage() {
   const editButton = document.getElementById("btn-gemini-quota-edit");
@@ -102,10 +105,25 @@ export function initGeminiQuotaEdit() {
 }
 
 export async function fetchDashboardStats() {
+  const userId = state.activeUserId;
+  if (!userId) return;
+  if (dashboardRequest && dashboardRequestUser === userId) return dashboardRequest;
+  const version = ++dashboardRequestVersion;
+  dashboardRequestUser = userId;
+  dashboardRequest = fetchDashboardStatsImpl(userId, version);
+  try {
+    await dashboardRequest;
+  } finally {
+    if (dashboardRequestVersion === version) dashboardRequest = null;
+  }
+}
+
+async function fetchDashboardStatsImpl(userId, version) {
   const dashboard = document.getElementById("tab-dashboard");
   const bubble = document.getElementById("yuuka-bubble-text");
   const retryId = "dashboard-retry";
-  dashboard?.setAttribute("aria-busy", "true");
+  if (!dashboard?.classList.contains("active")) return;
+  dashboard.setAttribute("aria-busy", "true");
   ["stat-pending-tasks", "stat-upcoming-schedules", "stat-expenses-total"].forEach((id) => {
     const element = document.getElementById(id);
     if (element) element.textContent = "—";
@@ -113,10 +131,16 @@ export async function fetchDashboardStats() {
   document.getElementById(retryId)?.remove();
   try {
     const [statusData, expenseData] = await Promise.all([
-      apiRequest(`/api/status?userId=${state.activeUserId}`),
-      apiRequest(`/api/expenses?userId=${state.activeUserId}`),
+      apiRequest(`/api/status?userId=${encodeURIComponent(userId)}`),
+      apiRequest(`/api/expenses?userId=${encodeURIComponent(userId)}`),
     ]);
 
+    if (
+      version !== dashboardRequestVersion ||
+      userId !== state.activeUserId ||
+      !dashboard.classList.contains("active")
+    )
+      return;
     state.pendingTasksCount = statusData.stats.pendingTasks;
     state.totalExpensesVal = expenseData.total;
 
@@ -155,7 +179,7 @@ export async function fetchDashboardStats() {
     );
   } catch (err) {
     console.error("ダッシュボード情報の更新エラー:", err);
-    if (bubble) {
+    if (version === dashboardRequestVersion && userId === state.activeUserId && bubble) {
       bubble.textContent = "ダッシュボード情報を取得できませんでした。";
       const retry = document.createElement("button");
       retry.id = retryId;
@@ -166,7 +190,8 @@ export async function fetchDashboardStats() {
       bubble.parentElement?.appendChild(retry);
     }
   } finally {
-    dashboard?.removeAttribute("aria-busy");
+    if (version === dashboardRequestVersion && userId === state.activeUserId)
+      dashboard?.removeAttribute("aria-busy");
   }
 }
 

@@ -141,7 +141,7 @@ async function onLoginSuccess(data) {
     state.activeUserId = state.userProfiles[0];
   }
   initConfigAfterAuth();
-  switchTab(location.hash.slice(1) || "dashboard");
+  switchTab(location.hash.slice(1) || "dashboard", false, true);
 }
 
 function initInfoPopovers() {
@@ -278,7 +278,7 @@ export async function checkSessionHandshake() {
         state.activeUserId = state.userProfiles[0];
       }
       initConfigAfterAuth();
-      switchTab(location.hash.slice(1) || "dashboard");
+      switchTab(location.hash.slice(1) || "dashboard", false, true);
     }
   } catch {}
 }

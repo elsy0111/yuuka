@@ -10,15 +10,10 @@ import { storage } from "./storage.js";
   const sub = document.getElementById("splash-sub");
   if (title) title.style.color = isBa ? "#1a2740" : "#fafafa";
   if (sub) sub.style.color = isBa ? "#6687a8" : "#a1a1aa";
-  const isPwa =
-    window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  setTimeout(
-    () => {
-      splash.classList.add("hide");
-      splash.addEventListener("animationend", () => splash.remove(), { once: true });
-    },
-    isPwa ? 1800 : 0,
-  );
+  // The OS already supplies a PWA launch screen; never hold the page for a timer.
+  splash.classList.add("hide");
+  splash.addEventListener("animationend", () => splash.remove(), { once: true });
+  setTimeout(() => splash.remove(), 250);
 })();
 
 import { checkSessionHandshake, initAuth } from "./auth.js";
