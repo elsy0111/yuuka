@@ -1,7 +1,6 @@
 import { guardSubmit } from "./ui.js";
 import { renderProfileDropdown } from "./auth.js";
 import { state } from "./state.js";
-import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
 import { fetchCredentialsSettings } from "./credentials.js";
 import { initMemories } from "./memories.js";
 import { confirmModal } from "./modal.js";
@@ -17,7 +16,6 @@ export async function fetchConfigSettings() {
     if (!data.success) return;
 
     renderConfigEntries(grid, data.config);
-    renderCalendarsList(data.config.googleCalendars || [], fetchConfigSettings);
     fetchCredentialsSettings();
 
     const urlInput = document.getElementById("bot-invite-url-input");
@@ -138,8 +136,6 @@ function renderInviteCodes(codes) {
 }
 
 export function initConfig() {
-  initCalendarForm(fetchConfigSettings);
-
   document.getElementById("btn-copy-invite-url")?.addEventListener("click", () => {
     const url = document.getElementById("bot-invite-url-input")?.value;
     if (!url) {
@@ -218,16 +214,7 @@ export function initConfig() {
 }
 
 function renderConfigEntries(grid, config) {
-  const entries = [
-    { label: "データベースファイルのパス (DB Path)", value: config.dbPath },
-    { label: "リマインダーチェック実行Cron (Reminder Cron)", value: config.reminderCron },
-    {
-      label: "GoogleカレンダーID (Google Calendar ID)",
-      value: config.googleCalendarId || "未設定 (カレンダー同期なし)",
-    },
-    { label: "サービスアカウントEmail", value: config.googleServiceAccountEmail },
-    { label: "OAuth2 クライアントID", value: config.googleClientId },
-  ];
+  const entries = [{ label: "データベース", value: config.dbPath }];
 
   entries.forEach(({ label, value }) => {
     const box = document.createElement("div");

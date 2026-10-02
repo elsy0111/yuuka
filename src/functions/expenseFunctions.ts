@@ -13,6 +13,27 @@ export function addExpense(
     purchase_source?: string;
   },
 ): string {
+  const categories = new Set(expenseRepo.CATEGORIES);
+  const validDate =
+    args.date === undefined ||
+    (typeof args.date === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(args.date) &&
+      Number.isFinite(Date.parse(`${args.date}T00:00:00Z`)) &&
+      new Date(`${args.date}T00:00:00Z`).toISOString().slice(0, 10) === args.date);
+  if (
+    !Number.isSafeInteger(args.amount) ||
+    args.amount <= 0 ||
+    typeof args.category !== "string" ||
+    !categories.has(args.category as expenseRepo.Category) ||
+    !validDate ||
+    (args.description !== undefined && typeof args.description !== "string") ||
+    (args.purchase_source !== undefined && typeof args.purchase_source !== "string")
+  ) {
+    return JSON.stringify({
+      success: false,
+      message: "支出の入力が不正です。金額・カテゴリ・日付を確認してください。",
+    });
+  }
   const expense = expenseRepo.addExpense(
     userId,
     args.amount,

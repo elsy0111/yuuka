@@ -5,16 +5,12 @@ import { config } from "../config.js";
 import * as browserFn from "./browserFunctions.js";
 import * as credentialFn from "./credentialFunctions.js";
 import { expenseDeclarations } from "./declarations/expenses.js";
-import { scheduleDeclarations } from "./declarations/schedules.js";
 import { systemDeclarations } from "./declarations/system.js";
-import { taskDeclarations } from "./declarations/tasks.js";
+import { workDeclarations } from "./declarations/work.js";
 import * as expenseFn from "./expenseFunctions.js";
 import * as memoryFn from "./memoryFunctions.js";
 import * as playbookFn from "./playbookFunctions.js";
-import * as scheduleFn from "./scheduleFunctions.js";
-import * as taskFn from "./taskFunctions.js";
 import * as workFn from "./workFunctions.js";
-import { workDeclarations } from "./declarations/work.js";
 
 type FunctionArgs = Record<string, unknown>;
 
@@ -42,13 +38,7 @@ export function isSandboxEnabled(): boolean {
  * 全ての関数定義（静的＋動的ロードされたもの）を返す
  */
 export function getAllFunctionDeclarations(): FunctionDeclaration[] {
-  const allStatic = [
-    ...taskDeclarations,
-    ...scheduleDeclarations,
-    ...expenseDeclarations,
-    ...workDeclarations,
-    ...systemDeclarations,
-  ];
+  const allStatic = [...expenseDeclarations, ...workDeclarations, ...systemDeclarations];
 
   if (!isSandboxEnabled()) {
     // 自己拡張機能が無効な場合、自己拡張関連ツールを除外して返す
@@ -193,45 +183,10 @@ export async function dispatchFunction(
       return workFn.getWorkSummary(userId, args as Parameters<typeof workFn.getWorkSummary>[1]);
     case "delete_work_entry":
       return workFn.deleteWorkEntry(userId, args as Parameters<typeof workFn.deleteWorkEntry>[1]);
-    case "updateSchedule":
-      return scheduleFn.updateSchedule(
-        userId,
-        args as Parameters<typeof scheduleFn.updateSchedule>[1],
-      );
     case "deleteExpense":
       return expenseFn.deleteExpense(userId, args as Parameters<typeof expenseFn.deleteExpense>[1]);
-    case "updateTask":
-      return taskFn.updateTask(userId, args as Parameters<typeof taskFn.updateTask>[1]);
     case "updateExpense":
       return expenseFn.updateExpense(userId, args as Parameters<typeof expenseFn.updateExpense>[1]);
-    // タスク
-    case "addTask":
-      return taskFn.addTask(userId, args as Parameters<typeof taskFn.addTask>[1]);
-    case "listTasks":
-      return taskFn.listTasks(userId, args as Parameters<typeof taskFn.listTasks>[1]);
-    case "completeTask":
-      return taskFn.completeTask(userId, args as Parameters<typeof taskFn.completeTask>[1]);
-    case "reopenTask":
-      return taskFn.reopenTask(userId, args as Parameters<typeof taskFn.reopenTask>[1]);
-    case "deleteTask":
-      return taskFn.deleteTask(userId, args as Parameters<typeof taskFn.deleteTask>[1]);
-
-    // 予定
-    case "addSchedule":
-      return await scheduleFn.addSchedule(
-        userId,
-        args as Parameters<typeof scheduleFn.addSchedule>[1],
-      );
-    case "listSchedules":
-      return await scheduleFn.listSchedules(
-        userId,
-        args as Parameters<typeof scheduleFn.listSchedules>[1],
-      );
-    case "deleteSchedule":
-      return await scheduleFn.deleteSchedule(
-        userId,
-        args as Parameters<typeof scheduleFn.deleteSchedule>[1],
-      );
 
     // 家計
     case "addExpense":

@@ -72,7 +72,7 @@
     font-size: 0.65rem;
     text-align: center;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 0;
     color: var(--color-zinc-muted);
   }
 

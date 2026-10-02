@@ -4,10 +4,9 @@ import { config } from "./config.js";
 import { addBotLog, type BotLogLevel, pruneBotLogs } from "./db/botLogRepo.js";
 import { isRegisteredUser } from "./db/userRepo.js";
 import { resolveApiKeyForUser, resolveModelForUser } from "./gemini/retry.js";
-import { type ChatMessage, processMessage } from "./gemini.js";
 import { buildSystemInstruction } from "./gemini/systemInstruction.js";
+import { type ChatMessage, processMessage } from "./gemini.js";
 import { parseReceipt } from "./services/receiptParser.js";
-import { startReminderService, stopReminderService } from "./services/reminderService.js";
 
 type TypingChannel = Message["channel"] & {
   sendTyping: () => Promise<unknown>;
@@ -129,8 +128,6 @@ client.once("clientReady", (c) => {
   console.log(`✅ デフォルトBot: ${c.user.tag} としてログインしました`);
   logSystemBotEvent("info", "default_bot_ready", { tag: c.user.tag, id: c.user.id });
   setBotStatus(client, "idle");
-  // リマインダーサービスを開始
-  startReminderService();
 });
 
 client.once("clientReady", (c) => {
@@ -140,8 +137,6 @@ client.once("clientReady", (c) => {
     id: c.user.id,
   });
   setBotStatus(client, "idle");
-  // リマインダーサービスを開始
-  startReminderService();
 });
 
 /**
@@ -278,7 +273,7 @@ export function setupMessageListener(botClient: Client, ownerId?: string) {
         response = await processMessage(userId, chatMessage, statusCallback);
       } else {
         response =
-          "何かお手伝いできることはありますか？ 📋\n\nタスク管理、予定管理、家計管理ができますよ！";
+          "何かお手伝いできることはありますか？ 📋\n\n家計管理やブラウザ操作をお手伝いします。";
       }
 
       // 応答が完了したため、タイマーをクリア
@@ -456,6 +451,5 @@ export async function startBot(): Promise<void> {
 }
 
 export function stopBot(): void {
-  stopReminderService();
   client.destroy();
 }

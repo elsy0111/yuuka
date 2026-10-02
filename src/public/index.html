@@ -23,8 +23,6 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/views/dashboard.css">
-  <link rel="stylesheet" href="css/views/tasks.css">
-  <link rel="stylesheet" href="css/views/schedules.css">
   <link rel="stylesheet" href="css/views/expenses.css">
   <link rel="stylesheet" href="css/views/work.css">
   <link rel="stylesheet" href="css/views/config.css">
@@ -33,6 +31,7 @@
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/themes/ba-light.css">
   <link rel="stylesheet" href="css/readability.css">
+  <link rel="stylesheet" href="css/views/finance.css">
 </head>
 <body>
 
@@ -57,7 +56,7 @@
         <h1>SEMINAR ACCOUNTING</h1>
         <p>ミレニアムサイエンススクール 生徒会セミナー会計室</p>
       </div>
-      
+
       <div class="login-tabs">
         <button class="login-tab-btn active" id="btn-tab-login" type="button">ログイン</button>
         <button class="login-tab-btn" id="btn-tab-register" type="button">アカウント作成</button>
@@ -129,7 +128,7 @@
        MAIN APP VIEW
        ========================================== -->
   <div id="app-container" class="hidden">
-    
+
     <!-- Sidebar Navigation (Desktop: Left, Mobile: Bottom Bar) -->
     <aside class="sidebar">
       <div class="sidebar-brand">
@@ -141,15 +140,10 @@
         <a href="#dashboard" class="menu-item active" data-tab="dashboard">
           <span class="material-symbols-outlined menu-icon-symbol">dashboard</span> <span class="menu-text">ホーム</span>
         </a>
-        <a href="#tasks" class="menu-item" data-tab="tasks">
-          <span class="material-symbols-outlined menu-icon-symbol">checklist</span> <span class="menu-text">タスク</span>
-        </a>
-        <a href="#schedules" class="menu-item" data-tab="schedules">
-          <span class="material-symbols-outlined menu-icon-symbol">calendar_today</span> <span class="menu-text">予定</span>
-        </a>
         <a href="#expenses" class="menu-item" data-tab="expenses">
           <span class="material-symbols-outlined menu-icon-symbol">payments</span> <span class="menu-text">家計</span>
         </a>
+        <a href="#work" class="menu-item" data-tab="work"><span class="material-symbols-outlined menu-icon-symbol">work</span> <span class="menu-text">働いた分</span></a>
         <a href="#config" class="menu-item" data-tab="config">
           <span class="material-symbols-outlined menu-icon-symbol">settings</span> <span class="menu-text">設定</span>
         </a>
@@ -161,14 +155,14 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-      
+
       <!-- Top Header (Desktop: Row, Mobile: Stacking Column) -->
       <header class="top-header">
         <div class="header-title">
           <h2 id="current-tab-title" tabindex="-1">ダッシュボード</h2>
           <p id="header-subtitle">ミレニアムの計算機、冷徹な算術師が先生をサポートします。</p>
         </div>
-        
+
         <!-- Interactive Controls (Switch Profiles & Logout) -->
         <div class="header-controls">
           <button type="button" class="user-profile-badge" id="btn-user-profile">
@@ -189,19 +183,13 @@
              1. DASHBOARD VIEW
              ========================================== -->
         <section id="tab-dashboard" class="tab-view active">
-          <div class="dashboard-quick-actions" aria-label="すぐに追加">
-            <button type="button" class="btn btn-primary" data-quick-add="task">＋ タスク追加</button>
-            <button type="button" class="btn btn-secondary" data-quick-add="schedule">＋ 予定追加</button>
-            <button type="button" class="btn btn-secondary" data-quick-add="expense">＋ 支出を記録</button>
-          </div>
-          
-          <!-- Welcome Row with Yuuka speech bubble (Matte Card) -->
+          <div class="dashboard-quick-actions"><button class="btn btn-primary" data-quick-add="expense">＋ 支出を記録</button><button class="btn btn-secondary" data-open-tab="work">働いた分を記録</button></div>
           <div class="welcome-card card">
             <div class="assistant-avatar-container">
               <img src="materials/yuka.webp" alt="早瀬ユウカ" class="avatar-img">
               <div class="avatar-badge">セミナー</div>
             </div>
-            
+
             <div class="speech-bubble-container">
               <div class="character-name">早瀬ユウカ</div>
               <div class="speech-bubble">
@@ -209,199 +197,30 @@
               </div>
             </div>
           </div>
-
-          <!-- Price Ticker Stats Cards Grid (Chic Matte Style) -->
-          <div class="stats-grid">
-            
-            <!-- Card 1: Tasks -->
-            <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="stat-tasks-badge-trend">未完了</div>
-              <div class="stat-card-header">
-                <span class="stat-label">未完了タスク</span>
-              </div>
-              <div class="stat-value" id="stat-pending-tasks">0</div>
-              <div class="stat-sparkline" id="tasks-priority-bar-chart" style="display: flex; align-items: flex-end; gap: 8px; height: 28px; margin-bottom: 8px;">
-                <!-- Dynamically generated mini bar chart representing priorities -->
-              </div>
-              <div class="stat-footer-text">後で困らないよう、早めに処理を！</div>
+          <div class="card finance-overview">
+            <div class="column-header"><h3>収支の比較</h3><label for="finance-month" class="finance-month-label">月 <input id="finance-month" type="month" min="1000-01" max="9999-12" required></label></div>
+            <div class="finance-summary" aria-live="polite">
+              <div><span>稼いだ分（控除前）</span><strong id="stat-earned-total">—</strong></div>
+              <div><span>使った分</span><strong id="stat-expenses-total">—</strong></div>
+              <div><span>差額</span><strong id="stat-net-total">—</strong></div>
             </div>
-
-            <!-- Card 2: Schedules -->
-            <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="stat-schedules-badge-trend">7日間</div>
-              <div class="stat-card-header">
-                <span class="stat-label">今後7日の予定</span>
-              </div>
-              <div class="stat-value" id="stat-upcoming-schedules">0</div>
-              <div class="stat-sparkline">
-                <svg class="sparkline-svg" viewBox="0 0 100 20">
-                  <path id="schedules-sparkline-path" d="" fill="none" stroke="#e4e4e7" stroke-width="1.5"/>
-                </svg>
-              </div>
-              <div class="stat-footer-text">時間は有限です。計画的な予定を。</div>
-            </div>
-
-            <!-- Card 3: Expenses -->
-            <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="expense-trend-badge">今月</div>
-              <div class="stat-card-header">
-                <span class="stat-label">今月の支出</span>
-              </div>
-              <div class="stat-value" id="stat-expenses-total">¥0</div>
-              <div class="stat-sparkline">
-                <svg class="sparkline-svg" viewBox="0 0 100 20">
-                  <path id="expenses-sparkline-path" d="" fill="none" stroke="#fafafa" stroke-width="1.5"/>
-                </svg>
-              </div>
-              <div class="stat-footer-text">計算の狂いは、即ち家計の乱れです！</div>
-            </div>
-
+            <div class="finance-legend"><span class="finance-earned">■ 稼いだ分</span><span class="finance-spent">■ 使った分</span><span>日別・円</span></div>
+            <svg id="finance-chart" viewBox="0 0 600 230" role="img" tabindex="0" aria-label="日別の稼いだ分と使った分。左右キーで日を選択"></svg>
+            <output id="finance-day-summary" class="finance-day-summary" aria-live="polite">グラフを押すと、その日の金額を確認できます。</output>
+            <p id="finance-error" role="status"></p><button id="finance-retry" class="btn btn-secondary" hidden>再試行</button>
           </div>
-
-          <!-- Gemini API Rate Limit Card -->
-          <!-- Dashboard Charts / High-tech Analytical Columns -->
-          <div class="dashboard-columns">
-            
-            <!-- Cryptographic Price Chart Style Line Chart (Matte Style) -->
-            <div class="dashboard-column card">
-              <div class="column-header">
-                <h3><span class="material-symbols-outlined header-icon-symbol">trending_up</span>支出の推移</h3>
-                <span class="hud-tag">LIVE</span>
-              </div>
-              <div class="chart-main-wrapper">
-                <div class="chart-y-axis" id="dashboard-trend-y-axis">
-                  <span>50k</span>
-                  <span>30k</span>
-                  <span>10k</span>
-                  <span>0k</span>
-                </div>
-                <div class="chart-body">
-                  <svg id="dashboard-trend-chart" class="trend-chart-svg" viewBox="0 0 400 150">
-                    <!-- Grid Lines (y=15,55,95,135 → value=niceMax,2*step,step,0) -->
-                    <line x1="0" y1="15" x2="400" y2="15" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="55" x2="400" y2="55" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="95" x2="400" y2="95" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    <line x1="0" y1="135" x2="400" y2="135" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
-                    
-                    <!-- Matte solid lines with no gradient area -->
-                    <path id="trend-area-path" d="" fill="transparent"/>
-                    <path id="trend-line-path" d="" fill="none" stroke="#fafafa" stroke-width="2.2" stroke-linecap="round"/>
-                    
-                    <!-- Solid white dots with dark outline -->
-                    <circle cx="80" cy="120" r="4.5" fill="#fafafa" stroke="#18181b" stroke-width="1.5"/>
-                    <circle cx="160" cy="110" r="4.5" fill="#fafafa" stroke="#18181b" stroke-width="1.5"/>
-                    <circle cx="240" cy="90" r="4.5" fill="#fafafa" stroke="#18181b" stroke-width="1.5"/>
-                    <circle cx="320" cy="60" r="4.5" fill="#fafafa" stroke="#18181b" stroke-width="1.5"/>
-                  </svg>
-                  <div class="chart-x-axis">
-                    <span>5日前</span>
-                    <span>昨日</span>
-                    <span>今日</span>
-                  </div>
-                </div>
-              </div>
-              <div class="chart-sub-details">
-                <div class="detail-item">
-                  <span class="det-label">今日の使用量</span>
-                  <span class="det-value" id="dashboard-today-expense">¥0</span>
-                </div>
-                <div class="detail-item">
-                  <span class="det-label">7日平均</span>
-                  <span class="det-value" id="dashboard-average-expense">¥0</span>
-                </div>
-                <div class="detail-item">
-                  <span class="det-label">7日合計</span>
-                  <span class="det-value" id="dashboard-week-total">¥0</span>
-                </div>
-                <div class="detail-item">
-                  <span class="det-label">主要カテゴリ</span>
-                  <span class="det-value" id="dashboard-highest-category">なし</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Category Breakdown with Matte Rings -->
-            <div class="dashboard-column card">
-              <div class="column-header">
-                <h3><span class="material-symbols-outlined header-icon-symbol">pie_chart</span>カテゴリ別の支出</h3>
-              </div>
-              <div class="chart-container-flex">
-                <div class="pie-chart-wrapper">
-                  <svg id="dashboard-donut-chart" class="donut-chart" viewBox="0 0 100 100">
-                    <circle class="donut-bg-ring" cx="50" cy="50" r="40" fill="transparent" stroke-width="9"/>
-                  </svg>
-                  <div class="chart-center-label">
-                    <div id="chart-center-percentage">0%</div>
-                    <div class="chart-center-sub">娯楽比率</div>
-                  </div>
-                </div>
-                <div class="chart-legend-wrapper">
-                  <div class="chart-legend" id="dashboard-category-legend">
-                    <!-- Generated dynamically -->
-                  </div>
-                  <div class="chart-legend-total">
-                    合計: <span id="dashboard-category-total">¥0</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Urgent Schedules & ToDos HUD Column -->
-          <div class="full-width-urgent-row card">
-            <div class="column-header">
-              <h3><span class="material-symbols-outlined header-icon-symbol">bolt</span>今日の予定と未完了タスク</h3>
-              <span class="hud-pulse-dot"></span>
-            </div>
-            <div class="dashboard-list" id="dashboard-urgent-list">
-              <!-- Generated dynamically -->
-            </div>
-          </div>
-
+          <div class="card finance-categories"><div class="column-header"><h3>使った分の内訳</h3></div><div id="dashboard-category-bars"></div></div>
         </section>
 
         <!-- ==========================================
              2. TASKS VIEW
              ========================================== -->
-        <section id="tab-tasks" class="tab-view">
-          <div class="view-actions-card card">
-            <div class="task-toolbar-top">
-              <label class="task-search-wrap" for="task-search">
-                <input id="task-search" type="search" placeholder="タイトル・説明を検索" aria-label="タスクを検索">
-              </label>
-              <button id="btn-new-task" class="btn btn-primary">＋ タスク追加</button>
-            </div>
-            <div class="filters-group" role="group" aria-label="タスクの状態">
-              <button class="btn btn-filter active" data-filter="all" aria-pressed="true">全て</button>
-              <button class="btn btn-filter" data-filter="pending" aria-pressed="false">未完了</button>
-              <button class="btn btn-filter" data-filter="done" aria-pressed="false">完了済み</button>
-              <span id="tasks-count" class="tasks-count" aria-live="polite">0件</span>
-            </div>
-          </div>
-          
-          <div class="list-container" id="tasks-list">
-            <!-- Generated dynamically -->
-          </div>
-        </section>
+
 
         <!-- ==========================================
              3. SCHEDULES VIEW
              ========================================== -->
-        <section id="tab-schedules" class="tab-view">
-          <div class="view-actions-card card">
-            <div class="filters-group">
-              <span class="label-text">表示期間:</span>
-              <button class="btn btn-filter active" data-days="7">直近7日間</button>
-              <button class="btn btn-filter" data-days="30">直近30日間</button>
-            </div>
-            <button id="btn-new-schedule" class="btn btn-primary">＋ 予定追加</button>
-          </div>
 
-          <div class="list-container" id="schedules-list">
-            <!-- Generated dynamically -->
-          </div>
-        </section>
 
         <!-- ==========================================
              4. EXPENSES VIEW
@@ -463,34 +282,7 @@
             </div>
           </div>
 
-          <section id="work-card" class="card work-card" aria-labelledby="work-title">
-            <div class="column-header"><h3 id="work-title">働いた分</h3><span class="hud-tag">控除前</span></div>
-            <p class="work-hint">時給を保存すると、働いた時間だけで収入を計算できます。</p>
-            <div class="work-month-nav" aria-label="勤務記録の月">
-              <button id="work-month-prev" type="button" class="btn btn-secondary" aria-label="前の月">‹</button>
-              <label for="work-month" class="sr-only">表示する月</label><input id="work-month" type="month" min="1000-01" max="9999-12" required>
-              <button id="work-month-next" type="button" class="btn btn-secondary" aria-label="次の月">›</button>
-              <button id="work-month-today" type="button" class="btn btn-secondary">今月</button>
-            </div>
-            <p id="work-summary" class="work-summary" aria-live="polite">読み込み中…</p>
-            <form id="work-rate-form" class="work-form">
-              <div class="form-group"><label for="work-hourly-rate">時給（円）</label><input id="work-hourly-rate" type="number" min="1" max="10000000" step="1" required placeholder="1200"></div>
-              <button type="submit" class="btn btn-secondary">時給を保存</button>
-            </form>
-            <p id="work-rate-hint" class="work-hint"></p>
-            <div class="work-form-heading"><h4 id="work-form-title">勤務を追加</h4><button id="work-edit-cancel" type="button" class="btn btn-secondary btn-sm" hidden>編集をやめる</button></div>
-            <form id="work-entry-form" class="work-form">
-              <div class="form-group"><label for="work-hours">働いた時間</label><div class="work-duration"><input id="work-hours" aria-label="時間" type="number" inputmode="decimal" min="0" max="24" step="any" placeholder="0"><span>時間</span><input id="work-minutes" aria-label="分" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="0"><span>分</span></div></div>
-              <div class="form-group"><label for="work-date">日付</label><input id="work-date" type="date" required></div>
-              <div class="work-quick-times" aria-label="労働時間を選択"><button type="button" class="btn btn-secondary btn-sm" data-work-hours="1">1時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="3">3時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="6">6時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="8">8時間</button></div>
-              <div class="form-group work-description-group"><label for="work-description">メモ（任意）</label><input id="work-description" type="text" maxlength="500" placeholder="アルバイトなど"></div>
-              <p id="work-preview" class="work-preview" aria-live="polite"></p>
-              <button id="work-entry-submit" type="submit" class="btn btn-primary" disabled>働いた時間を記録</button>
-            </form>
-            <div id="work-error" class="work-hint" role="status"></div>
-            <button id="work-retry" type="button" class="btn btn-secondary btn-sm" hidden>再試行</button>
-            <div id="work-entry-list" class="work-entry-list"></div>
-          </section>
+
           <div class="expense-daily-card card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">monitoring</span>日単位の消費量</h3>
@@ -503,7 +295,7 @@
 
           <!-- Actions: receipt dropzone & manual add -->
           <div class="expense-actions-columns">
-            
+
             <!-- Receipt Scanning Card -->
             <div class="action-column card">
               <div class="column-header">
@@ -511,17 +303,17 @@
                 <span class="hud-tag">AI</span>
               </div>
               <p class="description-text">レシート画像をドラッグ＆ドロップするか、ファイルを選択してください。ユウカが自動的に分類・登録を行います。</p>
-              
+
               <!-- Drag and drop zone -->
               <div id="receipt-dropzone" class="dropzone">
                 <div class="dropzone-content">
                   <span class="material-symbols-outlined dropzone-icon-symbol">cloud_upload</span>
                   <p class="dropzone-title">
                     <span>画像をドロップ、</span>
-                    <span>または<span class="text-highlight">ブラウズ</span></span>
+                    <span>または<span class="text-highlight">画像を選択</span></span>
                   </p>
-                  <span class="dropzone-sub">PNG, JPEG / 最大 5MB</span>
-                  <input type="file" id="receipt-file-input" accept="image/*" class="hidden">
+                  <span class="dropzone-sub">PNG, JPEG, WebP / 最大 7MB</span>
+                  <input type="file" id="receipt-file-input" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" class="hidden">
                 </div>
               </div>
 
@@ -580,18 +372,18 @@
           <!-- Recent Expenses List Table -->
           <div class="expense-table-card card">
             <div class="column-header">
-              <h3>直近の支出履歴</h3>
+              <h3>直近の支出（5件）</h3>
               <button id="btn-expense-detail" class="btn btn-secondary btn-sm" type="button">
                 <span class="material-symbols-outlined btn-icon-symbol">open_in_full</span>
                 詳細一覧
               </button>
             </div>
             <div class="table-responsive">
-              <table class="expense-table mobile-card-table">
+              <table class="expense-table compact-expense-table">
                 <thead>
                   <tr>
                     <th>日付</th>
-                    <th>カテゴリー</th>
+                    <th>分類</th>
                     <th>詳細</th>
                     <th>金額</th>
                   </tr>
@@ -608,6 +400,35 @@
         <!-- ==========================================
              5. CONFIG VIEW
              ========================================== -->
+        <section id="tab-work" class="tab-view"><section id="work-card" class="card work-card" aria-labelledby="work-title">
+            <div class="column-header"><h3 id="work-title">働いた分</h3><span class="hud-tag">控除前</span></div>
+            <p class="work-hint">時給を保存すると、働いた時間だけで収入を計算できます。</p>
+            <div class="work-month-nav" aria-label="勤務記録の月">
+              <button id="work-month-prev" type="button" class="btn btn-secondary" aria-label="前の月">‹</button>
+              <label for="work-month" class="sr-only">表示する月</label><input id="work-month" type="month" min="1000-01" max="9999-12" required>
+              <button id="work-month-next" type="button" class="btn btn-secondary" aria-label="次の月">›</button>
+              <button id="work-month-today" type="button" class="btn btn-secondary">今月</button>
+            </div>
+            <p id="work-summary" class="work-summary" aria-live="polite">読み込み中…</p>
+            <form id="work-rate-form" class="work-form">
+              <div class="form-group"><label for="work-hourly-rate">時給（円）</label><input id="work-hourly-rate" type="number" min="1" max="10000000" step="1" required placeholder="1200"></div>
+              <button type="submit" class="btn btn-secondary">時給を保存</button>
+            </form>
+            <p id="work-rate-hint" class="work-hint"></p>
+            <div class="work-form-heading"><h4 id="work-form-title">勤務を追加</h4><button id="work-edit-cancel" type="button" class="btn btn-secondary btn-sm" hidden>編集をやめる</button></div>
+            <form id="work-entry-form" class="work-form">
+              <div class="form-group"><label for="work-hours">働いた時間</label><div class="work-duration"><input id="work-hours" aria-label="時間" type="number" inputmode="decimal" min="0" max="24" step="any" placeholder="0"><span>時間</span><input id="work-minutes" aria-label="分" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="0"><span>分</span></div></div>
+              <div class="form-group"><label for="work-date">日付</label><input id="work-date" type="date" required></div>
+              <div class="work-quick-times" aria-label="労働時間を選択"><button type="button" class="btn btn-secondary btn-sm" data-work-hours="1">1時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="3">3時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="6">6時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="8">8時間</button></div>
+              <div class="form-group work-description-group"><label for="work-description">メモ（任意）</label><input id="work-description" type="text" maxlength="500" placeholder="アルバイトなど"></div>
+              <p id="work-preview" class="work-preview" aria-live="polite"></p>
+              <button id="work-entry-submit" type="submit" class="btn btn-primary" disabled>働いた時間を記録</button>
+            </form>
+            <div id="work-error" class="work-hint" role="status"></div>
+            <button id="work-retry" type="button" class="btn btn-secondary btn-sm" hidden>再試行</button>
+            <div id="work-entry-list" class="work-entry-list"></div>
+          </section></section>
+
         <section id="tab-config" class="tab-view">
 
 
@@ -682,7 +503,7 @@
               <h3><span class="material-symbols-outlined header-icon-symbol">google</span>Google アカウント連携 (OAuth2)</h3>
             </div>
             <p class="description-text">Google カレンダーの同期や Google Drive へのデータバックアップを行うために、システム共通のセキュアな認証基盤を利用して Google アカウントとの連携を行います。</p>
-            
+
             <div style="margin-top: 18px; display: flex; justify-content: center;">
               <button type="button" id="btn-google-auth" class="btn btn-primary btn-block" style="align-items: center; justify-content: center; gap: 8px; padding: 12px;">
                 <span class="material-symbols-outlined">link</span> Google 連携認証を開始する
@@ -695,7 +516,7 @@
               <h3>システム構成ステータス (`config.yaml`)</h3>
             </div>
             <p class="description-text">現在ロードされているサーバー設定です。機密情報は自動的に安全にマスクされています。</p>
-            
+
             <div class="config-items-grid" id="config-settings-grid">
               <!-- Generated dynamically -->
             </div>
@@ -708,7 +529,7 @@
               <span class="hud-tag">Beta</span>
             </div>
             <p class="description-text">データベースや設定ファイル、プレイブックのデータをGoogle Driveへ安全にバックアップします。</p>
-            
+
             <form id="backup-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
               <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
                 <input type="checkbox" id="backup-enable" style="width: 20px; height: 20px;">
@@ -728,24 +549,7 @@
               </div>
             </form>
           </div>
-          <!-- Google Calendars Management Card (Matte Flat Style) -->
-          <div class="config-card card" style="margin-top: 24px;">
-            <div class="column-header">
-              <h3><span class="material-symbols-outlined header-icon-symbol">calendar_today</span>Google連携カレンダー管理</h3>
-            </div>
-            <p class="description-text">同期対象のGoogleカレンダーIDを追加または削除できます。変更内容は `config.yaml` に即時反映されます。</p>
-            
-            <!-- Calendar IDs List -->
-            <div id="config-calendars-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px; margin-bottom: 20px;">
-              <!-- Generated dynamically -->
-            </div>
-            
-            <!-- Add Calendar Form -->
-            <form id="config-calendar-form" style="display: flex; gap: 12px; margin-top: 16px;">
-              <input type="text" id="config-new-calendar-id" required placeholder="example@group.calendar.google.com" style="flex-grow: 1;">
-              <button type="submit" class="btn btn-primary" style="white-space: nowrap;">追加</button>
-            </form>
-          </div>
+
 
           <!-- AI Credentials Management Card (Matte Flat Style) -->
           <div class="config-card card" style="margin-top: 24px;">
@@ -754,7 +558,7 @@
               <span class="hud-tag">SECURE</span>
             </div>
             <p class="description-text">AIエージェント（ユウカ）が自動ブラウジング等でログインするために使用するユーザー名とパスワードを安全に登録します。パスワードはAES-256-GCMにより強固に暗号化され、必要な時にのみオンデマンドで復号されます。</p>
-            
+
             <!-- Credentials List Table -->
             <div class="table-responsive" style="margin-top: 16px;">
               <table class="expense-table mobile-card-table" style="width: 100%; border-collapse: collapse;">
@@ -791,8 +595,6 @@
               <select id="memory-filter-module" class="filter-select">
                 <option value="">すべて</option>
                 <option value="expenses">家計</option>
-                <option value="schedules">予定</option>
-                <option value="tasks">タスク</option>
                 <option value="general">汎用</option>
               </select>
               <button id="btn-memory-reload" class="btn btn-secondary btn-sm">更新</button>
@@ -807,8 +609,6 @@
               <select id="memory-new-module" class="filter-select">
                 <option value="general">汎用</option>
                 <option value="expenses">家計</option>
-                <option value="schedules">予定</option>
-                <option value="tasks">タスク</option>
               </select>
               <button type="submit" class="btn btn-primary" style="white-space:nowrap;">追加</button>
             </form>
@@ -1039,79 +839,10 @@
   </div>
 
   <!-- Add Task Modal -->
-  <div id="modal-task" class="modal">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h3>新規タスクの追加</h3>
-        <button class="btn-close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form id="task-form">
-        <div class="form-group">
-          <label for="task-title">タイトル *</label>
-          <input type="text" id="task-title" required placeholder="タスク of Seminar">
-        </div>
-        <div class="form-group">
-          <label for="task-description">詳細説明</label>
-          <textarea id="task-description" placeholder="タスクのメモ書き"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="task-due">期限日</label>
-            <input type="date" id="task-due">
-          </div>
-          <div class="form-group">
-            <label for="task-priority">優先度</label>
-            <select id="task-priority">
-              <option value="0">低</option>
-              <option value="1">中</option>
-              <option value="2">高</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">タスク登録</button>
-      </form>
-    </div>
-  </div>
+
 
   <!-- Edit Task Modal -->
-  <div id="modal-task-edit" class="modal">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h3>タスクの編集</h3>
-        <button class="btn-close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form id="task-edit-form">
-        <input type="hidden" id="task-edit-id">
-        <div class="form-group">
-          <label for="task-edit-title">タイトル *</label>
-          <input type="text" id="task-edit-title" required>
-        </div>
-        <div class="form-group">
-          <label for="task-edit-description">詳細説明</label>
-          <textarea id="task-edit-description"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="task-edit-due">期限日</label>
-            <input type="date" id="task-edit-due">
-          </div>
-          <div class="form-group">
-            <label for="task-edit-priority">優先度</label>
-            <select id="task-edit-priority">
-              <option value="0">低</option>
-              <option value="1">中</option>
-              <option value="2">高</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">更新する</button>
-      </form>
-    </div>
-  </div>
+
 
   <!-- Edit Expense Modal -->
   <div id="modal-expense-edit" class="modal">
@@ -1169,79 +900,10 @@
   </div>
 
   <!-- Add Schedule Modal -->
-  <div id="modal-schedule" class="modal">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h3>新規予定の登録</h3>
-        <button class="btn-close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form id="schedule-form">
-        <div class="form-group">
-          <label for="sched-title">タイトル *</label>
-          <input type="text" id="sched-title" required placeholder="予定の件名">
-        </div>
-        <div class="form-group">
-          <label for="sched-description">予定詳細</label>
-          <textarea id="sched-description" placeholder="予定のメモ"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sched-start">開始日時 *</label>
-            <input type="datetime-local" id="sched-start" required>
-          </div>
-          <div class="form-group">
-            <label for="sched-end">終了日時</label>
-            <input type="datetime-local" id="sched-end">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="sched-remind">何分前にリマインドするか</label>
-          <input type="number" id="sched-remind" value="30" placeholder="30">
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">予定登録</button>
-      </form>
-    </div>
-  </div>
+
 
   <!-- Edit Schedule Modal -->
-  <div id="modal-schedule-edit" class="modal">
-    <div class="modal-content card">
-      <div class="modal-header">
-        <h3>予定の編集</h3>
-        <button class="btn-close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form id="schedule-edit-form">
-        <input type="hidden" id="sched-edit-id">
-        <div class="form-group">
-          <label for="sched-edit-title">タイトル *</label>
-          <input type="text" id="sched-edit-title" required>
-        </div>
-        <div class="form-group">
-          <label for="sched-edit-description">予定詳細</label>
-          <textarea id="sched-edit-description"></textarea>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sched-edit-start">開始日時 *</label>
-            <input type="datetime-local" id="sched-edit-start" required>
-          </div>
-          <div class="form-group">
-            <label for="sched-edit-end">終了日時</label>
-            <input type="datetime-local" id="sched-edit-end">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="sched-edit-remind">何分前にリマインドするか</label>
-          <input type="number" id="sched-edit-remind" value="30">
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">更新する</button>
-      </form>
-    </div>
-  </div>
+
 
   <!-- AI Receipt Result Modal -->
   <div id="modal-receipt-result" class="modal">

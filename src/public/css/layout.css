@@ -53,7 +53,7 @@
   align-items: center;
   gap: 12px;
   padding: 11px 16px;
-  border-radius: var(--radius);
+  border-radius: 0;
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -136,7 +136,7 @@
   background-color: var(--card-matte);
   border: 1px solid var(--border-matte);
   padding: 8px 12px;
-  border-radius: var(--radius);
+  border-radius: 0;
 }
 
 .profile-switch label {
@@ -154,7 +154,7 @@
   background-color: var(--card-matte);
   border: 1px solid var(--border-matte);
   padding: 6px 12px;
-  border-radius: var(--radius);
+  border-radius: 0;
   font-size: 0.8rem;
   color: var(--text-primary);
   cursor: pointer;
@@ -208,7 +208,7 @@
   background-color: var(--bg-primary);
   border: 1px solid var(--border-matte);
   padding: 4px 8px;
-  border-radius: var(--radius);
+  border-radius: 0;
   font-size: 0.8rem;
   outline: none;
   cursor: pointer;
@@ -221,13 +221,13 @@
   gap: 8px;
   border: 1px solid var(--border-matte);
   padding: 6px 12px;
-  border-radius: 50px;
+  border-radius: 0;
 }
 
 .status-indicator {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: var(--color-zinc-light);
 }
 

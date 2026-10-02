@@ -74,7 +74,7 @@ async function workerContext(fetch) {
     fetch,
     caches: {
       match: async () => new Response("old"),
-      keys: async () => ["other-app", "yuuka-v2", "yuuka-v3"],
+      keys: async () => ["other-app", "yuuka-v2", "yuuka-v3", "yuuka-v4"],
       delete: async (key) => deleted.push(key),
       open: async () => ({ put() {} }),
     },
@@ -129,7 +129,7 @@ test("service worker leaves API requests and other applications' caches alone", 
     },
   });
   await activated;
-  assert.deepEqual(deleted, ["yuuka-v2"]);
+  assert.deepEqual(deleted, ["yuuka-v2", "yuuka-v3"]);
 });
 
 test("blocked local storage does not prevent using the app", async () => {

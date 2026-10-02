@@ -3,16 +3,12 @@ import { fetchConfigSettings } from "./config.js";
 import { fetchDashboardStats, fetchGeminiUsage } from "./dashboard.js";
 import { fetchExpensesList } from "./expenses.js";
 import { fetchMemories } from "./memories.js";
-import { fetchSchedulesList } from "./schedules.js";
 import { state } from "./state.js";
-import { getModal, openModal } from "./modal.js";
-import { fetchTasksList } from "./tasks.js";
 import { fetchWorkSummary } from "./work.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",
-  tasks: "タスク管理（ToDo）",
-  schedules: "予定スケジュール（Googleカレンダー同期）",
+  work: "働いた分",
   expenses: "家計管理",
   config: "システム設定情報",
   "bot-logs": "開発者",
@@ -23,15 +19,11 @@ export function loadDataForActiveTab() {
     case "dashboard":
       fetchDashboardStats();
       break;
-    case "tasks":
-      fetchTasksList();
-      break;
-    case "schedules":
-      fetchSchedulesList();
+    case "work":
+      fetchWorkSummary();
       break;
     case "expenses":
       fetchExpensesList();
-      fetchWorkSummary();
       break;
     case "config":
       fetchConfigSettings();
@@ -45,7 +37,7 @@ export function loadDataForActiveTab() {
 }
 
 export function switchTab(tabId, recordHistory = false, forceReload = false) {
-  if (!Object.hasOwn(TAB_TITLES, tabId)) return;
+  if (!Object.hasOwn(TAB_TITLES, tabId)) tabId = "dashboard";
   const changed = state.activeTab !== tabId;
   state.activeTab = tabId;
   if (location.hash !== `#${tabId}`) {
@@ -90,11 +82,11 @@ export function initRouter() {
         const input = document.getElementById("exp-amount");
         input?.scrollIntoView({ block: "center" });
         input?.focus({ preventScroll: true });
-      } else {
-        switchTab(kind === "task" ? "tasks" : "schedules", true);
-        openModal(getModal(kind));
       }
     });
+  });
+  document.querySelectorAll("[data-open-tab]").forEach((button) => {
+    button.addEventListener("click", () => switchTab(button.dataset.openTab, true));
   });
   window.addEventListener("hashchange", () => switchTab(location.hash.slice(1)));
   document.querySelectorAll(".menu-item").forEach((item) => {

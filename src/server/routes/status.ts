@@ -1,7 +1,7 @@
 import { getMainBotInviteUrl } from "../../bot.js";
 import { config } from "../../config.js";
 import { getDb } from "../../db/database.js";
-import { getUserByDiscordId, getUserGoogleConfig } from "../../db/userRepo.js";
+import { getUserByDiscordId } from "../../db/userRepo.js";
 import { sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
@@ -27,38 +27,9 @@ export const handleStatus: RouteHandler = async ({ req, res, pathname, method })
     const db = getDb();
     const discordId = getSessionDiscordId(req);
     const userId = discordId || "sensei_default";
-    const taskCount = db
-      .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ?")
-      .get(userId) as { count: number };
-    const pendingTaskCount = db
-      .prepare("SELECT COUNT(*) as count FROM tasks WHERE user_id = ? AND status = 'pending'")
-      .get(userId) as { count: number };
-    const scheduleCount = db
-      .prepare("SELECT COUNT(*) as count FROM schedules WHERE user_id = ?")
-      .get(userId) as { count: number };
     const expenseCount = db
       .prepare("SELECT COUNT(*) as count FROM expenses WHERE user_id = ?")
       .get(userId) as { count: number };
-    const priorityRows = db
-      .prepare(`
-      SELECT priority, COUNT(*) as count
-      FROM tasks
-      WHERE user_id = ? AND status = 'pending'
-      GROUP BY priority
-    `)
-      .all(userId) as { priority: number; count: number }[];
-
-    const priorityMap: Record<number, number> = { 0: 0, 1: 0, 2: 0 };
-    for (const row of priorityRows) priorityMap[row.priority] = row.count;
-
-    const scheduleTrend = Array.from({ length: 5 }, (_, i) => {
-      const dateStr = new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      return countForDate(
-        "SELECT COUNT(*) as count FROM schedules WHERE user_id = ? AND date(start_at) = date(?)",
-        userId,
-        dateStr,
-      );
-    });
     const expenseTrend = Array.from({ length: 5 }, (_, idx) => {
       const dateStr = new Date(Date.now() - (4 - idx) * 24 * 60 * 60 * 1000)
         .toISOString()
@@ -73,23 +44,13 @@ export const handleStatus: RouteHandler = async ({ req, res, pathname, method })
     sendJson(res, 200, {
       success: true,
       stats: {
-        tasks: taskCount.count,
-        pendingTasks: pendingTaskCount.count,
-        pendingPriorities: priorityMap,
-        schedules: scheduleCount.count,
-        scheduleTrend,
         expenses: expenseCount.count,
         expenseTrend,
       },
       config: {
         dbPath: config.dbPath,
-        reminderCron: config.reminderCron,
-        googleCalendarId: config.googleCalendarId,
         googleServiceAccountEmail: mask(config.googleServiceAccountEmail),
         googleClientId: mask(config.googleClientId),
-        googleCalendars: (discordId ? (getUserGoogleConfig(discordId)?.calendars ?? []) : []).map(
-          (id) => ({ id, summary: id }),
-        ),
         botInviteUrl: getMainBotInviteUrl(),
       },
     });

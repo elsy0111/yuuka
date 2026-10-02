@@ -1,18 +1,18 @@
 /* Compact, readable surfaces and mobile layouts without clipped columns. */
 :root {
-  --bg-primary: #10151d;
-  --bg-secondary: #141c27;
-  --bg-sidebar: #111923;
-  --card-matte: #192330;
-  --card-matte-hover: #202e3e;
-  --border-matte: #354253;
-  --control-bg: #111a25;
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-sidebar: #09090b;
+  --card-matte: #18181b;
+  --card-matte-hover: #27272a;
+  --border-matte: #3f3f46;
+  --control-bg: #09090b;
   --control-placeholder: #a0afc1;
   --control-border: #405169;
   --text-secondary: #c1ccda;
   --color-zinc-muted: #afbed0;
-  --radius: 10px;
-  --radius-lg: 14px;
+  --radius: 0;
+  --radius-lg: 0;
   --text-error: var(--color-red);
   --text-success: var(--color-green);
   --font-family-sans: "Inter", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
@@ -29,8 +29,8 @@
   --control-border: #b7cadc;
   --text-secondary: #486074;
   --color-zinc-muted: #52697c;
-  --radius: 10px;
-  --radius-lg: 14px;
+  --radius: 0;
+  --radius-lg: 0;
   --accent-cyan: #087d99;
   --border-focus: #087d99;
   --control-placeholder: #526d80;
@@ -51,7 +51,7 @@ body {
 }
 .card,
 .card-item {
-  box-shadow: 0 3px 12px rgb(0 0 0 / 8%);
+  box-shadow: none;
 }
 .column-header {
   gap: 10px;
@@ -429,7 +429,7 @@ body {
   }
   .sidebar .menu-item {
     min-height: 48px;
-    border-radius: 8px;
+    border-radius: 0;
   }
   .sidebar .menu-text {
     display: block;

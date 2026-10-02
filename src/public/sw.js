@@ -1,4 +1,4 @@
-const CACHE = "yuuka-v3";
+const CACHE = "yuuka-v4";
 const PRECACHE = [
   "/",
   "/manifest.json",

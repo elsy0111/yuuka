@@ -113,7 +113,7 @@ export function getMonthlyCategoryBreakdown(
 export function listRecentExpenses(userId: string, count: number = 10): Expense[] {
   const db = getDb();
   return db
-    .prepare("SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC, created_at DESC LIMIT ?")
+    .prepare("SELECT * FROM expenses WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?")
     .all(userId, count) as Expense[];
 }
 
@@ -171,6 +171,25 @@ export function getDailyExpenseTotals(userId: string, days: number = 6): DailyEx
 
   const totals = new Map(rows.map((row) => [row.date, row.total]));
   return dateStrings.map((date) => ({ date, total: totals.get(date) ?? 0 }));
+}
+
+export function getMonthlyDailyExpenseTotals(
+  userId: string,
+  year: number,
+  month: number,
+): DailyExpenseTotal[] {
+  const days = new Date(year, month, 0).getDate();
+  const prefix = `${year}-${String(month).padStart(2, "0")}`;
+  const rows = getDb()
+    .prepare(
+      "SELECT date, COALESCE(SUM(amount),0) total FROM expenses WHERE user_id=? AND date LIKE ? GROUP BY date",
+    )
+    .all(userId, `${prefix}-%`) as DailyExpenseTotal[];
+  const totals = new Map(rows.map((row) => [row.date, row.total]));
+  return Array.from({ length: days }, (_, index) => ({
+    date: `${prefix}-${String(index + 1).padStart(2, "0")}`,
+    total: totals.get(`${prefix}-${String(index + 1).padStart(2, "0")}`) ?? 0,
+  }));
 }
 
 export interface ExpenseFilter {

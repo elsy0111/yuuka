@@ -46,7 +46,7 @@
   --control-placeholder: #6b8798;
   --control-border: #c8dcea;
 
-  --radius: 2px;
+  --radius: 0;
 
   /* テキスト */
   --color-white: #1b2b3a; /* ダークネイビー（heading/icon用） */

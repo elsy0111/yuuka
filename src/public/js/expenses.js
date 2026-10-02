@@ -19,7 +19,7 @@ export async function fetchExpensesList() {
     document.dispatchEvent(new Event("expenses-updated"));
 
     if (data.expenses?.length > 0) {
-      data.expenses.forEach((exp) => {
+      data.expenses.slice(0, 5).forEach((exp) => {
         tbody.appendChild(makeExpenseRow(exp));
       });
     } else {
@@ -234,13 +234,15 @@ export function makeExpenseRow(exp) {
   const tr = document.createElement("tr");
 
   const tdDate = document.createElement("td");
-  tdDate.textContent = exp.date;
+  tdDate.textContent = exp.date.slice(5).replace("-", "/");
+  tdDate.title = exp.date;
 
   const tdCat = document.createElement("td");
   tdCat.textContent = exp.category;
 
   const tdDesc = document.createElement("td");
   tdDesc.textContent = exp.description || "なし";
+  tdDesc.title = exp.description || "なし";
 
   const tdAmt = document.createElement("td");
   tdAmt.className = "expense-amount-val";
@@ -288,7 +290,7 @@ export async function handleDeleteExpense(id) {
 async function handleEditExpenseSubmit(e) {
   e.preventDefault();
   const id = parseInt(document.getElementById("exp-edit-id").value, 10);
-  const amount = parseInt(document.getElementById("exp-edit-amount").value, 10);
+  const amount = Number(document.getElementById("exp-edit-amount").value);
   const date = document.getElementById("exp-edit-date").value;
   const category = document.getElementById("exp-edit-category").value;
   const description = document.getElementById("exp-edit-description").value.trim();
@@ -324,7 +326,7 @@ export function initExpenses() {
     "submit",
     guardSubmit(async (e) => {
       e.preventDefault();
-      const amount = parseInt(document.getElementById("exp-amount").value, 10);
+      const amount = Number(document.getElementById("exp-amount").value);
       const category = document.getElementById("exp-category").value;
       const desc = document.getElementById("exp-description").value.trim();
       const date = document.getElementById("exp-date").value;
@@ -429,7 +431,7 @@ function processReceiptFile(file) {
   reader.onload = async (e) => {
     const base64Data = e.target.result.split(",")[1];
     scanStatus.classList.remove("hidden");
-    scanStatusTxt.textContent = "レシート画像をユウカが確認中... (Gemini API解析を起動しています)";
+    scanStatusTxt.textContent = "レシートを解析しています…";
     try {
       const data = await apiRequest("/api/expenses/upload-receipt", {
         method: "POST",
@@ -438,12 +440,19 @@ function processReceiptFile(file) {
           userId: state.activeUserId,
           imageBase64: base64Data,
           mimeType: file.type,
-          additionalText: "WEB管理画面からアップロードされたレシートの解析結果です。",
+          additionalText: "レシートの支出明細を抽出してください。",
         }),
       });
       if (data.success) {
         scanStatus.classList.add("hidden");
-        document.getElementById("receipt-ai-response").textContent = data.response;
+        if (
+          !Number.isInteger(data.savedCount) ||
+          data.savedCount < 1 ||
+          data.expenses?.length !== data.savedCount
+        )
+          throw new Error("支出の保存を確認できませんでした。");
+        document.getElementById("receipt-ai-response").textContent =
+          `${data.savedCount}件を記録しました。合計 ¥${data.total.toLocaleString()}\n\n${data.expenses.map((expense) => `${expense.description || expense.category}　¥${expense.amount.toLocaleString()}`).join("\n")}`;
         openModal(getModal("receiptResult"));
         fetchExpensesList();
       } else {

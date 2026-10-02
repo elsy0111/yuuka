@@ -20,13 +20,11 @@ import { checkSessionHandshake, initAuth } from "./auth.js";
 import { initBotLogs } from "./bot-logs.js";
 import { initConfig } from "./config.js";
 import { initCredentials } from "./credentials.js";
-import { initGeminiQuotaEdit } from "./dashboard.js";
+import { initGeminiQuotaEdit, initFinanceDashboard } from "./dashboard.js";
 import { initExpenseDetail } from "./expense-detail.js";
 import { initBudgetEdit, initExpenses } from "./expenses.js";
 import { initModals } from "./modal.js";
 import { initRouter } from "./router.js";
-import { initSchedules } from "./schedules.js";
-import { initTasks } from "./tasks.js";
 import { initTheme } from "./theme.js";
 import { initWork } from "./work.js";
 
@@ -35,12 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initModals();
   initRouter();
   initAuth();
-  initTasks();
-  initSchedules();
   initExpenses();
   initWork();
   initBudgetEdit();
   initGeminiQuotaEdit();
+  initFinanceDashboard();
   initExpenseDetail();
   initConfig();
   initCredentials();

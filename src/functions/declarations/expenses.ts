@@ -31,8 +31,8 @@ export const expenseDeclarations: FunctionDeclaration[] = [
     name: "addExpense",
     description:
       "支出を家計簿に記録する。カテゴリは: 食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他。" +
-      "【重要】ユーザーが明示していない情報（purchase_source等）を推測・憶測して呼び出すことは禁止。不明な場合は必ずユーザーに確認してから呼び出すこと。" +
-      "割引があった場合のみdescriptionに (割引〇〇円引き) を記載。purchase_sourceはユーザーが明示した店舗名・場所のみ使用すること。",
+      "ユーザーが明示していない情報を推測して補いません。purchase_sourceが不明な場合は「不明」で記録します。" +
+      "割引があった場合のみdescriptionに (割引〇〇円引き) を記載します。",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
@@ -55,11 +55,10 @@ export const expenseDeclarations: FunctionDeclaration[] = [
         },
         purchase_source: {
           type: SchemaType.STRING,
-          description:
-            "購入した場所・店舗名。ユーザーが明示した名前のみ使用（例: イオン、ファミリーマート、自販機）。不明な場合はユーザーに確認してから呼び出すこと",
+          description: "購入した場所・店舗名。明示がなければ「不明」",
         },
       },
-      required: ["amount", "category", "purchase_source"],
+      required: ["amount", "category"],
     },
   },
   {

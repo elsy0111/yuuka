@@ -46,7 +46,7 @@
 .work-summary > div {
   padding: 12px;
   border: 1px solid var(--border-matte);
-  border-radius: var(--radius);
+  border-radius: 0;
   background: var(--bg-primary);
   min-width: 0;
 }
@@ -77,7 +77,7 @@
   min-width: 0;
   padding: 10px;
   border: 1px solid var(--border-matte);
-  border-radius: var(--radius);
+  border-radius: 0;
 }
 .work-entry-text {
   min-width: 0;

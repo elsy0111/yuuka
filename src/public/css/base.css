@@ -18,7 +18,7 @@
   --control-text: #f4f4f5;
   --control-placeholder: #71717a;
   --control-border: #27272a;
-  --radius: 2px; /* Minimal modern 2px rounded corners */
+  --radius: 0; /* Minimal modern 2px rounded corners */
 
   --accent-cyan: #38d5ff;
   --accent-cyan-hover: #67e8f9;
@@ -179,7 +179,7 @@ textarea {
   padding: 10px 14px;
   background-color: var(--control-bg);
   border: 1px solid var(--control-border);
-  border-radius: var(--radius);
+  border-radius: 0;
   outline: none;
   color: var(--control-text);
   font-size: 0.9rem;
@@ -231,7 +231,7 @@ textarea:disabled {
 }
 ::-webkit-scrollbar-thumb {
   background: #27272a;
-  border-radius: var(--radius);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
@@ -241,7 +241,7 @@ textarea:disabled {
 .card {
   background-color: var(--card-matte);
   border: 1px solid var(--border-matte);
-  border-radius: var(--radius);
+  border-radius: 0;
   padding: 24px;
   transition: var(--transition-smooth);
   min-width: 0;

@@ -4,20 +4,14 @@ import { sendError } from "./server/http.js";
 import { handleApiUsage } from "./server/routes/apiUsage.js";
 import { handleLogin, handleLogout, handleProfile, handleRegister } from "./server/routes/auth.js";
 import { handleBotLogs } from "./server/routes/botLogs.js";
-import {
-  handleCalendarAdd,
-  handleCalendarDelete,
-  handleGeminiConfig,
-} from "./server/routes/config.js";
+import { handleGeminiConfig } from "./server/routes/config.js";
 import { handleCredentials } from "./server/routes/credentials.js";
 import { handleExpenses } from "./server/routes/expenses.js";
 import { handleInviteCodes } from "./server/routes/inviteCodes.js";
 import { handleMemories } from "./server/routes/memories.js";
-import { handleSchedules } from "./server/routes/schedules.js";
 import { handleStatus, handleUsers } from "./server/routes/status.js";
-import { handleTasks } from "./server/routes/tasks.js";
-import { handleWork } from "./server/routes/work.js";
 import { handleUserMigrate } from "./server/routes/userMigrate.js";
+import { handleWork } from "./server/routes/work.js";
 import { isAuthenticated } from "./server/session.js";
 import { serveStaticFile } from "./server/static.js";
 import type { RouteContext, RouteHandler } from "./server/types.js";
@@ -27,14 +21,10 @@ const privateRoutes: RouteHandler[] = [
   handleLogout,
   handleProfile,
   handleStatus,
-  handleCalendarAdd,
-  handleCalendarDelete,
   handleGeminiConfig,
   handleUsers,
   handleCredentials,
-  handleTasks,
   handleWork,
-  handleSchedules,
   handleExpenses,
   handleMemories,
   handleBotLogs,

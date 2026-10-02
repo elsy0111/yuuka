@@ -5,25 +5,26 @@ import {
   getMonthlyCategoryBreakdown,
   getMonthlyCount,
   getMonthlyMaxDay,
+  getMonthlyDailyExpenseTotals,
   getMonthlyTotal,
   listFilteredExpenses,
   listRecentExpenses,
   updateExpense,
 } from "../../db/expenseRepo.js";
 import { getMonthlyBudget, updateMonthlyBudget } from "../../db/userRepo.js";
-import { parseReceipt } from "../../services/receiptParser.js";
+import { processWebReceipt } from "../../services/webReceipt.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
 function isValidDate(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0 && !Number.isNaN(Date.parse(value));
+  if (typeof value !== "string" || !/^[1-9]\d{3}-\d{2}-\d{2}$/.test(value)) return false;
+  const timestamp = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
 }
 
 function isValidAmount(value: unknown): value is number {
-  return (
-    typeof value === "number" && Number.isFinite(value) && Number.isInteger(value) && value > 0
-  );
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
@@ -35,20 +36,32 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
         return true;
       }
       const now = new Date();
-      const year = parseInt(parsedUrl.searchParams.get("year") || String(now.getFullYear()), 10);
-      const month = parseInt(parsedUrl.searchParams.get("month") || String(now.getMonth() + 1), 10);
+      const year = Number(parsedUrl.searchParams.get("year") || now.getFullYear());
+      const month = Number(parsedUrl.searchParams.get("month") || now.getMonth() + 1);
+      if (
+        !Number.isInteger(year) ||
+        year < 1000 ||
+        year > 9999 ||
+        !Number.isInteger(month) ||
+        month < 1 ||
+        month > 12
+      ) {
+        sendError(res, 400, "年月が不正です。");
+        return true;
+      }
       const total = getMonthlyTotal(userId, year, month);
       const budget = getMonthlyBudget(userId);
       const daysElapsed = new Date().getDate();
       const breakdown = getMonthlyCategoryBreakdown(userId, year, month);
       sendJson(res, 200, {
         success: true,
-        expenses: listRecentExpenses(userId, 30),
+        expenses: listRecentExpenses(userId, 5),
         total,
         budget,
         remaining: budget - total,
         breakdown,
         dailyTotals: getDailyExpenseTotals(userId, 7),
+        monthlyDailyTotals: getMonthlyDailyExpenseTotals(userId, year, month),
         stats: {
           count: getMonthlyCount(userId, year, month),
           avgDaily: daysElapsed > 0 ? Math.round(total / daysElapsed) : 0,
@@ -214,12 +227,14 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
         return true;
       }
       const { imageBase64, mimeType, additionalText } = JSON.parse(await getRequestBody(req));
-      if (!imageBase64 || !mimeType) {
-        sendError(res, 400, "画像データ(base64)とMIMEタイプが必要です。");
-        return true;
-      }
-      const response = await parseReceipt(userId, imageBase64, mimeType, additionalText);
-      sendJson(res, 200, { success: true, response });
+      const saved = await processWebReceipt(userId, imageBase64, mimeType, additionalText);
+      sendJson(res, 200, {
+        success: true,
+        response: `支出を${saved.expenses.length}件記録しました。`,
+        savedCount: saved.expenses.length,
+        expenses: saved.expenses,
+        total: saved.total,
+      });
     } catch (err) {
       console.error("WEBレシート解析エラー:", err);
       sendError(res, 500, "レシート解析中にエラーが発生しました。");
