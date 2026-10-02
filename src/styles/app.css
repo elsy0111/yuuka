@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@import "./base.css";
+@import "./layout.css";
+@import "./components.css";
+@import "./views/dashboard.css";
+@import "./views/expenses.css";
+@import "./views/work.css";
+@import "./views/config.css";
+@import "./modals.css";
+@import "./responsive.css";
+@import "./animations.css";
+@import "./themes/ba-light.css";
+@import "./readability.css";
+@import "./views/finance.css";
+
+@source "../public/index.html";
+@source "../public/js";
+
+@theme inline {
+  --color-surface: var(--card-matte);
+  --color-canvas: var(--bg-primary);
+  --color-muted: var(--text-secondary);
+  --color-accent: var(--accent-cyan);
+  --color-outline: var(--border-matte);
+  --radius-control: var(--radius);
+  --radius-panel: var(--radius-lg);
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
+
+/* Shared control geometry across all screens. */
+.btn,
+.user-profile-badge,
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  @apply rounded-control;
+}
+.btn,
+.user-profile-badge,
+input:not([type="checkbox"]):not([type="radio"]),
+select {
+  @apply min-h-10;
+}
+.card,
+.modal-content {
+  @apply rounded-panel;
+}
+
+@media (max-width: 768px) {
+  .sidebar-menu {
+    @apply grid grid-cols-5 gap-0 w-full;
+  }
+  .sidebar .menu-item {
+    @apply m-0 min-w-0 w-full justify-center px-0 text-center rounded-control;
+  }
+}

@@ -1,0 +1,192 @@
+@layer components {
+  /* Labour income is displayed separately from expenses. */
+  .work-card {
+    @apply mb-[20px];
+  }
+  .work-form {
+    @apply grid;
+    @apply grid-cols-[repeat(2,_minmax(0,_1fr))];
+    @apply gap-[10px];
+    @apply min-w-0;
+    @apply mt-[14px];
+  }
+  .work-form .form-group {
+    @apply min-w-0;
+    @apply mb-[0];
+  }
+  .work-form label {
+    @apply block;
+    @apply text-[0.8rem];
+    @apply mb-[5px];
+  }
+  #work-rate-form {
+    @apply grid-cols-[minmax(0,_1fr)_auto];
+    align-items: end;
+  }
+  .work-form input {
+    @apply min-w-0;
+    @apply max-w-[100%];
+  }
+  .work-description-group,
+  .work-preview,
+  #work-entry-submit {
+    grid-column: 1 / -1;
+  }
+  .work-preview,
+  .work-hint {
+    @apply text-[var(--text-secondary)];
+    @apply text-[0.8rem];
+    overflow-wrap: anywhere;
+  }
+  .work-summary {
+    @apply grid;
+    @apply grid-cols-[repeat(2,_minmax(0,_1fr))];
+    @apply gap-[8px];
+    margin-block: 14px;
+  }
+  .work-summary > div {
+    @apply p-[12px];
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    background: var(--bg-primary);
+    @apply min-w-0;
+  }
+  .work-summary span {
+    @apply block;
+    @apply text-[0.75rem];
+    @apply text-[var(--text-secondary)];
+  }
+  .work-summary strong {
+    @apply block;
+    @apply mt-[4px];
+    @apply text-[1.2rem];
+    @apply text-[var(--accent-cyan)];
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+  .work-entry-list {
+    @apply grid;
+    @apply gap-[8px];
+    @apply mt-[12px];
+    @apply min-w-0;
+  }
+  .work-entry-row {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+    @apply gap-[8px];
+    @apply min-w-0;
+    @apply p-[10px];
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+  }
+  .work-entry-text {
+    @apply min-w-0;
+    overflow-wrap: anywhere;
+    @apply text-[0.8rem];
+  }
+  .work-entry-row button {
+    @apply shrink-0;
+  }
+  @media (max-width: 480px) {
+    .work-form {
+      @apply grid-cols-[minmax(0,_1fr)];
+    }
+    .work-summary strong {
+      @apply text-[1.05rem];
+    }
+    .work-entry-row {
+      @apply items-start;
+    }
+  }
+  .work-month-nav {
+    @apply grid;
+    @apply grid-cols-[44px_minmax(0,_1fr)_44px_auto];
+    @apply gap-[6px];
+    @apply items-center;
+    margin-block: 14px;
+  }
+  .work-month-nav input {
+    @apply w-full;
+    @apply min-w-0;
+  }
+  .work-month-nav .btn {
+    padding-inline: 10px;
+  }
+  .work-duration {
+    @apply grid;
+    @apply grid-cols-[minmax(0,_1fr)_auto_minmax(0,_1fr)_auto];
+    @apply gap-[6px];
+    @apply items-center;
+  }
+  .work-duration span {
+    @apply text-[0.8rem];
+    @apply text-[var(--text-secondary)];
+  }
+  .work-form-heading {
+    @apply flex;
+    @apply gap-[8px];
+    @apply justify-between;
+    @apply items-center;
+    @apply mt-[20px];
+  }
+  .work-form-heading h4 {
+    @apply m-[0];
+    @apply text-[0.95rem];
+    overflow-wrap: anywhere;
+  }
+  .work-quick-times {
+    grid-column: 1 / -1;
+    @apply flex;
+    @apply gap-[6px];
+    @apply flex-wrap;
+  }
+  .work-entry-text strong,
+  .work-entry-text span {
+    @apply block;
+  }
+  .work-entry-text span {
+    @apply mt-[4px];
+    @apply text-[var(--text-secondary)];
+  }
+  .work-entry-actions {
+    @apply flex;
+    @apply gap-[6px];
+    @apply shrink-0;
+  }
+  .work-entry-row {
+    @apply flex-wrap;
+  }
+  .work-entry-text {
+    flex: 1 1 180px;
+  }
+  .work-entry-actions {
+    @apply ml-[auto];
+  }
+  @media (max-width: 480px) {
+    .work-month-nav {
+      @apply grid-cols-[38px_minmax(0,_1fr)_38px];
+    }
+    #work-month-today {
+      grid-column: 1 / -1;
+      justify-self: end;
+    }
+    .work-entry-text {
+      @apply basis-[100%];
+    }
+    .work-form-heading {
+      @apply items-start;
+    }
+  }
+  .work-month-nav .sr-only {
+    @apply absolute;
+    @apply w-[1px];
+    @apply h-[1px];
+    @apply p-[0];
+    @apply m-[-1px];
+    @apply overflow-hidden;
+    clip-path: inset(50%);
+    @apply whitespace-nowrap;
+    border: 0;
+  }
+}

@@ -1,3 +1,4 @@
+import { renderDonutChart } from "./chart-donut.js";
 import { mergeDailyFinance, renderFinanceChart } from "./finance-chart.js";
 import { closeModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
@@ -157,40 +158,16 @@ async function loadFinance(user, month, capturedVersion) {
     renderFinanceChart(
       mergeDailyFinance(expenses.monthlyDailyTotals || expenses.dailyTotals, work.entries),
     );
-    renderCategories(expenses.breakdown, spent);
+    renderDonutChart(expenses.breakdown, spent);
   } catch (err) {
     if (capturedVersion !== version || user !== state.activeUserId) return;
     document.getElementById("finance-chart").replaceChildren();
-    document.getElementById("dashboard-category-bars").replaceChildren();
+    renderDonutChart([], 0);
     error.textContent = "収支を取得できませんでした。";
     retry.hidden = false;
     reportError(err);
   } finally {
     if (capturedVersion === version && user === state.activeUserId)
       card.removeAttribute("aria-busy");
-  }
-}
-function renderCategories(categories, total) {
-  const root = document.getElementById("dashboard-category-bars");
-  root.replaceChildren();
-  if (!categories?.length) {
-    root.textContent = "この月の支出はありません。";
-    return;
-  }
-  for (const category of categories) {
-    const row = document.createElement("div");
-    row.className = "finance-category-row";
-    const name = document.createElement("span");
-    name.textContent = category.category;
-    const track = document.createElement("div");
-    track.className = "finance-category-track";
-    const bar = document.createElement("div");
-    bar.className = "finance-category-bar";
-    bar.style.width = `${total ? (category.total / total) * 100 : 0}%`;
-    track.append(bar);
-    const amount = document.createElement("strong");
-    amount.textContent = `¥${category.total.toLocaleString()}`;
-    row.append(name, track, amount);
-    root.append(row);
   }
 }

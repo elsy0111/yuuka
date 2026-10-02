@@ -1,13 +1,16 @@
 const NS = "http://www.w3.org/2000/svg";
-export function mergeDailyFinance(days, entries) {
+export function mergeDailyFinance(days, entries, now = new Date()) {
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const income = new Map();
   for (const entry of entries || [])
     income.set(entry.date, (income.get(entry.date) || 0) + Number(entry.amount || 0));
-  return (days || []).map((day) => ({
-    date: day.date,
-    spent: Number(day.total || 0),
-    earned: income.get(day.date) || 0,
-  }));
+  return (days || [])
+    .filter((day) => day.date <= today)
+    .map((day) => ({
+      date: day.date,
+      spent: Number(day.total || 0),
+      earned: income.get(day.date) || 0,
+    }));
 }
 function node(tag, attrs, text) {
   const element = document.createElementNS(NS, tag);
@@ -19,6 +22,12 @@ export function renderFinanceChart(rows) {
   const svg = document.getElementById("finance-chart");
   const output = document.getElementById("finance-day-summary");
   svg.replaceChildren();
+  svg.hidden = rows.length === 0;
+  if (!rows.length) {
+    svg.setAttribute("aria-label", "表示する日別の収支はありません");
+    output.textContent = "この期間に表示できる日別の収支はありません。";
+    return;
+  }
   const left = 60,
     right = 584,
     top = 18,
@@ -51,7 +60,7 @@ export function renderFinanceChart(rows) {
           fill: "var(--text-secondary)",
           "font-size": 15,
         },
-        Math.round(value).toLocaleString(),
+        formatAxisAmount(value),
       ),
     );
   }
@@ -90,10 +99,7 @@ export function renderFinanceChart(rows) {
       }),
     );
     rows.forEach((row, i) => {
-      if (row[key])
-        svg.append(
-          node("rect", { x: x(i) - 3, y: y(row[key]) - 3, width: 6, height: 6, fill: color }),
-        );
+      if (row[key]) svg.append(node("circle", { cx: x(i), cy: y(row[key]), r: 3, fill: color }));
     });
   }
   const cursor = node("line", {
@@ -133,4 +139,10 @@ export function renderFinanceChart(rows) {
     "aria-label",
     `日別の収支。稼いだ分 ${rows.reduce((sum, row) => sum + row.earned, 0).toLocaleString()}円、使った分 ${rows.reduce((sum, row) => sum + row.spent, 0).toLocaleString()}円。左右キーで日を選択`,
   );
+}
+
+function formatAxisAmount(value) {
+  if (value >= 100_000_000) return `${Number((value / 100_000_000).toFixed(1))}億`;
+  if (value >= 10_000) return `${Number((value / 10_000).toFixed(1))}万`;
+  return Math.round(value).toLocaleString();
 }

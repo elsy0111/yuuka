@@ -22,6 +22,7 @@ export async function fetchExpensesList() {
       data.expenses.slice(0, 5).forEach((exp) => {
         tbody.appendChild(makeExpenseRow(exp));
       });
+      fitExpenseAmountColumn(tbody);
     } else {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -46,6 +47,18 @@ export async function fetchExpensesList() {
     tbody.appendChild(row);
     reportError(e);
   }
+}
+
+function fitExpenseAmountColumn(tbody) {
+  const cells = [...tbody.querySelectorAll(".expense-amount-val")];
+  if (!cells.length) return;
+  const style = getComputedStyle(cells[0]);
+  const canvas = document.createElement("canvas").getContext("2d");
+  if (!canvas) return;
+  canvas.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  const width =
+    Math.max(64, ...cells.map((cell) => canvas.measureText(cell.textContent).width)) + 16;
+  tbody.closest("table").style.setProperty("--expense-amount-width", `${Math.ceil(width)}px`);
 }
 
 function renderExpenseStats(stats) {
@@ -365,6 +378,10 @@ export function initExpenses() {
     if (id) handleDeleteExpense(id);
   });
 
+  const tbody = document.getElementById("expenses-table-body");
+  const observer = new ResizeObserver(() => fitExpenseAmountColumn(tbody));
+  observer.observe(tbody.closest("table"));
+  document.fonts?.ready.then(() => fitExpenseAmountColumn(tbody));
   initReceiptDropzone();
 }
 

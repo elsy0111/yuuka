@@ -1,0 +1,342 @@
+@layer components {
+  /* ==============================================================================
+   BLUE ARCHIVE LIGHT THEME
+   実際のゲームUI配色を再現
+   Sources: Blue Archive Wiki (#02D3FB), MomoTalk Discord theme
+            (#F2F7F8 sidebar / #E7F0F7 header / #DDE6ED border)
+   ============================================================================== */
+
+  /* BA共通アクセントカラー変数 */
+  [data-theme="blue-archive"] {
+    /* BA公式シアン (#02D3FB は wiki confirmed, #00AED8 は hover用) */
+    --ba-cyan: #02d3fb;
+    --ba-cyan-hover: #00aed8;
+    --ba-cyan-dim: rgba(2, 211, 251, 0.12);
+    --ba-cyan-faint: rgba(2, 211, 251, 0.06);
+
+    /* 追加アクセント — ゲーム本編の MomoTalk / 優先度 / 警告色を再現 */
+    --ba-pink: #fb90a4; /* MomoTalk バナー・優先度高 */
+    --ba-pink-dim: rgba(251, 144, 164, 0.15);
+    --ba-lavender: #1aadcb; /* リンク・低優先度色（水色寄り） */
+    --ba-yellow: #ffd966; /* 警告/注意 */
+    --ba-yellow-dim: rgba(255, 217, 102, 0.15);
+
+    --accent-cyan: var(--ba-cyan);
+    --accent-cyan-hover: var(--ba-cyan-hover);
+    --accent-cyan-dim: var(--ba-cyan-dim);
+    --accent-cyan-faint: var(--ba-cyan-faint);
+    --accent-pink: var(--ba-pink);
+    --accent-pink-dim: var(--ba-pink-dim);
+    --accent-lavender: var(--ba-lavender);
+    --accent-yellow: var(--ba-yellow);
+    --accent-yellow-dim: var(--ba-yellow-dim);
+
+    /* 背景 — 公式ゲーム画面に近い色 */
+    --bg-primary: #fbfcff; /* ほぼ白・微青みがかった main content */
+    --bg-secondary: #f2f7f8; /* MomoTalkソース sidebar 値そのまま */
+    --bg-sidebar: #f2f7f8; /* サイドバー */
+    --card-matte: #ffffff;
+    --card-matte-hover: #f5fafe;
+
+    /* ボーダー */
+    --border-matte: #b8cdd9;
+    --border-focus: #02d3fb;
+    --control-bg: #f7fbff;
+    --control-bg-hover: #f0f8fd;
+    --control-text: #1b2b3a;
+    --control-placeholder: #6b8798;
+    --control-border: #c8dcea;
+
+    --radius: 2px;
+
+    /* テキスト */
+    --color-white: #1b2b3a; /* ダークネイビー（heading/icon用） */
+    --color-zinc-light: #2e4a62;
+    --color-zinc-muted: #3a6070;
+    --color-green: #16a34a;
+    --color-red: #dc2626;
+
+    --text-primary: #1b2b3a;
+    --text-secondary: #2a4e66;
+  }
+
+  /* ---- ヘッダーエリア: ゲームのパネル上部の薄青を再現 ---- */
+  [data-theme="blue-archive"] .top-header {
+    @apply bg-[#e7f0f7];
+    border-bottom-color: #c8dcea;
+  }
+
+  @media (max-width: 768px) {
+    [data-theme="blue-archive"] .top-header {
+      @apply bg-[#e7f0f7];
+    }
+  }
+
+  /* ---- サイドバー ---- */
+  [data-theme="blue-archive"] .sidebar {
+    @apply bg-[#f2f7f8];
+    border-right-color: #dde6ed;
+  }
+
+  /* ---- ナビメニュー ---- */
+  [data-theme="blue-archive"] .menu-item:hover {
+    @apply bg-[var(--ba-cyan-faint)];
+    @apply text-[#1b2b3a];
+  }
+
+  [data-theme="blue-archive"] .menu-item.active {
+    @apply bg-[rgba(2,_211,_251,_0.07)];
+    @apply text-[#0bbad8];
+    @apply font-bold;
+  }
+
+  /* ---- ボタン ---- */
+  [data-theme="blue-archive"] .btn-primary {
+    @apply bg-[#02d3fb];
+    @apply text-[#ffffff];
+  }
+
+  [data-theme="blue-archive"] .btn-primary:hover {
+    @apply bg-[#00aed8];
+  }
+
+  [data-theme="blue-archive"] .btn-filter.active {
+    @apply bg-[#02d3fb];
+    @apply border-[#02d3fb];
+    @apply text-[#ffffff];
+  }
+
+  [data-theme="blue-archive"] .btn-secondary:hover {
+    @apply bg-[var(--ba-cyan-faint)];
+  }
+
+  [data-theme="blue-archive"] .btn-icon:hover {
+    @apply bg-[var(--ba-cyan-faint)];
+    @apply border-[#02d3fb];
+  }
+
+  /* ---- フォームコントロール ---- */
+  [data-theme="blue-archive"]
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+  [data-theme="blue-archive"] select:focus,
+  [data-theme="blue-archive"] textarea:focus {
+    @apply border-[#02d3fb];
+    @apply shadow-[0_0_0_2px_rgba(2,_211,_251,_0.15)];
+  }
+
+  [data-theme="blue-archive"] .checkbox-custom:checked {
+    @apply bg-[#02d3fb];
+    @apply border-[#02d3fb];
+  }
+
+  /* ---- 各種パーツ ---- */
+  [data-theme="blue-archive"] .budget-progress-bar {
+    @apply bg-[#02d3fb];
+  }
+
+  [data-theme="blue-archive"] .hud-pulse-dot {
+    @apply bg-[#02d3fb];
+  }
+
+  [data-theme="blue-archive"] .avatar-badge {
+    @apply bg-[#02d3fb];
+    @apply text-[#ffffff];
+  }
+
+  [data-theme="blue-archive"] .badge-accent {
+    @apply text-[#02d3fb];
+    @apply border-[#02d3fb];
+  }
+
+  [data-theme="blue-archive"] .hud-tag {
+    @apply text-[#02d3fb];
+    @apply border-[#c8dcea];
+  }
+
+  [data-theme="blue-archive"] .spinner {
+    @apply border-[rgba(2,_211,_251,_0.18)];
+    border-top-color: #02d3fb;
+  }
+
+  [data-theme="blue-archive"] .alert-box {
+    border-left-color: #02d3fb;
+    @apply bg-[#f0faff];
+  }
+
+  /* ---- SVG チャート ---- */
+  [data-theme="blue-archive"] #trend-line-path {
+    stroke: #02d3fb;
+  }
+
+  [data-theme="blue-archive"] #dashboard-trend-chart line {
+    stroke: #c8dcea;
+  }
+
+  [data-theme="blue-archive"] #schedules-sparkline-path,
+  [data-theme="blue-archive"] #expenses-sparkline-path {
+    stroke: #02d3fb;
+  }
+
+  [data-theme="blue-archive"] .donut-bg-ring {
+    stroke: #dde6ed;
+  }
+
+  /* ---- ドロップゾーン ---- */
+  [data-theme="blue-archive"] .dropzone:hover,
+  [data-theme="blue-archive"] .dropzone.dragover {
+    @apply border-[#02d3fb];
+    @apply bg-[var(--ba-cyan-faint)];
+  }
+
+  [data-theme="blue-archive"] .text-highlight {
+    @apply text-[#02d3fb];
+  }
+
+  /* ---- モーダルオーバーレイ ---- */
+  [data-theme="blue-archive"] .modal {
+    @apply bg-[rgba(211,_232,_245,_0.8)];
+  }
+
+  /* ---- スクロールバー ---- */
+  [data-theme="blue-archive"] ::-webkit-scrollbar-thumb {
+    background: #c8dcea;
+  }
+
+  [data-theme="blue-archive"] ::-webkit-scrollbar-thumb:hover {
+    background: #02d3fb;
+  }
+
+  /* ---- モバイル ---- */
+  @media (max-width: 768px) {
+    [data-theme="blue-archive"] .sidebar {
+      @apply bg-[#f2f7f8];
+      border-top-color: #dde6ed;
+      @apply shadow-[0_-2px_12px_rgba(2,_211,_251,_0.1)];
+    }
+
+    [data-theme="blue-archive"] .menu-item.active {
+      @apply text-[#0bbad8];
+      @apply bg-[rgba(2,_211,_251,_0.07)];
+    }
+  }
+
+  /* ==============================================================================
+   BA — マルチアクセントカラー（ピンク / ラベンダー / イエロー）
+   ============================================================================== */
+
+  /* リンク色：ゲーム内リンク色 (ラベンダー) */
+  [data-theme="blue-archive"] a:not(.menu-item):not(.btn) {
+    @apply text-[var(--ba-lavender)];
+  }
+
+  [data-theme="blue-archive"] a:not(.menu-item):not(.btn):hover {
+    @apply text-[var(--ba-cyan)];
+  }
+
+  /* 緊急/期限切れバッジ — ピンク */
+  [data-theme="blue-archive"] .badge-urgent {
+    @apply bg-[var(--ba-pink-dim)];
+    @apply text-[var(--ba-pink)];
+    border: 1px solid var(--ba-pink);
+  }
+
+  /* 通常バッジは control 色のまま */
+  [data-theme="blue-archive"] .badge-normal {
+    @apply text-[var(--ba-lavender)];
+    @apply border-[#c8dcea];
+  }
+
+  /* 優先度: タスクカード左ボーダー (動的クラス付与時用) */
+  [data-theme="blue-archive"] .card-item.priority-high {
+    border-left: 3px solid var(--ba-pink);
+  }
+
+  [data-theme="blue-archive"] .card-item.priority-medium {
+    border-left: 3px solid var(--ba-yellow);
+  }
+
+  [data-theme="blue-archive"] .card-item.priority-low {
+    border-left: 3px solid var(--ba-lavender);
+  }
+
+  /* メタ情報内の "priority" マーカー */
+  [data-theme="blue-archive"] .meta-item .priority-high {
+    @apply text-[var(--ba-pink)];
+  }
+  [data-theme="blue-archive"] .meta-item .priority-medium {
+    @apply text-[var(--ba-yellow)];
+  }
+  [data-theme="blue-archive"] .meta-item .priority-low {
+    @apply text-[var(--ba-lavender)];
+  }
+
+  /* ステータスバッジ — シアン枠 */
+  [data-theme="blue-archive"] .stat-card-badge-trend {
+    @apply text-[var(--ba-cyan)];
+    @apply border-[#c8dcea];
+  }
+
+  /* アクセントバッジ — シアン (既存上書きで明示) */
+  [data-theme="blue-archive"] .badge-accent {
+    @apply text-[var(--ba-cyan)];
+    @apply border-[var(--ba-cyan)];
+    @apply bg-[var(--ba-cyan-faint)];
+  }
+
+  /* 警告アイコン — ウォームイエロー */
+  [data-theme="blue-archive"] .alert-icon-symbol {
+    @apply text-[var(--ba-yellow)];
+  }
+
+  [data-theme="blue-archive"] .alert-box {
+    border-left-color: var(--ba-yellow);
+    @apply bg-[#fffbec];
+  }
+
+  /* ソースバッジを色分け */
+  [data-theme="blue-archive"] .source-discord {
+    @apply text-[var(--ba-lavender)];
+  }
+  [data-theme="blue-archive"] .source-manual {
+    @apply text-[var(--ba-cyan)];
+  }
+  [data-theme="blue-archive"] .source-web {
+    @apply text-[var(--ba-pink)];
+  }
+
+  /* ---- テーマセレクター ---- */
+  [data-theme="blue-archive"] .theme-option.active {
+    @apply border-[#02d3fb];
+  }
+
+  /* ---- 支出詳細モーダル ---- */
+  [data-theme="blue-archive"] .modal-overlay {
+    @apply bg-[rgba(211,_232,_245,_0.8)];
+  }
+
+  [data-theme="blue-archive"] .modal-panel {
+    background: #fbfcff;
+    @apply border-[#c8dcea];
+  }
+
+  [data-theme="blue-archive"] .modal-filters {
+    background: #f0f5fa;
+    @apply border-[#c8dcea];
+  }
+
+  [data-theme="blue-archive"] .filter-input,
+  [data-theme="blue-archive"] .filter-select {
+    background: #fbfcff;
+    @apply border-[#c8dcea];
+    @apply text-[#1a2740];
+  }
+
+  @layer components {
+    [data-theme="blue-archive"] .menu-item {
+      @apply rounded;
+    }
+    [data-theme="blue-archive"] .card {
+      @apply rounded;
+    }
+  }
+}

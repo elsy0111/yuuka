@@ -1,0 +1,552 @@
+@layer components {
+  /* ==============================================================================
+   GEMINI API USAGE CARD
+   ============================================================================= */
+
+  .gemini-usage-grid {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[14px];
+    @apply mt-[4px];
+  }
+
+  .gemini-usage-item {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[6px];
+  }
+
+  .gemini-usage-label {
+    @apply text-[0.68rem];
+    @apply font-bold;
+    @apply text-[var(--color-zinc-muted)];
+    @apply tracking-[0.04em];
+  }
+
+  .gemini-usage-bar-row {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[10px];
+  }
+
+  .gemini-usage-bar-track {
+    flex: 1;
+    @apply h-[6px];
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    @apply overflow-hidden;
+  }
+
+  .gemini-usage-bar {
+    @apply h-full;
+    @apply w-[0%];
+    @apply bg-[var(--accent-cyan)];
+    @apply rounded-[var(--radius)];
+    transition: width 0.4s ease;
+  }
+
+  .gemini-usage-bar.warn {
+    @apply bg-[var(--accent-yellow)];
+  }
+
+  .gemini-usage-bar.danger {
+    @apply bg-[var(--color-red)];
+  }
+
+  .gemini-quota-form-grid {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[16px];
+    @apply m-[16px_0];
+  }
+
+  .gemini-quota-field {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[6px];
+  }
+
+  .gemini-quota-field-label {
+    @apply text-[0.8rem];
+    @apply font-bold;
+    @apply text-[var(--text-primary)];
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[2px];
+  }
+
+  .gemini-quota-field-sub {
+    @apply text-[0.7rem];
+    @apply font-normal;
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .gemini-quota-field .filter-input {
+    @apply w-full;
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.9rem];
+  }
+
+  .gemini-usage-val {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.72rem];
+    @apply text-[var(--text-secondary)];
+    @apply whitespace-nowrap;
+    @apply min-w-[90px];
+    @apply text-right;
+  }
+
+  /* ==============================================================================
+   1. DASHBOARD VIEW COMPONENTS (Welcome speech Chibi & Ticker Cards)
+   ============================================================================= */
+  .welcome-card {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[20px];
+    @apply mb-[24px];
+  }
+
+  .assistant-avatar-container {
+    @apply relative;
+    @apply w-[80px];
+    @apply h-[80px];
+    @apply shrink-0;
+  }
+
+  .avatar-img {
+    @apply w-full;
+    @apply h-full;
+    @apply object-cover;
+    @apply rounded-[50%];
+    @apply block;
+    @apply aspect-[1_/_1];
+  }
+
+  .avatar-badge {
+    @apply absolute;
+    @apply bottom-[-2px];
+    @apply right-[-2px];
+    @apply bg-[var(--color-white)];
+    @apply text-[var(--bg-primary)];
+    @apply text-[0.6rem];
+    @apply font-bold;
+    @apply p-[1px_4px];
+    @apply rounded-[50px];
+  }
+
+  .speech-bubble-container {
+    @apply grow;
+  }
+
+  .character-name {
+    @apply text-[0.75rem];
+    @apply font-extrabold;
+    @apply text-[var(--color-white)];
+    @apply mb-[4px];
+    @apply tracking-[0.05em];
+  }
+
+  .speech-bubble {
+    @apply relative;
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply p-[14px_18px];
+    @apply rounded-[var(--radius)];
+    @apply text-[0.9rem];
+    @apply leading-[1.4];
+    @apply text-[var(--text-primary)];
+  }
+
+  .speech-bubble::before {
+    content: "";
+    @apply absolute;
+    @apply left-[-6px];
+    @apply top-[15px];
+    @apply w-[0];
+    @apply h-[0];
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid var(--border-matte);
+  }
+
+  /* Stats Cards Tickers - Chic Matte Grayscale */
+  .stats-grid {
+    @apply grid;
+    @apply grid-cols-[repeat(3,_minmax(0,_1fr))];
+    @apply gap-[24px];
+    @apply mb-[24px];
+  }
+
+  .stat-card {
+    @apply relative;
+    @apply flex;
+    @apply flex-col;
+    @apply justify-between;
+    @apply min-h-[145px];
+  }
+
+  .stat-card-badge-trend {
+    @apply absolute;
+    @apply top-[20px];
+    @apply right-[20px];
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.7rem];
+    @apply font-bold;
+    @apply p-[2px_6px];
+    @apply rounded-[var(--radius)];
+    border: 1px solid var(--border-matte);
+    @apply text-[var(--accent-cyan)];
+    @apply whitespace-nowrap;
+  }
+
+  .stat-card-badge-trend.positive {
+    @apply text-[var(--color-white)];
+  }
+
+  .stat-card-badge-trend.negative {
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .stat-card-header {
+    @apply mb-[8px];
+    @apply pr-[72px];
+  }
+
+  .stat-label {
+    @apply block;
+    @apply text-[0.65rem];
+    @apply font-bold;
+    @apply tracking-[0.08em];
+    @apply text-[var(--color-zinc-muted)];
+    @apply leading-[1.25];
+  }
+
+  .stat-card .stat-value {
+    @apply text-[2rem];
+    @apply font-extrabold;
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[var(--color-white)];
+    @apply leading-[1];
+    @apply mb-[8px];
+    @apply whitespace-nowrap;
+  }
+
+  .stat-sparkline {
+    @apply w-full;
+    @apply h-[20px];
+    @apply mb-[8px];
+  }
+
+  .sparkline-svg {
+    @apply w-full;
+    @apply h-full;
+  }
+
+  .stat-footer-text {
+    @apply text-[0.65rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply font-medium;
+  }
+
+  /* Dashboard columns layout */
+  .dashboard-columns {
+    @apply grid;
+    @apply grid-cols-[minmax(0,_1fr)_minmax(0,_1fr)];
+    @apply gap-[24px];
+    @apply mb-[24px];
+  }
+
+  /* ==============================================================================
+   MONOCHROME ANALYTICS PRICE CHART COMPONENT
+   ============================================================================= */
+  .chart-main-wrapper {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[16px];
+    @apply h-[170px];
+    @apply mb-[12px];
+  }
+
+  .chart-y-axis {
+    @apply relative;
+    @apply h-[140px];
+    align-self: flex-start;
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.65rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply text-right;
+    @apply w-[44px];
+    @apply shrink-0;
+    @apply whitespace-nowrap;
+  }
+
+  .chart-y-axis span {
+    @apply absolute;
+    @apply right-[0];
+    transform: translateY(-50%);
+  }
+
+  .chart-body {
+    @apply grow;
+    @apply h-full;
+    @apply relative;
+    @apply flex;
+    @apply flex-col;
+    @apply justify-between;
+  }
+
+  .trend-chart-svg {
+    @apply w-full;
+    @apply h-[140px];
+  }
+
+  .chart-x-axis {
+    @apply relative;
+    @apply h-[1.2em];
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.65rem];
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .chart-x-axis span {
+    @apply absolute;
+    transform: translateX(-50%);
+    @apply whitespace-nowrap;
+  }
+
+  .column-header {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+    @apply flex-wrap;
+    @apply gap-[8px];
+    @apply mb-[16px];
+  }
+
+  .column-header h3 {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[6px];
+    @apply min-w-0;
+    overflow-wrap: anywhere;
+    @apply text-[1rem];
+    @apply font-bold;
+    @apply text-[var(--color-white)];
+  }
+
+  .hud-tag {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.72rem];
+    @apply font-bold;
+    @apply text-[var(--accent-cyan)];
+    border: 1px solid var(--border-matte);
+    @apply p-[4px_6px];
+    @apply rounded-[var(--radius)];
+    @apply whitespace-nowrap;
+    @apply shrink-0;
+  }
+
+  #trend-line-path,
+  #schedules-sparkline-path,
+  #expenses-sparkline-path {
+    stroke: var(--accent-cyan);
+  }
+
+  #dashboard-trend-chart line {
+    stroke: var(--border-matte);
+  }
+
+  .donut-bg-ring {
+    stroke: var(--border-matte);
+  }
+
+  .chart-sub-details {
+    @apply grid;
+    @apply grid-cols-[repeat(4,_minmax(0,_1fr))];
+    @apply gap-[12px];
+    border-top: 1px solid var(--border-matte);
+    @apply pt-[16px];
+    @apply mt-[8px];
+  }
+
+  .detail-item {
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply p-[10px];
+    @apply rounded-[var(--radius)];
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[2px];
+  }
+
+  .det-label {
+    @apply text-[0.65rem];
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .det-value {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.85rem];
+    @apply font-bold;
+    @apply text-[var(--color-white)];
+  }
+
+  /* Category Breakdown HUD Rings */
+  .chart-container-flex {
+    @apply flex;
+    @apply items-center;
+    @apply justify-around;
+    @apply gap-[20px];
+    @apply min-h-[180px];
+  }
+
+  .pie-chart-wrapper {
+    @apply relative;
+    @apply w-[130px];
+    @apply h-[130px];
+  }
+
+  .donut-chart {
+    @apply w-full;
+    @apply h-full;
+    transform: rotate(-90deg);
+  }
+
+  .chart-center-label {
+    @apply absolute;
+    @apply top-[50%];
+    @apply left-[50%];
+    transform: translate(-50%, -50%);
+    @apply text-center;
+  }
+
+  #chart-center-percentage {
+    @apply text-[1.25rem];
+    @apply font-extrabold;
+    @apply text-[var(--color-white)];
+    @apply font-[family-name:var(--font-family-mono)];
+  }
+
+  .chart-center-sub {
+    @apply text-[0.6rem];
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .chart-legend-wrapper {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[10px];
+  }
+
+  .chart-legend {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[6px];
+  }
+
+  .chart-legend-total {
+    @apply text-[0.72rem];
+    @apply text-[var(--color-zinc-muted)];
+    border-top: 1px solid var(--border-matte);
+    @apply pt-[8px];
+    @apply font-[family-name:var(--font-family-mono)];
+  }
+
+  .chart-legend-total span {
+    @apply text-[var(--color-white)];
+    @apply font-bold;
+  }
+
+  .legend-item {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[8px];
+    @apply text-[0.75rem];
+  }
+
+  .legend-color {
+    @apply w-[10px];
+    @apply h-[10px];
+    @apply rounded-[2px];
+    @apply shrink-0;
+  }
+
+  /* Urgent Lists on Dashboard */
+  .full-width-urgent-row {
+    @apply mt-[24px];
+  }
+
+  .hud-pulse-dot {
+    @apply w-[6px];
+    @apply h-[6px];
+    @apply rounded-[50%];
+    @apply bg-[var(--accent-cyan)];
+  }
+
+  .dashboard-list {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[10px];
+  }
+
+  .urgent-item {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+    @apply p-[12px_16px];
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    @apply text-[0.85rem];
+    transition: var(--transition-smooth);
+  }
+
+  .urgent-item:hover {
+    @apply border-[var(--border-focus)];
+  }
+
+  .urgent-badge {
+    @apply p-[2px_6px];
+    @apply rounded-[var(--radius)];
+    @apply text-[0.65rem];
+    @apply font-bold;
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply whitespace-nowrap;
+  }
+
+  .badge-urgent {
+    @apply bg-[var(--accent-pink-dim)];
+    @apply text-[var(--accent-pink)];
+    border: 1px solid var(--accent-pink);
+  }
+
+  .badge-normal {
+    @apply bg-[transparent];
+    @apply text-[var(--accent-lavender)];
+    border: 1px solid var(--border-matte);
+  }
+  .trend-point-label {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[10px];
+    @apply font-bold;
+    @apply pointer-events-none;
+  }
+
+  .dashboard-quick-actions {
+    @apply flex;
+    @apply flex-wrap;
+    @apply gap-[8px];
+    @apply mb-[20px];
+  }
+  @media (max-width: 768px) {
+    .dashboard-quick-actions {
+      @apply grid;
+      @apply grid-cols-[repeat(3,_minmax(0,_1fr))];
+    }
+    .dashboard-quick-actions .btn {
+      padding-inline: 4px;
+      @apply text-[0.75rem];
+    }
+  }
+}

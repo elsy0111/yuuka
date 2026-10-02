@@ -14,3 +14,6 @@ config.yaml
 *.db-wal
 *.db-shm
 yuuka.service
+
+# Tailwind output built locally and in CI
+src/public/app.css

@@ -10,7 +10,9 @@
       "src/public/**/*.css",
       "test/**/*.ts",
       "test/**/*.mjs",
-      "scripts/**/*.mjs"
+      "scripts/**/*.mjs",
+      "src/styles/**/*.css",
+      "!src/public/app.css"
     ]
   },
   "formatter": {
@@ -35,6 +37,9 @@
   "css": {
     "formatter": {
       "quoteStyle": "double"
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   }
 }

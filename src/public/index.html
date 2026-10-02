@@ -19,19 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Google Material Symbols (Outlined version matches shadcn/ui aesthetic perfectly) -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/views/dashboard.css">
-  <link rel="stylesheet" href="css/views/expenses.css">
-  <link rel="stylesheet" href="css/views/work.css">
-  <link rel="stylesheet" href="css/views/config.css">
-  <link rel="stylesheet" href="css/modals.css">
-  <link rel="stylesheet" href="css/responsive.css">
-  <link rel="stylesheet" href="css/animations.css">
-  <link rel="stylesheet" href="css/themes/ba-light.css">
-  <link rel="stylesheet" href="css/readability.css">
-  <link rel="stylesheet" href="css/views/finance.css">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
 
@@ -115,7 +103,7 @@
             <input type="password" id="reg-password" required placeholder="••••••••••••" autocomplete="new-password">
           </div>
 
-          <button type="submit" class="btn btn-primary btn-block" style="margin-top: 8px;">登録してログインする</button>
+          <button type="submit" class="btn btn-primary btn-block [margin-top:8px]">登録してログインする</button>
         </form>
       </div>
 
@@ -136,7 +124,7 @@
         <span class="brand-text">SEMINAR</span>
       </div>
 
-      <nav class="sidebar-menu">
+      <nav class="sidebar-menu max-[768px]:grid max-[768px]:grid-cols-5 max-[768px]:gap-0">
         <a href="#dashboard" class="menu-item active" data-tab="dashboard">
           <span class="material-symbols-outlined menu-icon-symbol">dashboard</span> <span class="menu-text">ホーム</span>
         </a>
@@ -209,7 +197,30 @@
             <output id="finance-day-summary" class="finance-day-summary" aria-live="polite">グラフを押すと、その日の金額を確認できます。</output>
             <p id="finance-error" role="status"></p><button id="finance-retry" class="btn btn-secondary" hidden>再試行</button>
           </div>
-          <div class="card finance-categories"><div class="column-header"><h3>使った分の内訳</h3></div><div id="dashboard-category-bars"></div></div>
+            <div class="dashboard-column card finance-categories">
+              <div class="column-header">
+                <h3><span class="material-symbols-outlined header-icon-symbol">pie_chart</span>カテゴリ別の支出</h3>
+              </div>
+              <div class="chart-container-flex">
+                <div class="pie-chart-wrapper">
+                  <svg id="dashboard-donut-chart" class="donut-chart" viewBox="0 0 100 100">
+                    <circle class="donut-bg-ring" cx="50" cy="50" r="40" fill="transparent" stroke-width="9"/>
+                  </svg>
+                  <div class="chart-center-label">
+                    <div id="chart-center-percentage">0%</div>
+                    <div class="chart-center-sub">娯楽比率</div>
+                  </div>
+                </div>
+                <div class="chart-legend-wrapper">
+                  <div class="chart-legend" id="dashboard-category-legend">
+                    <!-- Generated dynamically -->
+                  </div>
+                  <div class="chart-legend-total">
+                    合計: <span id="dashboard-category-total">¥0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
         </section>
 
         <!-- ==========================================
@@ -234,14 +245,14 @@
               <div class="hud-card-sub">今月の支出記録</div>
             </div>
             <!-- Dynamic Category Progress Bar -->
-            <div class="hud-card card col-span-2">
+            <div class="hud-card card hud-span-full">
               <div class="budget-header">
                 <p>月次予算</p>
                 <button type="button" class="btn-budget-edit" id="btn-budget-edit">
                   <span class="material-symbols-outlined">edit</span>
                 </button>
               </div>
-              <div id="budget-edit-form" class="budget-edit-form" style="display:none;">
+              <div id="budget-edit-form" class="budget-edit-form [display:none]">
                 <input type="number" id="budget-input" class="filter-input" min="0" step="1000" placeholder="50000">
                 <button type="button" class="btn btn-primary btn-sm" id="btn-budget-save">保存</button>
                 <button type="button" class="btn btn-secondary btn-sm" id="btn-budget-cancel">キャンセル</button>
@@ -462,30 +473,30 @@
             </div>
           </div>
 
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">person</span>プロフィール設定</h3>
             </div>
             <p class="description-text">先生ご自身の表示名を設定できます。</p>
-            <form id="profile-config-form" style="display: flex; gap: 12px; margin-top: 16px;">
-              <input type="text" id="config-profile-username" required placeholder="表示名 (例: シャーレの先生)" style="flex-grow: 1;">
-              <button type="submit" class="btn btn-primary" style="white-space: nowrap;">保存</button>
+            <form id="profile-config-form" class="[display:flex] [gap:12px] [margin-top:16px]">
+              <input type="text" id="config-profile-username" required placeholder="表示名 (例: シャーレの先生)" class="[flex-grow:1]">
+              <button type="submit" class="btn btn-primary [white-space:nowrap]">保存</button>
             </form>
           </div>
 
           <!-- Gemini Settings -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">psychology</span>Gemini AI 個別設定</h3>
             </div>
             <p class="description-text">先生ご自身の Gemini API Key と使用するモデルを設定してください。</p>
-            <form id="gemini-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-              <div class="form-group" style="margin-bottom: 12px;">
+            <form id="gemini-config-form" class="[display:flex] [flex-direction:column] [gap:12px] [margin-top:16px]">
+              <div class="form-group [margin-bottom:12px]">
                 <label for="gemini-api-key">Gemini API Key</label>
                 <input type="password" id="gemini-api-key" placeholder="APIキーを入力してください">
-                <small id="gemini-api-key-hint" style="color: var(--text-secondary); margin-top: 4px; display: block;"></small>
+                <small id="gemini-api-key-hint" class="[color:var(--text-secondary)] [margin-top:4px] [display:block]"></small>
               </div>
-              <div class="form-group" style="margin-bottom: 12px;">
+              <div class="form-group [margin-bottom:12px]">
                 <label for="gemini-model-select">Gemini モデル</label>
                 <select id="gemini-model-select" required>
                   <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite（現在の標準）</option>
@@ -498,20 +509,20 @@
           </div>
 
           <!-- Google OAuth settings -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">google</span>Google アカウント連携 (OAuth2)</h3>
             </div>
             <p class="description-text">Google カレンダーの同期や Google Drive へのデータバックアップを行うために、システム共通のセキュアな認証基盤を利用して Google アカウントとの連携を行います。</p>
 
-            <div style="margin-top: 18px; display: flex; justify-content: center;">
-              <button type="button" id="btn-google-auth" class="btn btn-primary btn-block" style="align-items: center; justify-content: center; gap: 8px; padding: 12px;">
+            <div class="[margin-top:18px] [display:flex] [justify-content:center]">
+              <button type="button" id="btn-google-auth" class="btn btn-primary btn-block [align-items:center] [justify-content:center] [gap:8px] [padding:12px]">
                 <span class="material-symbols-outlined">link</span> Google 連携認証を開始する
               </button>
             </div>
           </div>
 
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3>システム構成ステータス (`config.yaml`)</h3>
             </div>
@@ -523,17 +534,17 @@
           </div>
 
           <!-- Google Drive Backup Settings Card -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">cloud_sync</span>Google Drive バックアップ</h3>
               <span class="hud-tag">Beta</span>
             </div>
             <p class="description-text">データベースや設定ファイル、プレイブックのデータをGoogle Driveへ安全にバックアップします。</p>
 
-            <form id="backup-config-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-              <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="backup-enable" style="width: 20px; height: 20px;">
-                <label for="backup-enable" style="margin: 0;">自動バックアップを有効にする</label>
+            <form id="backup-config-form" class="[display:flex] [flex-direction:column] [gap:12px] [margin-top:16px]">
+              <div class="form-group [display:flex] [align-items:center] [gap:10px]">
+                <input type="checkbox" id="backup-enable" class="[width:20px] [height:20px]">
+                <label for="backup-enable" class="[margin:0]">自動バックアップを有効にする</label>
               </div>
               <div class="form-group">
                 <label for="backup-folder-id">バックアップ先フォルダID (空の場合はマイドライブ直下に保存)</label>
@@ -543,16 +554,16 @@
                 <label for="backup-cron">実行スケジュール</label>
                 <input type="text" id="backup-cron" placeholder="0 3 * * *">
               </div>
-              <div style="display: flex; gap: 10px; margin-top: 8px;">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">設定を保存</button>
-                <button type="button" id="btn-trigger-backup" class="btn btn-secondary" style="flex: 1;">今すぐバックアップ実行</button>
+              <div class="[display:flex] [gap:10px] [margin-top:8px]">
+                <button type="submit" class="btn btn-primary [flex:1]">設定を保存</button>
+                <button type="button" id="btn-trigger-backup" class="btn btn-secondary [flex:1]">今すぐバックアップ実行</button>
               </div>
             </form>
           </div>
 
 
           <!-- AI Credentials Management Card (Matte Flat Style) -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">lock</span>AI認証情報管理 (AI Credentials)</h3>
               <span class="hud-tag">SECURE</span>
@@ -560,15 +571,15 @@
             <p class="description-text">AIエージェント（ユウカ）が自動ブラウジング等でログインするために使用するユーザー名とパスワードを安全に登録します。パスワードはAES-256-GCMにより強固に暗号化され、必要な時にのみオンデマンドで復号されます。</p>
 
             <!-- Credentials List Table -->
-            <div class="table-responsive" style="margin-top: 16px;">
-              <table class="expense-table mobile-card-table" style="width: 100%; border-collapse: collapse;">
+            <div class="table-responsive [margin-top:16px]">
+              <table class="expense-table mobile-card-table [width:100%] [border-collapse:collapse]">
                 <thead>
-                  <tr style="border-bottom: 1px solid #27272a;">
-                    <th style="text-align: left; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa;">対象サービス名</th>
-                    <th style="text-align: left; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa;">ユーザー名 (ID)</th>
-                    <th style="text-align: left; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa;">パスワード</th>
-                    <th style="text-align: left; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa;">最終更新</th>
-                    <th style="text-align: right; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa; width: 80px;">操作</th>
+                  <tr class="[border-bottom:1px_solid_#27272a]">
+                    <th class="[text-align:left] [padding:10px] [font-weight:500] [font-size:0.85rem] [color:#a1a1aa]">対象サービス名</th>
+                    <th class="[text-align:left] [padding:10px] [font-weight:500] [font-size:0.85rem] [color:#a1a1aa]">ユーザー名 (ID)</th>
+                    <th class="[text-align:left] [padding:10px] [font-weight:500] [font-size:0.85rem] [color:#a1a1aa]">パスワード</th>
+                    <th class="[text-align:left] [padding:10px] [font-weight:500] [font-size:0.85rem] [color:#a1a1aa]">最終更新</th>
+                    <th class="[text-align:right] [padding:10px] [font-weight:500] [font-size:0.85rem] [color:#a1a1aa] [width:80px]">操作</th>
                   </tr>
                 </thead>
                 <tbody id="config-credentials-list">
@@ -578,20 +589,20 @@
             </div>
 
             <!-- Add Credential Button trigger -->
-            <div style="margin-top: 18px; display: flex; justify-content: flex-end;">
+            <div class="[margin-top:18px] [display:flex] [justify-content:flex-end]">
               <button id="btn-new-credential" class="btn btn-primary">＋ 認証情報を追加</button>
             </div>
           </div>
 
           <!-- Memory Management Card -->
-          <div class="config-card card" style="margin-top: 24px;">
+          <div class="config-card card [margin-top:24px]">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">memory</span>ユウカの記憶管理</h3>
               <span class="hud-tag">MEMORY</span>
             </div>
             <p class="description-text">ユウカがDiscordで学習した定型情報の一覧です。AIが家計記録などの際に自動参照します。</p>
 
-            <div style="display:flex;gap:8px;margin:14px 0 10px;">
+            <div class="[display:flex] [gap:8px] [margin:14px_0_10px]">
               <select id="memory-filter-module" class="filter-select">
                 <option value="">すべて</option>
                 <option value="expenses">家計</option>
@@ -600,48 +611,48 @@
               <button id="btn-memory-reload" class="btn btn-secondary btn-sm">更新</button>
             </div>
 
-            <div id="config-memories-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            <div id="config-memories-list" class="[display:flex] [flex-direction:column] [gap:8px] [margin-bottom:16px]">
               <!-- Generated dynamically -->
             </div>
 
-            <form id="memory-add-form" style="gap:8px;margin-top:8px;flex-wrap:wrap;">
-              <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" style="flex-grow:1;min-width:0;">
+            <form id="memory-add-form" class="[gap:8px] [margin-top:8px] [flex-wrap:wrap]">
+              <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" class="[flex-grow:1] [min-width:0]">
               <select id="memory-new-module" class="filter-select">
                 <option value="general">汎用</option>
                 <option value="expenses">家計</option>
               </select>
-              <button type="submit" class="btn btn-primary" style="white-space:nowrap;">追加</button>
+              <button type="submit" class="btn btn-primary [white-space:nowrap]">追加</button>
             </form>
           </div>
 
           <!-- Bot招待URL -->
-          <div class="config-card card" style="margin-top: 24px;" id="bot-invite-url-card">
+          <div class="config-card card [margin-top:24px]" id="bot-invite-url-card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">add_link</span>Bot 招待URL</h3>
             </div>
             <p class="description-text">このURLを友達に共有すると、友達が自分のDiscordサーバーにBotを追加できます。</p>
-            <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center;">
-              <input type="text" id="bot-invite-url-input" readonly style="flex: 1; font-family: var(--font-family-mono); font-size: 0.8rem;" placeholder="Bot起動後に表示されます">
+            <div class="[display:flex] [gap:8px] [margin-top:12px] [align-items:center]">
+              <input type="text" id="bot-invite-url-input" readonly placeholder="Bot起動後に表示されます" class="[flex:1] [font-family:var(--font-family-mono)] [font-size:0.8rem]">
               <button type="button" class="btn btn-primary btn-sm" id="btn-copy-invite-url">
-                <span class="material-symbols-outlined" style="font-size:16px;">content_copy</span>コピー
+                <span class="material-symbols-outlined [font-size:16px]">content_copy</span>コピー
               </button>
             </div>
           </div>
 
           <!-- 招待コード管理 -->
-          <div class="config-card card" style="margin-top: 24px;" id="invite-code-management-card">
+          <div class="config-card card [margin-top:24px]" id="invite-code-management-card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">card_giftcard</span>招待コード管理</h3>
             </div>
-            <ol class="description-text" style="margin: 0; padding-left: 1.4em; line-height: 2;">
+            <ol class="description-text [margin:0] [padding-left:1.4em] [line-height:2]">
               <li>「新規発行」でコードを生成し、コピーして友達に共有する</li>
               <li>友達がこの管理画面のURLにアクセスし、「アカウント作成」タブを開く</li>
               <li>Discord ユーザーID・ユーザー名・パスワード・招待コードを入力して登録</li>
               <li>友達がログイン後、設定画面で自分の Gemini API Key を登録する</li>
               <li>友達が自分の Discord サーバーに Bot 招待URLでBotを追加する（招待URLは上の「Bot 招待URL」カードから取得）</li>
             </ol>
-            <div id="invite-codes-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 14px; margin-bottom: 18px;"></div>
-            <div style="display: flex; justify-content: flex-end;">
+            <div id="invite-codes-list" class="[display:flex] [flex-direction:column] [gap:8px] [margin-top:14px] [margin-bottom:18px]"></div>
+            <div class="[display:flex] [justify-content:flex-end]">
               <button type="button" class="btn btn-primary" id="btn-generate-invite">＋ 新規発行</button>
             </div>
           </div>
@@ -663,7 +674,7 @@
           <div class="config-card card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">speed</span>Gemini API レート使用状況</h3>
-              <div style="display:flex;gap:8px;align-items:center;">
+              <div class="[display:flex] [gap:8px] [align-items:center]">
                 <span class="hud-tag" id="gemini-usage-model">—</span>
                 <button type="button" class="btn-budget-edit" id="btn-gemini-quota-edit" title="クォータを設定">
                   <span class="material-symbols-outlined">edit</span>
@@ -729,7 +740,7 @@
               <button type="button" id="btn-bot-logs-reload" class="btn btn-secondary btn-sm">
                 <span class="material-symbols-outlined">refresh</span>更新
               </button>
-              <button type="button" id="btn-bot-logs-clear" class="btn btn-secondary btn-sm" style="color:var(--color-red);border-color:var(--color-red);">
+              <button type="button" id="btn-bot-logs-clear" class="btn btn-secondary btn-sm [color:var(--color-red)] [border-color:var(--color-red)]">
                 <span class="material-symbols-outlined">delete_sweep</span>全削除
               </button>
             </div>
@@ -817,7 +828,7 @@
         <button class="btn-close"><span class="material-symbols-outlined">close</span></button>
       </div>
       <p class="description-text">現在のモデル: <strong id="gemini-quota-model-label">—</strong></p>
-      <p class="description-text" style="margin-top:-8px;">Google AI Studio で確認できる無料枠の上限値を入力してください。0 のままにするとバーが表示されません。</p>
+      <p class="description-text [margin-top:-8px]">Google AI Studio で確認できる無料枠の上限値を入力してください。0 のままにするとバーが表示されません。</p>
       <div class="gemini-quota-form-grid">
         <div class="gemini-quota-field">
           <label class="gemini-quota-field-label">RPM <span class="gemini-quota-field-sub">Requests per Minute（分あたりのリクエスト上限）</span></label>
@@ -889,11 +900,11 @@
           <label for="exp-edit-description">詳細</label>
           <input type="text" id="exp-edit-description" placeholder="例: コンビニでの買い物">
         </div>
-        <div style="display:flex;gap:8px;margin-top:4px;">
-          <button id="btn-expense-delete" class="btn" type="button" style="background:var(--color-red);color:#fff;border:none;">
-            <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">delete</span>削除
+        <div class="[display:flex] [gap:8px] [margin-top:4px]">
+          <button id="btn-expense-delete" class="btn [background:var(--color-red)] [color:#fff] [border:none]" type="button">
+            <span class="material-symbols-outlined [font-size:1rem] [vertical-align:middle]">delete</span>削除
           </button>
-          <button type="submit" class="btn btn-primary" style="flex:1;">更新する</button>
+          <button type="submit" class="btn btn-primary [flex:1]">更新する</button>
         </div>
       </form>
     </div>
@@ -961,7 +972,7 @@
         <div class="filter-row">
           <label>期間（開始日 → 終了日）</label>
           <input type="date" id="filter-date-from" aria-label="開始日" class="filter-input">
-          <span style="color:var(--color-zinc-muted);">〜</span>
+          <span class="[color:var(--color-zinc-muted)]">〜</span>
           <input type="date" id="filter-date-to" aria-label="終了日" class="filter-input">
         </div>
         <div class="filter-row">
@@ -989,7 +1000,7 @@
         <div class="filter-row">
           <label>金額</label>
           <input type="number" id="filter-amount-min" aria-label="金額の下限" class="filter-input filter-input-num" placeholder="下限">
-          <span style="color:var(--color-zinc-muted);">〜</span>
+          <span class="[color:var(--color-zinc-muted)]">〜</span>
           <input type="number" id="filter-amount-max" aria-label="金額の上限" class="filter-input filter-input-num" placeholder="上限">
         </div>
         <div class="filter-row">
@@ -1041,7 +1052,7 @@
         <h3 id="field-info-modal-title"></h3>
         <button class="btn-close"><span class="material-symbols-outlined">close</span></button>
       </div>
-      <p id="field-info-modal-body" style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.7;"></p>
+      <p id="field-info-modal-body" class="[color:var(--text-secondary)] [font-size:0.85rem] [line-height:1.7]"></p>
     </div>
   </div>
 

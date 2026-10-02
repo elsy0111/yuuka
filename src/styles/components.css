@@ -1,0 +1,446 @@
+@layer components {
+  /* ==============================================================================
+   OVERLAY & LOGIN WINDOW (Sleek Matte HUD)
+   ============================================================================== */
+  .overlay {
+    @apply fixed;
+    @apply top-[0];
+    @apply left-[0];
+    @apply w-[100vw];
+    @apply h-[100vh];
+    @apply bg-[var(--bg-primary)];
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply z-[9999];
+    @apply opacity-[0];
+    @apply pointer-events-none;
+    transition: var(--transition-smooth);
+  }
+
+  @layer components {
+    .btn,
+    button {
+      @apply inline-flex items-center justify-center;
+    }
+    .form-group {
+      @apply flex flex-col;
+    }
+  }
+
+  .overlay.active {
+    @apply opacity-[1];
+    @apply pointer-events-auto;
+  }
+
+  .login-card {
+    @apply bg-[var(--card-matte)];
+    border: 1px solid var(--border-matte);
+    @apply w-full;
+    @apply max-w-[560px];
+    @apply p-[36px_40px];
+    @apply rounded-[var(--radius)];
+    @apply text-center;
+    transform: scale(0.95);
+    transition: var(--transition-smooth);
+  }
+
+  .overlay.active .login-card {
+    transform: scale(1);
+  }
+
+  .logo-icon {
+    @apply text-[3rem];
+    @apply mb-[16px];
+  }
+
+  .login-avatar-img {
+    @apply w-[80px];
+    @apply h-[80px];
+    @apply object-cover;
+    @apply rounded-[50%];
+    @apply mb-[12px];
+  }
+
+  .login-header h1 {
+    @apply text-[1.8rem];
+    @apply font-extrabold;
+    @apply text-[var(--color-white)];
+    @apply mb-[8px];
+    @apply tracking-[0.05em];
+  }
+
+  .login-header p {
+    @apply text-[var(--text-secondary)];
+    @apply text-[0.8rem];
+    @apply tracking-[0.02em];
+  }
+
+  .login-tabs {
+    @apply flex;
+    @apply gap-[0];
+    @apply m-[20px_0_16px];
+    border-bottom: 1px solid var(--border-matte);
+  }
+
+  .login-tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    @apply text-[var(--text-secondary)];
+    @apply text-[0.85rem];
+    @apply font-medium;
+    @apply p-[8px_0];
+    @apply cursor-pointer;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+    @apply mb-[-1px];
+  }
+
+  .login-tab-btn.active {
+    @apply text-[var(--color-white)];
+    border-bottom-color: var(--color-white);
+  }
+
+  .login-tab-pane {
+    @apply hidden;
+  }
+
+  .login-tab-pane.active {
+    @apply block;
+  }
+
+  .reg-group-label {
+    @apply text-[0.8rem];
+    @apply font-semibold;
+    @apply tracking-[0.06em];
+    @apply text-[var(--text-secondary)];
+    border-left: 2px solid var(--border-matte);
+    @apply pl-[8px];
+    @apply m-[22px_0_12px];
+    @apply text-left;
+  }
+
+  .btn-field-info {
+    background: transparent;
+    border: none;
+    @apply p-[0];
+    @apply ml-[4px];
+    @apply cursor-pointer;
+    @apply text-[var(--text-secondary)];
+    vertical-align: middle;
+    @apply leading-[1];
+    transition: color 0.15s;
+  }
+
+  .btn-field-info:hover {
+    @apply text-[var(--color-white)];
+  }
+
+  .btn-field-info .material-symbols-outlined {
+    @apply text-[0.95rem];
+  }
+
+  /* ==============================================================================
+   FORM CONTROLS & INPUTS (Minimal Matte Styling)
+   ============================================================================== */
+  .form-group {
+    @apply mb-[20px];
+    @apply text-left;
+  }
+
+  .form-group label {
+    @apply block;
+    @apply text-[0.75rem];
+    @apply text-[var(--text-secondary)];
+    @apply mb-[6px];
+    @apply font-semibold;
+    text-transform: uppercase;
+    @apply tracking-[0.05em];
+  }
+
+  .form-row {
+    @apply grid;
+    @apply grid-cols-[minmax(0,_1fr)_minmax(0,_1fr)];
+    @apply gap-[16px];
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    @apply min-h-[100px];
+  }
+
+  .field-sub {
+    @apply block;
+    @apply text-[0.7rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply mt-[4px];
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply gap-[6px];
+    @apply p-[10px_20px];
+    @apply rounded-[var(--radius)];
+    @apply font-semibold;
+    @apply text-[0.9rem];
+    @apply cursor-pointer;
+    border: none;
+    @apply outline-none;
+    transition: var(--transition-smooth);
+    @apply whitespace-nowrap;
+  }
+
+  .btn-icon-symbol {
+    @apply text-[1rem];
+    @apply leading-[1];
+  }
+
+  .btn-block {
+    @apply flex;
+    @apply w-full;
+  }
+
+  .btn-primary {
+    @apply bg-[var(--accent-cyan)];
+    @apply text-[var(--bg-primary)];
+  }
+
+  .btn-primary:hover {
+    @apply bg-[var(--accent-cyan-hover)];
+  }
+
+  .btn-secondary {
+    @apply bg-[transparent];
+    border: 1px solid var(--border-matte);
+    @apply text-[var(--text-primary)];
+  }
+
+  .btn-secondary:hover {
+    @apply bg-[var(--accent-cyan-faint)];
+  }
+
+  .btn-icon {
+    @apply bg-[transparent];
+    border: 1px solid var(--border-matte);
+    @apply text-[var(--text-primary)];
+    @apply w-[32px];
+    @apply h-[32px];
+    @apply inline-flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply rounded-[var(--radius)];
+    @apply cursor-pointer;
+    font-weight: bold;
+    transition: var(--transition-smooth);
+  }
+
+  .btn-icon:hover {
+    @apply bg-[var(--accent-cyan-faint)];
+    @apply border-[var(--border-focus)];
+  }
+
+  .error-msg {
+    @apply text-[var(--color-red)];
+    @apply text-[0.8rem];
+    @apply mt-[12px];
+    @apply min-h-[20px];
+  }
+
+  /* Badge */
+  .badge {
+    @apply text-[0.65rem];
+    @apply font-bold;
+    @apply p-[2px_6px];
+    @apply rounded-[var(--radius)];
+    @apply whitespace-nowrap;
+  }
+
+  .badge-accent {
+    @apply bg-[var(--accent-cyan-faint)];
+    @apply text-[var(--accent-cyan)];
+    border: 1px solid var(--accent-cyan);
+  }
+
+  .description-text {
+    @apply text-[0.75rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply leading-[1.4];
+    @apply mb-[12px];
+  }
+
+  /* ============================================================
+   TOAST NOTIFICATIONS (Sonner-like)
+   ============================================================ */
+  #toast-container {
+    @apply fixed;
+    @apply bottom-[24px];
+    @apply right-[24px];
+    @apply z-[9999];
+    @apply flex;
+    flex-direction: column-reverse;
+    @apply gap-[8px];
+    list-style: none;
+    @apply m-[0];
+    @apply p-[0];
+    @apply w-[340px];
+    @apply max-w-[calc(100vw_-_32px)];
+  }
+
+  .toast {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[10px];
+    @apply p-[12px_14px];
+    @apply rounded-[var(--radius)];
+    border: 1px solid var(--border-matte);
+    @apply bg-[var(--card-matte)];
+    @apply shadow-[0_4px_20px_rgba(0,_0,_0,_0.4)];
+    @apply text-[0.83rem];
+    @apply text-[var(--text-primary)];
+    @apply opacity-[0];
+    transform: translateY(8px) scale(0.97);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+    @apply pointer-events-none;
+  }
+
+  .toast-active {
+    @apply opacity-[1];
+    transform: translateY(0) scale(1);
+    @apply pointer-events-auto;
+  }
+
+  .toast-out {
+    animation: toast-fade-out 0.18s ease forwards;
+  }
+
+  @keyframes toast-fade-out {
+    to {
+      opacity: 0;
+      transform: translateY(4px) scale(0.97);
+    }
+  }
+
+  .toast-icon {
+    @apply text-[1.05rem];
+    @apply shrink-0;
+  }
+
+  .toast-success .toast-icon {
+    @apply text-[var(--color-green)];
+  }
+  .toast-error .toast-icon {
+    @apply text-[var(--color-red)];
+  }
+  .toast-warning .toast-icon {
+    @apply text-[var(--accent-yellow)];
+  }
+  .toast-default .toast-icon {
+    @apply text-[var(--accent-cyan)];
+  }
+
+  .toast-message {
+    flex: 1;
+    @apply leading-[1.4];
+  }
+
+  .toast-close {
+    background: transparent;
+    border: none;
+    @apply cursor-pointer;
+    @apply text-[var(--color-zinc-muted)];
+    @apply flex;
+    @apply items-center;
+    @apply p-[0];
+    @apply shrink-0;
+    transition: color 0.15s;
+  }
+
+  .toast-close:hover {
+    @apply text-[var(--text-primary)];
+  }
+
+  .toast-close .material-symbols-outlined {
+    @apply text-[0.95rem];
+  }
+
+  /* モバイル: 下部ナビの上に出す */
+  @media (max-width: 768px) {
+    #toast-container {
+      @apply bottom-[80px];
+      @apply right-[16px];
+      @apply left-[16px];
+      @apply w-auto;
+    }
+  }
+
+  a:not(.menu-item):not(.btn) {
+    @apply text-[var(--accent-lavender)];
+  }
+
+  a:not(.menu-item):not(.btn):hover {
+    @apply text-[var(--accent-cyan)];
+  }
+
+  /* Clear feedback and keyboard navigation across views. */
+  :focus-visible {
+    outline: 3px solid var(--accent-blue, #60a5fa);
+    outline-offset: 3px;
+  }
+  button:disabled {
+    @apply opacity-[0.55];
+    cursor: wait;
+  }
+  .list-state {
+    @apply p-[28px];
+    @apply text-center;
+    @apply text-[var(--text-secondary)];
+  }
+  .list-state p {
+    @apply mb-[12px];
+  }
+  .card-text {
+    @apply min-w-0;
+    overflow-wrap: anywhere;
+  }
+  body.modal-open {
+    @apply overflow-hidden;
+  }
+  @media (max-width: 768px) {
+    .btn-trash,
+    .btn-icon-sm,
+    .toast-close {
+      @apply min-w-[44px];
+      @apply min-h-[44px];
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      @apply text-[16px];
+    }
+    .expense-table {
+      @apply w-full;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+      animation-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+      animation-iteration-count: 1 !important;
+      /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+      transition-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+      scroll-behavior: auto !important;
+    }
+  }
+}

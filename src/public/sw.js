@@ -1,7 +1,8 @@
-const CACHE = "yuuka-v4";
+const CACHE = "yuuka-v5";
 const PRECACHE = [
   "/",
   "/manifest.json",
+  "/app.css",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
   "/materials/yuka.webp",

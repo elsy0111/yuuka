@@ -50,5 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: yuuka-dist-${{ github.sha }}
-          path: dist
+          path: |
+            dist
+            src/public/app.css
           if-no-files-found: error

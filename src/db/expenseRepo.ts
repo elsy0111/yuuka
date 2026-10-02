@@ -177,8 +177,13 @@ export function getMonthlyDailyExpenseTotals(
   userId: string,
   year: number,
   month: number,
+  now = new Date(),
 ): DailyExpenseTotal[] {
+  const selected = year * 12 + month;
+  const current = now.getFullYear() * 12 + now.getMonth() + 1;
+  if (selected > current) return [];
   const days = new Date(year, month, 0).getDate();
+  const visibleDays = selected === current ? Math.min(days, now.getDate()) : days;
   const prefix = `${year}-${String(month).padStart(2, "0")}`;
   const rows = getDb()
     .prepare(
@@ -186,7 +191,7 @@ export function getMonthlyDailyExpenseTotals(
     )
     .all(userId, `${prefix}-%`) as DailyExpenseTotal[];
   const totals = new Map(rows.map((row) => [row.date, row.total]));
-  return Array.from({ length: days }, (_, index) => ({
+  return Array.from({ length: visibleDays }, (_, index) => ({
     date: `${prefix}-${String(index + 1).padStart(2, "0")}`,
     total: totals.get(`${prefix}-${String(index + 1).padStart(2, "0")}`) ?? 0,
   }));

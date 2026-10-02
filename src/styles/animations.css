@@ -1,0 +1,190 @@
+@layer components {
+  /* ==============================================================================
+   DYNAMIC ANIMATION KEYFRAMES
+   ============================================================================== */
+  /* ==============================================================================
+   SPLASH SCREEN (PWA起動時)
+   ============================================================================== */
+  #splash-screen {
+    @apply fixed;
+    inset: 0;
+    @apply z-[99999];
+    @apply bg-[var(--bg-primary)];
+    @apply flex;
+    @apply flex-col;
+    @apply items-center;
+    @apply justify-center;
+    @apply gap-[16px];
+    animation: splash-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @layer components {
+    .tab-view {
+      @apply min-w-0;
+    }
+    .card-item {
+      @apply overflow-hidden;
+    }
+  }
+
+  #splash-screen.hide {
+    animation: splash-out 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  #splash-avatar {
+    @apply w-[96px];
+    @apply h-[96px];
+    @apply rounded-[50%];
+    @apply object-cover;
+    animation: splash-avatar-in 0.5s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  #splash-title {
+    @apply text-[1.1rem];
+    @apply font-extrabold;
+    @apply tracking-[0.15em];
+    @apply text-[var(--color-white)];
+    animation: splash-text-in 0.4s 0.25s ease both;
+  }
+
+  #splash-sub {
+    @apply text-[0.75rem];
+    @apply text-[var(--text-secondary)];
+    @apply tracking-[0.05em];
+    animation: splash-text-in 0.4s 0.35s ease both;
+  }
+
+  @keyframes splash-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes splash-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  @keyframes splash-avatar-in {
+    from {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes splash-text-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes tab-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes item-fade-in {
+    from {
+      opacity: 0;
+      transform: translateX(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes logo-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .btn,
+    .menu-item {
+      transition:
+        transform 0.16s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    }
+    .btn:active,
+    .menu-item:active {
+      transform: scale(0.97);
+    }
+    @media (hover: hover) {
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .card:hover {
+        @apply border-[color-mix(in_srgb,_var(--accent-cyan)_30%,_var(--border-matte))];
+      }
+    }
+  }
+
+  @keyframes surface-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Animate one visible surface, rather than every row and card together. */
+  .tab-view {
+    animation: none;
+  }
+  .card-item {
+    animation: none;
+  }
+  #tasks-list .card-item,
+  #schedules-list .card-item {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 128px;
+  }
+  @media (max-width: 768px) {
+    #tasks-list .card-item,
+    #schedules-list .card-item {
+      contain-intrinsic-size: auto 190px;
+    }
+    .modal,
+    .modal-overlay {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+}

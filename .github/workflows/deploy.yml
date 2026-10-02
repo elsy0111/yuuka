@@ -43,7 +43,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: yuuka-dist-${{ github.sha }}
-          path: dist
+          path: .
 
       - name: Restore crawler executable permission
         run: chmod +x dist/bin/yuuka-crawler

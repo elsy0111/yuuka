@@ -63,6 +63,9 @@ Yuuka の Discord Bot は、以下の順序で受信メッセージを判定し�
 ### Web/PWA 仕様
 
 *   静的ファイルは `src/public/` から配信します。
+*   全画面のスタイルはTailwind CSS 4で生成します。編集元は `src/styles/`、ビルド出力は `src/public/app.css` です。
+*   `yarn dev` はCSSの生成・監視とアプリを起動します。`yarn build` はCSSも生成し、CIは検証済みCSSを本番へ配布します。
+*   当月の収支グラフは今日までを表示し、未来の日付を0埋めしません。過去月は月末まで表示します。
 *   ログイン/登録後、サーバーは `__Host-yuuka-session` Cookie と session token を返します。ブラウザ側は session token を `localStorage` に保存し、同一オリジンの `/api/` リクエストへ `Authorization: Bearer ...` を自動付与します。
 *   Service Worker は `/sw.js` として登録され、`/`, CSS, JS, manifest, icons, `materials/yuka.webp` をプリキャッシュします。
 *   GET かつ同一オリジンかつ `/api/` を含まないリクエストだけをキャッシュ対象にします。API、認証、外部リクエストはキャッシュしません。

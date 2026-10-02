@@ -1,0 +1,317 @@
+@layer components {
+  /* ==============================================================================
+   POPUP MODAL DIALOGS (Highly Interactive Overlays)
+   ============================================================================== */
+  .modal {
+    @apply fixed;
+    @apply top-[0];
+    @apply left-[0];
+    @apply w-[100vw];
+    @apply h-[100dvh];
+    @apply p-[16px];
+    @apply bg-[rgba(9,_9,_11,_0.7)];
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply z-[1100];
+    @apply opacity-[0];
+    @apply pointer-events-none;
+    transition: var(--transition-smooth);
+  }
+
+  .modal.active {
+    @apply opacity-[1];
+    @apply pointer-events-auto;
+  }
+
+  .modal-content {
+    @apply w-full;
+    @apply max-w-[460px];
+    @apply max-h-[calc(100dvh_-_32px)];
+    @apply overflow-y-auto;
+    transform: translateY(12px);
+    transition: var(--transition-smooth);
+    border: 1px solid var(--border-matte);
+  }
+
+  .wide-modal {
+    @apply max-w-[600px];
+  }
+
+  .modal.modal-field-info {
+    @apply z-[10100];
+  }
+
+  .modal.active .modal-content {
+    transform: translateY(0);
+  }
+
+  .modal-header {
+    @apply flex;
+    @apply justify-between;
+    @apply items-center;
+    @apply mb-[20px];
+    border-bottom: 1px solid var(--border-matte);
+    @apply pb-[12px];
+  }
+
+  .modal-header h3 {
+    @apply text-[1.05rem];
+    @apply font-extrabold;
+  }
+
+  .btn-close {
+    background: transparent;
+    border: none;
+    @apply text-[1.4rem];
+    @apply cursor-pointer;
+    @apply text-[var(--color-zinc-muted)];
+    @apply leading-[1];
+  }
+
+  .btn-close:hover {
+    @apply text-[var(--color-white)];
+  }
+
+  /* Receipt AI result layout */
+  .receipt-result-body {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[10px];
+    @apply mb-[20px];
+  }
+
+  .receipt-result-icon {
+    @apply text-[2.5rem];
+    @apply text-center;
+  }
+
+  .receipt-ai-comment {
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply p-[16px];
+    @apply rounded-[10px];
+    @apply text-[0.8rem];
+    @apply leading-[1.5];
+    @apply whitespace-pre-wrap;
+    @apply max-h-[300px];
+    @apply overflow-y-auto;
+  }
+
+  .modal-footer {
+    @apply flex;
+    @apply justify-end;
+    border-top: 1px solid var(--border-matte);
+    @apply pt-[12px];
+  }
+
+  .confirm-modal-content {
+    @apply max-w-[420px];
+  }
+
+  .confirm-modal-message {
+    @apply text-[var(--text-secondary)];
+    @apply text-[0.9rem];
+    @apply leading-[1.7];
+    @apply mb-[20px];
+    white-space: pre-line;
+  }
+
+  .confirm-modal-footer {
+    @apply gap-[8px];
+  }
+
+  .btn-danger {
+    @apply bg-[var(--color-red)];
+    @apply text-[var(--color-white)];
+  }
+
+  .btn-danger:hover {
+    filter: brightness(1.08);
+  }
+
+  /* ==============================
+   支出詳細モーダル
+   ============================== */
+  .btn-sm {
+    @apply p-[4px_10px];
+    @apply text-[0.72rem];
+  }
+
+  .modal-overlay {
+    @apply fixed;
+    inset: 0;
+    background: rgba(9, 9, 11, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    @apply flex;
+    @apply items-start;
+    @apply justify-center;
+    @apply z-[1000];
+    @apply overflow-y-auto;
+    @apply p-[16px];
+    @apply box-border;
+    @apply opacity-[0];
+    transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .modal-overlay.modal-visible {
+    @apply opacity-[1];
+  }
+
+  .modal-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius-lg)];
+    @apply w-full;
+    @apply max-w-[min(1100px,_calc(100vw_-_32px))];
+    @apply min-w-0;
+    @apply min-h-[calc(100vh_-_32px)];
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[16px];
+    @apply p-[24px];
+  }
+
+  .modal-overlay .modal-panel {
+    transform: translateY(14px);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .modal-overlay.modal-visible .modal-panel {
+    transform: translateY(0);
+  }
+
+  .modal-overlay.hidden {
+    @apply hidden;
+  }
+
+  .modal-overlay .modal-header {
+    @apply flex;
+    @apply items-center;
+    @apply justify-between;
+  }
+
+  .modal-overlay .modal-header h3 {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[6px];
+    @apply text-[1rem];
+    @apply font-bold;
+    @apply text-[var(--color-white)];
+  }
+
+  .modal-filters {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[10px];
+    background: var(--bg-primary);
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    @apply p-[16px];
+  }
+
+  .filter-row {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[8px];
+    @apply flex-wrap;
+  }
+
+  .filter-row label {
+    @apply text-[0.72rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply whitespace-nowrap;
+  }
+
+  .filter-input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    @apply text-[var(--text-primary)];
+    @apply text-[0.78rem];
+    @apply p-[4px_8px];
+    @apply min-w-[120px];
+  }
+
+  .filter-input-num {
+    @apply min-w-[80px];
+    @apply max-w-[100px];
+  }
+
+  #filter-q,
+  #filter-purchase-source {
+    flex: 1;
+    @apply min-w-[160px];
+  }
+
+  .filter-select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-matte);
+    @apply rounded-[var(--radius)];
+    @apply text-[var(--text-primary)];
+    @apply text-[0.78rem];
+    @apply p-[4px_8px];
+  }
+
+  .filter-actions {
+    @apply pt-[6px];
+  }
+
+  .filter-actions .btn {
+    @apply p-[7px_18px];
+    @apply text-[0.78rem];
+  }
+
+  .filter-count {
+    @apply text-[0.72rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply font-[family-name:var(--font-family-mono)];
+  }
+
+  .modal-table-wrap {
+    @apply overflow-x-auto;
+    @apply overflow-y-auto;
+    flex: 1 1 0;
+    @apply min-h-0;
+  }
+
+  /* ソート可能テーブルヘッダー */
+  .sortable-th {
+    @apply cursor-pointer;
+    user-select: none;
+    @apply whitespace-nowrap;
+  }
+
+  .sortable-th:hover {
+    background: var(--color-zinc-hover, rgba(255, 255, 255, 0.05));
+  }
+
+  .sort-icon {
+    @apply inline-block;
+    @apply ml-[4px];
+    @apply text-[0.7em];
+    @apply opacity-[0.7];
+    @apply min-w-[1em];
+  }
+
+  .sort-asc .sort-icon,
+  .sort-desc .sort-icon {
+    @apply opacity-[1];
+  }
+
+  @layer components {
+    .modal {
+      @apply fixed flex items-center justify-center;
+    }
+    .modal-content {
+      @apply flex flex-col overflow-hidden;
+    }
+    .modal-header,
+    .modal-footer {
+      @apply flex items-center;
+    }
+  }
+}

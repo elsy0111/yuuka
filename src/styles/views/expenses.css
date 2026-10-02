@@ -1,0 +1,444 @@
+@layer components {
+  /* ==============================================================================
+   4. EXPENSE TAB STYLINGS (Drag & Drop HUD)
+   ============================================================================== */
+  .expense-hud-grid {
+    @apply grid;
+    @apply grid-cols-[1fr];
+    @apply gap-[24px];
+    @apply mb-[24px];
+  }
+
+  .hud-card {
+    @apply flex;
+    @apply flex-col;
+    @apply justify-center;
+  }
+
+  .hud-card-sub {
+    @apply text-[0.7rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply mt-[6px];
+  }
+
+  .hud-span-full {
+    grid-column: auto;
+  }
+
+  .hud-card p {
+    @apply text-[0.75rem];
+    @apply text-[var(--color-zinc-muted)];
+    @apply font-bold;
+    @apply mb-[6px];
+    @apply tracking-[0.05em];
+  }
+
+  .hud-card h2 {
+    @apply text-[2.2rem];
+    @apply font-extrabold;
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[var(--color-white)];
+    @apply whitespace-nowrap;
+  }
+
+  .budget-header {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[6px];
+    @apply mb-[6px];
+  }
+
+  .budget-header p {
+    @apply mb-[0];
+  }
+
+  .btn-budget-edit {
+    background: transparent;
+    border: none;
+    @apply cursor-pointer;
+    @apply text-[var(--text-secondary)];
+    @apply p-[2px];
+    @apply flex;
+    @apply items-center;
+    transition: color 0.15s;
+  }
+
+  .btn-budget-edit:hover {
+    @apply text-[var(--text-primary)];
+  }
+
+  .btn-budget-edit .material-symbols-outlined {
+    @apply text-[1rem];
+  }
+
+  .budget-edit-form {
+    @apply flex;
+    @apply gap-[6px];
+    @apply items-center;
+    @apply mb-[8px];
+    @apply flex-wrap;
+  }
+
+  .budget-edit-form .filter-input {
+    @apply w-[120px];
+  }
+
+  .budget-limit-row {
+    @apply flex;
+    @apply justify-between;
+    @apply items-baseline;
+    @apply mb-[8px];
+  }
+
+  .budget-limit-label {
+    @apply text-[0.75rem];
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  .budget-remaining {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.8rem];
+    @apply font-bold;
+  }
+
+  .budget-progress-container {
+    @apply w-full;
+    @apply h-[10px];
+    @apply bg-[var(--bg-primary)];
+    @apply rounded-[var(--radius)];
+    @apply overflow-hidden;
+    @apply mb-[8px];
+    border: 1px solid var(--border-matte);
+  }
+
+  .budget-progress-bar {
+    @apply h-full;
+    @apply w-[0%];
+    @apply bg-[var(--accent-cyan)];
+    @apply rounded-[var(--radius)];
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .budget-info {
+    @apply flex;
+    @apply justify-between;
+    @apply text-[0.75rem];
+    @apply text-[var(--text-secondary)];
+    font-weight: bold;
+  }
+
+  #expense-budget-percent {
+    @apply text-[var(--accent-cyan)];
+    @apply font-[family-name:var(--font-family-mono)];
+  }
+
+  /* Stats Grid */
+  .expense-stats-grid {
+    @apply grid;
+    @apply grid-cols-[repeat(4,_1fr)];
+    @apply gap-[12px];
+    @apply mb-[24px];
+  }
+
+  .expense-stat-card {
+    @apply p-[14px_16px];
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[4px];
+  }
+
+  .stat-label {
+    @apply text-[0.68rem];
+    @apply font-bold;
+    @apply text-[var(--color-zinc-muted)];
+    @apply tracking-[0.05em];
+    @apply m-[0];
+  }
+
+  .stat-value {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[1.4rem];
+    @apply font-extrabold;
+    @apply text-[var(--color-white)];
+    @apply leading-[1.1];
+    @apply whitespace-nowrap;
+    @apply overflow-hidden;
+    @apply text-ellipsis;
+  }
+
+  .stat-sub {
+    @apply text-[0.7rem];
+    @apply text-[var(--text-secondary)];
+    @apply font-[family-name:var(--font-family-mono)];
+  }
+
+  .expense-stat-ranking .stat-value {
+    @apply text-[1rem];
+  }
+
+  .stat-ranking-list {
+    list-style: none;
+    @apply m-[4px_0_0];
+    @apply p-[0];
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[5px];
+  }
+
+  .stat-ranking-item {
+    @apply flex;
+    @apply items-center;
+    @apply gap-[8px];
+    @apply text-[0.78rem];
+  }
+
+  .stat-rank-num {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.65rem];
+    @apply font-bold;
+    @apply text-[var(--accent-cyan)];
+    @apply w-[14px];
+    @apply shrink-0;
+  }
+
+  .stat-rank-cat {
+    flex: 1;
+    @apply text-[var(--text-primary)];
+    @apply min-w-0;
+    @apply overflow-hidden;
+    @apply text-ellipsis;
+    @apply whitespace-nowrap;
+  }
+
+  .stat-rank-amt {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.75rem];
+    @apply text-[var(--text-secondary)];
+    @apply shrink-0;
+  }
+
+  /* Upload & Manual Columns Grid */
+  .expense-actions-columns {
+    @apply grid;
+    @apply grid-cols-[minmax(0,_1fr)_minmax(0,_1fr)];
+    @apply gap-[24px];
+    @apply mb-[24px];
+  }
+
+  .action-column {
+    @apply flex;
+    @apply flex-col;
+  }
+
+  .expense-daily-card {
+    @apply mb-[24px];
+  }
+
+  .expense-daily-list {
+    @apply flex;
+    @apply flex-col;
+    @apply gap-[10px];
+    @apply mt-[14px];
+  }
+
+  .expense-daily-item {
+    @apply grid;
+    @apply grid-cols-[56px_minmax(0,_1fr)_96px];
+    @apply gap-[12px];
+    @apply items-center;
+  }
+
+  .expense-daily-date,
+  .expense-daily-amount {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply text-[0.78rem];
+  }
+
+  .expense-daily-date {
+    @apply text-[var(--text-secondary)];
+  }
+
+  .expense-daily-amount {
+    @apply text-[var(--text-primary)];
+    @apply text-right;
+  }
+
+  .expense-daily-track {
+    @apply h-[8px];
+    @apply rounded-[var(--radius)];
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply overflow-hidden;
+  }
+
+  .expense-daily-bar {
+    @apply h-full;
+    @apply rounded-[var(--radius)];
+    @apply bg-[var(--accent-cyan)];
+  }
+
+  /* AI Scan drag and drop zone */
+  .dropzone {
+    @apply grow;
+    border: 1px dashed var(--border-matte);
+    @apply bg-[var(--bg-primary)];
+    @apply rounded-[var(--radius)];
+    @apply flex;
+    @apply items-center;
+    @apply justify-center;
+    @apply text-center;
+    @apply p-[30px];
+    @apply cursor-pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .dropzone:hover,
+  .dropzone.dragover {
+    @apply border-[var(--border-focus)];
+    @apply bg-[var(--accent-cyan-faint)];
+  }
+
+  .dropzone-content {
+    @apply flex;
+    @apply flex-col;
+    @apply items-center;
+    @apply gap-[6px];
+  }
+
+  .dropzone-icon {
+    @apply text-[2rem];
+    @apply mb-[4px];
+  }
+
+  .dropzone-content p {
+    @apply text-[0.9rem];
+    @apply font-bold;
+  }
+
+  .dropzone-title {
+    @apply flex;
+    @apply flex-wrap;
+    @apply justify-center;
+  }
+
+  .text-highlight {
+    @apply text-[var(--accent-cyan)];
+    text-decoration: underline;
+  }
+
+  .dropzone-sub {
+    @apply text-[0.65rem];
+    @apply text-[var(--color-zinc-muted)];
+  }
+
+  /* Scan status box */
+  .scan-status-box {
+    @apply mt-[14px];
+    @apply bg-[var(--bg-primary)];
+    border: 1px solid var(--border-matte);
+    @apply p-[14px];
+    @apply rounded-[var(--radius)];
+    @apply flex;
+    @apply items-center;
+    @apply gap-[12px];
+  }
+
+  .scan-status-box.hidden {
+    @apply hidden;
+  }
+
+  .spinner {
+    @apply w-[20px];
+    @apply h-[20px];
+    border: 2px solid var(--accent-cyan-dim);
+    border-top-color: var(--accent-cyan);
+    @apply rounded-[50%];
+    animation: spin 0.8s linear infinite;
+  }
+
+  #scan-status-text {
+    @apply text-[0.8rem];
+    @apply text-[var(--text-primary)];
+  }
+
+  /* Expenses Ledger Table styling */
+  .expense-table-card {
+    @apply mb-[24px];
+    @apply min-w-0;
+  }
+
+  .table-responsive {
+    @apply w-full;
+    @apply overflow-x-auto;
+  }
+
+  .expense-table {
+    @apply w-full;
+    @apply border-collapse;
+    @apply text-left;
+  }
+
+  .expense-table th {
+    @apply p-[12px_14px];
+    @apply text-[0.75rem];
+    @apply text-[var(--color-white)];
+    @apply font-bold;
+    border-bottom: 1px solid var(--border-matte);
+    @apply whitespace-nowrap;
+  }
+
+  .expense-table td {
+    @apply p-[12px_14px];
+    @apply text-[0.8rem];
+    border-bottom: 1px solid var(--border-matte);
+    @apply whitespace-nowrap;
+  }
+
+  .expense-table tr:hover td {
+    @apply bg-[rgba(255,_255,_255,_0.02)];
+  }
+
+  .expense-source-badge {
+    @apply text-[0.6rem];
+    font-weight: bold;
+    @apply p-[2px_5px];
+    @apply rounded-[var(--radius)];
+    @apply font-[family-name:var(--font-family-mono)];
+    border: 1px solid var(--border-matte);
+    @apply bg-[var(--bg-primary)];
+    @apply whitespace-nowrap;
+    @apply inline-flex;
+    @apply items-center;
+  }
+
+  .source-web,
+  .source-manual,
+  .source-discord {
+    @apply text-[var(--text-secondary)];
+  }
+
+  .source-web {
+    @apply text-[var(--accent-pink)];
+  }
+
+  .source-manual {
+    @apply text-[var(--accent-cyan)];
+  }
+
+  .source-discord {
+    @apply text-[var(--accent-lavender)];
+  }
+
+  .expense-amount-val {
+    @apply font-[family-name:var(--font-family-mono)];
+    @apply font-bold;
+    @apply text-[0.85rem];
+    @apply text-[var(--color-white)];
+    @apply text-right;
+  }
+
+  .expense-table th:last-child,
+  .expense-table td:last-child {
+    @apply text-right;
+  }
+}

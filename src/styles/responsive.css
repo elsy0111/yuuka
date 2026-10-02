@@ -1,0 +1,509 @@
+@layer components {
+  /* ==============================================================================
+   RESPONSIVE SMARTPHONE UI (Adaptive Layouts)
+   ============================================================================= */
+
+  /* Tablet adjustments (between 768 and 1024) */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .main-content {
+      @apply p-[0];
+    }
+
+    .top-header {
+      @apply p-[16px_24px];
+    }
+
+    .content-view-container {
+      @apply p-[24px];
+    }
+
+    .stats-grid {
+      @apply grid-cols-[repeat(3,_1fr)];
+      @apply gap-[16px];
+    }
+
+    .dashboard-columns {
+      @apply grid-cols-[1fr];
+      @apply gap-[20px];
+    }
+
+    .stat-card {
+      @apply p-[18px];
+    }
+  }
+
+  @layer components {
+    .sidebar-menu {
+      @apply grid min-w-0;
+    }
+    .menu-item {
+      @apply min-w-0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Sidebar transforms into Bottom Nav Bar */
+    .sidebar {
+      @apply fixed;
+      @apply bottom-[0];
+      @apply left-[0];
+      @apply w-[100vw];
+      @apply h-[calc(64px_+_env(safe-area-inset-bottom))];
+      @apply flex-row;
+      @apply bg-[var(--bg-primary)];
+      border-top: 1px solid var(--border-matte);
+      border-right: none;
+      @apply pt-0 pb-[env(safe-area-inset-bottom)];
+      justify-content: stretch;
+      @apply shadow-[0_-4px_20px_rgba(0,_0,_0,_0.6)];
+      @apply z-[1000];
+    }
+
+    .sidebar-brand {
+      @apply hidden; /* Hide brand/logo on mobile bottom nav */
+    }
+
+    .sidebar-menu {
+      @apply w-full;
+      @apply flex-row;
+      @apply grid;
+      @apply grid-cols-[repeat(5,_minmax(0,_1fr))];
+      @apply items-center;
+      @apply gap-[0];
+    }
+
+    .menu-item {
+      @apply flex-col;
+      @apply items-center;
+      @apply gap-[2px];
+      @apply p-[6px_2px];
+      @apply min-w-0;
+      @apply min-h-[48px];
+      @apply text-[0.65rem];
+      @apply text-center;
+      border: none;
+      @apply rounded-[var(--radius)];
+      @apply text-[var(--color-zinc-muted)];
+    }
+
+    .menu-item .menu-icon-symbol {
+      @apply text-[1.15rem];
+      @apply m-[0];
+    }
+
+    .menu-item:hover {
+      @apply bg-[transparent];
+      @apply pl-[2px];
+    }
+
+    .menu-item.active {
+      @apply text-[var(--color-white)];
+      @apply bg-[rgba(255,_255,_255,_0.05)];
+    }
+
+    /* Main Workspace adjustments */
+    .main-content {
+      @apply p-[0_0_calc(88px_+_env(safe-area-inset-bottom))_0]; /* bottom padding to prevent overlap with bottom nav bar */
+      @apply h-auto;
+      @apply min-h-[calc(100vh_-_64px)];
+    }
+
+    /* Stacking Top Header */
+    .top-header {
+      @apply flex-col;
+      @apply items-stretch;
+      @apply gap-[12px];
+      @apply p-[14px_16px];
+      border-bottom: 1px solid var(--border-matte);
+    }
+
+    .content-view-container {
+      @apply p-[20px_16px];
+    }
+
+    .header-title {
+      @apply min-w-0;
+    }
+
+    .header-controls {
+      @apply flex-row;
+      @apply flex-wrap;
+      @apply items-stretch;
+      @apply justify-start;
+      @apply gap-[8px];
+      @apply w-full;
+    }
+
+    .profile-switch {
+      flex: 1 1 auto;
+      @apply min-w-0;
+      @apply justify-between;
+      @apply p-[6px_10px];
+      @apply gap-[6px];
+    }
+
+    .profile-switch label {
+      @apply shrink-0;
+    }
+
+    .user-select-dropdown {
+      @apply min-w-0;
+      @apply max-w-[100%];
+      flex: 1 1 0;
+    }
+
+    #btn-logout {
+      @apply p-[8px_12px];
+      @apply text-[0.8rem];
+      flex: 0 0 auto;
+      @apply w-auto;
+      @apply whitespace-nowrap;
+    }
+
+    /* モバイルではログアウトボタンのアイコンを非表示にしてテキストのみ */
+    #btn-logout .icon-button-left {
+      @apply hidden;
+    }
+
+    /* Layout Grids Stacking to 1 Column */
+    .stats-grid {
+      @apply grid-cols-[1fr];
+      @apply gap-[16px];
+    }
+
+    .stat-card {
+      @apply min-h-[130px];
+    }
+
+    .dashboard-columns,
+    .expense-actions-columns {
+      @apply grid-cols-[1fr];
+      @apply gap-[20px];
+    }
+
+    .expense-hud-grid {
+      @apply grid-cols-[1fr];
+      @apply gap-[12px];
+      @apply mb-[16px];
+    }
+
+    .expense-stats-grid {
+      @apply grid-cols-[repeat(2,_1fr)];
+      @apply gap-[8px];
+      @apply mb-[16px];
+    }
+
+    .expense-daily-card,
+    .expense-actions-columns,
+    .expense-table-card {
+      @apply mb-[16px];
+    }
+
+    /* 全タブ共通: セクション間を16pxに統一 */
+    .view-actions-card {
+      @apply mb-[16px];
+    }
+
+    .welcome-card,
+    .stats-grid,
+    .dashboard-columns {
+      @apply mb-[16px];
+    }
+
+    .config-card + .config-card {
+      @apply mt-[16px];
+    }
+
+    .hud-card h2 {
+      @apply text-[1.9rem];
+    }
+
+    .hud-span-full {
+      grid-column: span 1;
+    }
+
+    .hud-card {
+      @apply p-[16px];
+    }
+
+    .config-items-grid {
+      @apply grid-cols-[1fr];
+    }
+
+    .welcome-card {
+      @apply flex-col;
+      @apply items-center;
+      @apply text-center;
+      @apply gap-[14px];
+      @apply p-[16px];
+    }
+
+    .speech-bubble-container {
+      @apply w-full;
+      @apply min-w-0;
+    }
+
+    .speech-bubble::before {
+      @apply hidden; /* Hide side arrow of speech bubble */
+    }
+
+    .pie-chart-wrapper {
+      @apply w-[110px];
+      @apply h-[110px];
+    }
+
+    .chart-container-flex {
+      @apply flex-col;
+      @apply gap-[16px];
+      @apply p-[10px_0];
+    }
+
+    /* description を truncate 表示 */
+    .expense-table td:nth-child(3) {
+      @apply max-w-[100px];
+      @apply overflow-hidden;
+      @apply text-ellipsis;
+      @apply whitespace-nowrap;
+    }
+
+    .expense-table th,
+    .expense-table td {
+      @apply p-[10px_8px];
+      @apply text-[0.75rem];
+    }
+
+    /* 詳細一覧モーダルは全列表示 */
+    #expense-detail-modal .expense-table th,
+    #expense-detail-modal .expense-table td {
+      display: table-cell;
+      @apply text-[0.65rem];
+      @apply p-[6px_4px];
+      @apply whitespace-nowrap;
+    }
+
+    #expense-detail-modal .modal-panel {
+      @apply p-[12px];
+      @apply gap-[10px];
+    }
+
+    #expense-detail-modal.modal-overlay {
+      @apply p-[16px];
+    }
+
+    #expense-detail-modal .modal-filters {
+      @apply p-[10px];
+    }
+
+    /* Card paddings tightened */
+    .card {
+      @apply p-[16px];
+    }
+
+    /* Header title scaling */
+    .header-title h2 {
+      @apply text-[1.3rem];
+    }
+
+    .header-title p {
+      @apply text-[0.72rem];
+    }
+
+    .column-header h3 {
+      @apply text-[0.95rem];
+      @apply leading-[1.35];
+      word-break: break-word;
+    }
+
+    /* Stat values shrink slightly */
+    .stat-card .stat-value {
+      @apply text-[1.7rem];
+    }
+
+    .hud-card h2 {
+      @apply text-[1.7rem];
+    }
+
+    /* View actions card may overflow with many filter buttons */
+    .view-actions-card {
+      @apply flex-col;
+      @apply items-stretch;
+      @apply gap-[12px];
+      @apply p-[14px];
+    }
+
+    .filters-group {
+      @apply flex-wrap;
+    }
+
+    /* Card item content stack to prevent action button overflow */
+    .card-item {
+      @apply flex-col;
+      @apply items-stretch;
+      @apply gap-[12px];
+      @apply p-[14px];
+    }
+
+    .card-actions-right {
+      @apply justify-end;
+    }
+
+    /* Form row to single column to prevent narrow inputs */
+    .form-row {
+      @apply grid-cols-[1fr];
+      @apply gap-[0];
+    }
+
+    /* Calendar form: stack input + button */
+    #config-calendar-form {
+      @apply flex-col;
+      @apply gap-[10px];
+    }
+
+    /* Sub-details under chart wrap nicely */
+    .chart-sub-details {
+      @apply grid-cols-[1fr];
+      @apply gap-[8px];
+    }
+
+    /* Profile switch & header controls - allow shrink (handled above) */
+
+    /* Modal padding/width adjustments */
+    .modal {
+      @apply p-[16px];
+    }
+
+    .modal-content {
+      @apply max-w-[100%];
+    }
+
+    .wide-modal {
+      @apply max-w-[100%];
+    }
+
+    /* Theme options - allow wrapping & full width */
+    .theme-option {
+      flex: 1 1 130px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .expense-stats-grid {
+      @apply grid-cols-[repeat(2,_minmax(0,_1fr))];
+    }
+  }
+
+  @media (max-width: 420px) {
+    .main-content {
+      @apply p-[0_0_calc(88px_+_env(safe-area-inset-bottom))_0];
+    }
+
+    .top-header {
+      @apply p-[12px];
+    }
+
+    .content-view-container {
+      @apply p-[16px_12px];
+    }
+
+    .card {
+      @apply p-[14px];
+    }
+
+    .header-title h2 {
+      @apply text-[1.2rem];
+    }
+
+    .stat-card .stat-value {
+      @apply text-[1.5rem];
+    }
+
+    .stat-card-badge-trend {
+      @apply top-[14px];
+      @apply right-[14px];
+      @apply text-[0.6rem];
+    }
+
+    .welcome-card {
+      @apply p-[14px];
+    }
+
+    .menu-item {
+      @apply text-[0.6rem];
+    }
+
+    .column-header h3 {
+      @apply text-[0.88rem];
+    }
+  }
+
+  /* 360px 以下: 5項目を均等幅のままコンパクトに表示 */
+  @media (max-width: 360px) {
+    .menu-item {
+      @apply p-[6px_2px];
+      @apply text-[0.6rem];
+    }
+
+    .sidebar {
+      @apply h-[calc(54px_+_env(safe-area-inset-bottom))];
+    }
+
+    .main-content {
+      @apply p-[0_0_74px_0];
+    }
+
+    .top-header {
+      @apply p-[10px];
+    }
+
+    .content-view-container {
+      @apply p-[14px_10px];
+    }
+
+    .login-card {
+      @apply p-[28px_20px];
+    }
+
+    .header-title h2 {
+      @apply text-[1.1rem];
+    }
+
+    .header-title p {
+      @apply text-[0.7rem];
+    }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar {
+      @apply min-w-0;
+      @apply pl-[max(4px,env(safe-area-inset-left))] pr-[max(4px,env(safe-area-inset-right))];
+    }
+    .menu-text {
+      @apply max-w-[100%];
+      @apply overflow-hidden;
+      @apply text-ellipsis;
+    }
+    .menu-item.active {
+      @apply text-[var(--accent-cyan)];
+      background: var(--accent-cyan-faint);
+    }
+    .expense-stats-grid > * {
+      @apply min-w-0;
+    }
+    .expense-stats-grid .hud-card {
+      @apply p-[12px];
+    }
+    .expense-stats-grid .hud-card h2 {
+      @apply text-[1.4rem];
+    }
+  }
+
+  @media (max-width: 768px) {
+    html,
+    .main-content {
+      scroll-padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    }
+    .main-content :is(button, input, select, textarea, [tabindex]) {
+      scroll-margin-block: 90px;
+    }
+  }
+}
