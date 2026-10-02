@@ -156,7 +156,7 @@
 
 /* Animate one visible surface, rather than every row and card together. */
 .tab-view {
-  animation-duration: 0.16s;
+  animation: none;
 }
 .card-item {
   animation: none;
