@@ -7,6 +7,7 @@ import { fetchSchedulesList } from "./schedules.js";
 import { state } from "./state.js";
 import { getModal, openModal } from "./modal.js";
 import { fetchTasksList } from "./tasks.js";
+import { fetchWorkSummary } from "./work.js";
 
 const TAB_TITLES = {
   dashboard: "ダッシュボード",
@@ -30,6 +31,7 @@ export function loadDataForActiveTab() {
       break;
     case "expenses":
       fetchExpensesList();
+      fetchWorkSummary();
       break;
     case "config":
       fetchConfigSettings();

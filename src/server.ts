@@ -16,6 +16,7 @@ import { handleMemories } from "./server/routes/memories.js";
 import { handleSchedules } from "./server/routes/schedules.js";
 import { handleStatus, handleUsers } from "./server/routes/status.js";
 import { handleTasks } from "./server/routes/tasks.js";
+import { handleWork } from "./server/routes/work.js";
 import { handleUserMigrate } from "./server/routes/userMigrate.js";
 import { isAuthenticated } from "./server/session.js";
 import { serveStaticFile } from "./server/static.js";
@@ -32,6 +33,7 @@ const privateRoutes: RouteHandler[] = [
   handleUsers,
   handleCredentials,
   handleTasks,
+  handleWork,
   handleSchedules,
   handleExpenses,
   handleMemories,

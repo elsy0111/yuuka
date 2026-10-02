@@ -124,3 +124,51 @@
     transform: rotate(360deg);
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .tab-view.active > .card,
+  .tab-view.active .stats-grid > *,
+  .tab-view.active .expense-hud-grid > * {
+    animation: surface-in 0.35s ease both;
+  }
+  .tab-view.active .stats-grid > :nth-child(2),
+  .tab-view.active .expense-hud-grid > :nth-child(2) {
+    animation-delay: 45ms;
+  }
+  .tab-view.active .stats-grid > :nth-child(3) {
+    animation-delay: 90ms;
+  }
+  .btn,
+  .menu-item {
+    transition:
+      transform 0.16s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .btn:active,
+  .menu-item:active {
+    transform: scale(0.97);
+  }
+  .mobile-card-table tr {
+    animation: surface-in 0.25s ease both;
+  }
+  @media (hover: hover) {
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .card:hover {
+      border-color: color-mix(in srgb, var(--accent-cyan) 30%, var(--border-matte));
+    }
+  }
+}
+
+@keyframes surface-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

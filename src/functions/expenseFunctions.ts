@@ -107,6 +107,57 @@ export function listRecentExpenses(userId: string, args: { count?: number }): st
   });
 }
 
+export function updateExpense(
+  userId: string,
+  args: {
+    id: number;
+    amount?: number;
+    category?: string;
+    description?: string | null;
+    date?: string;
+    purchase_source?: string;
+  },
+): string {
+  const validDate =
+    args.date === undefined ||
+    (typeof args.date === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(args.date) &&
+      Number.isFinite(Date.parse(`${args.date}T00:00:00Z`)) &&
+      new Date(`${args.date}T00:00:00Z`).toISOString().slice(0, 10) === args.date);
+  if (
+    !Number.isSafeInteger(args.id) ||
+    args.id < 1 ||
+    !validDate ||
+    (args.amount !== undefined && (!Number.isSafeInteger(args.amount) || args.amount <= 0)) ||
+    (args.category !== undefined && (typeof args.category !== "string" || !args.category.trim())) ||
+    (args.description !== undefined &&
+      args.description !== null &&
+      typeof args.description !== "string") ||
+    (args.purchase_source !== undefined && typeof args.purchase_source !== "string")
+  ) {
+    return JSON.stringify({ success: false, message: "支出の入力が不正です。" });
+  }
+  const expense = expenseRepo.updateExpense(args.id, userId, {
+    ...args,
+    category: args.category?.trim(),
+  });
+  return JSON.stringify(
+    expense
+      ? { success: true, message: `支出 #${expense.id} を更新しました。`, expense }
+      : { success: false, message: "支出が見つかりません。" },
+  );
+}
+
+export function deleteExpense(userId: string, args: { id: number }): string {
+  if (!Number.isSafeInteger(args.id) || args.id < 1)
+    return JSON.stringify({ success: false, message: "記録IDが不正です。" });
+  const success = expenseRepo.deleteExpense(args.id, userId);
+  return JSON.stringify({
+    success,
+    message: success ? "支出を削除しました。" : "支出が見つかりません。",
+  });
+}
+
 export function setMonthlyBudget(userId: string, args: { budget: number }): string {
   const amount = Math.round(args.budget);
   if (amount < 0) {

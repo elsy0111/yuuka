@@ -1,7 +1,7 @@
-import { guardSubmit, apiRequest, reportError, showListState } from "./ui.js";
-import { toast } from "./toast.js";
 import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
+import { toast } from "./toast.js";
+import { apiRequest, guardSubmit, reportError, showListState } from "./ui.js";
 
 export async function fetchTasksList(
   filter = document.querySelector("[data-filter].active")?.dataset.filter || "all",
@@ -11,7 +11,7 @@ export async function fetchTasksList(
   list._requestId = requestId;
   list._tasks = null;
   const count = document.getElementById("tasks-count");
-  if (count) count.textContent = "読み込み中…";
+  if (count) count.textContent = "0件";
   showListState(list, "読み込み中…");
   try {
     const params = new URLSearchParams({ userId: state.activeUserId, status: filter });
@@ -34,7 +34,7 @@ function renderTasks(list) {
     return `${task.title}\n${task.description || ""}`.toLocaleLowerCase().includes(query);
   });
   list.replaceChildren();
-  const status = list._tasks?.length ? `${tasks.length}件` : "登録されているタスクがありません。";
+  const status = `${tasks.length}件`;
   const count = document.getElementById("tasks-count");
   if (count) count.textContent = status;
   if (tasks.length) {
@@ -45,7 +45,17 @@ function renderTasks(list) {
   }
   const empty = document.createElement("div");
   empty.className = "glass task-empty-state";
-  empty.textContent = query ? "検索条件に一致するタスクがありません。" : status;
+  const icon = document.createElement("div");
+  icon.className = "task-empty-icon";
+  icon.textContent = query ? "⌕" : "✓";
+  icon.setAttribute("aria-hidden", "true");
+  const heading = document.createElement("h3");
+  heading.textContent = query ? "検索結果がありません" : "タスクはまだありません";
+  const description = document.createElement("p");
+  description.textContent = query
+    ? "検索語を変えるか、検索をクリアしてください。"
+    : "やることを追加して、今日の予定を整理しましょう。";
+  empty.append(icon, heading, description);
   if (query) {
     const clear = document.createElement("button");
     clear.type = "button";
@@ -65,30 +75,12 @@ function renderTasks(list) {
 
 function setupTaskSearch() {
   const list = document.getElementById("tasks-list");
-  const filterGroup = document.querySelector("[data-filter]")?.parentElement;
-  if (!list || !filterGroup || document.getElementById("task-search")) return;
-  const label = document.createElement("label");
-  label.className = "task-search-wrap";
-  label.htmlFor = "task-search";
-  const icon = document.createElement("span");
-  icon.className = "material-symbols-outlined";
-  icon.textContent = "search";
-  const input = document.createElement("input");
-  input.id = "task-search";
-  input.type = "search";
-  input.placeholder = "タイトル・説明を検索";
-  input.setAttribute("aria-label", "タスクを検索");
+  const input = document.getElementById("task-search");
+  if (!list || !input) return;
   input.addEventListener("input", () => {
     list._searchQuery = input.value;
     renderTasks(list);
   });
-  label.append(icon, input);
-  filterGroup.appendChild(label);
-  const count = document.createElement("span");
-  count.id = "tasks-count";
-  count.className = "tasks-count";
-  count.setAttribute("aria-live", "polite");
-  filterGroup.appendChild(count);
 }
 
 function makeTaskCard(task) {
@@ -248,8 +240,10 @@ export function initTasks() {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-filter]").forEach((b) => {
         b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
       });
       btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
       fetchTasksList(btn.getAttribute("data-filter"));
     });
   });

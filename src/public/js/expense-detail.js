@@ -74,6 +74,13 @@ export function initExpenseDetail() {
     document.getElementById(id)?.addEventListener("change", fetchDetailExpenses);
   });
 
+  document.getElementById("expense-detail-sort")?.addEventListener("change", (event) => {
+    const [key, dir] = event.target.value.split(":");
+    sortState.key = key;
+    sortState.dir = dir;
+    updateSortIndicators();
+    renderTable();
+  });
   document.addEventListener("expenses-updated", () => {
     if (!modal.classList.contains("hidden") && !modal.inert) fetchDetailExpenses();
   });
@@ -95,21 +102,30 @@ export function initExpenseDetail() {
         sortState.dir = key === "date" || key === "amount" ? "desc" : "asc";
       }
 
-      document.querySelectorAll("#expense-detail-modal .sortable-th").forEach((el) => {
-        el.classList.remove("sort-asc", "sort-desc");
-        el.setAttribute("aria-sort", "none");
-        const icon = el.querySelector(".sort-icon");
-        if (icon) icon.textContent = "";
-      });
-
-      th.classList.add(`sort-${sortState.dir}`);
-      th.setAttribute("aria-sort", sortState.dir === "asc" ? "ascending" : "descending");
-      const icon = th.querySelector(".sort-icon");
-      if (icon) icon.textContent = sortState.dir === "asc" ? "▲" : "▼";
+      updateSortIndicators();
 
       renderTable();
     });
   });
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll("#expense-detail-modal .sortable-th").forEach((header) => {
+    const active = header.dataset.sort === sortState.key;
+    header.classList.toggle("sort-asc", active && sortState.dir === "asc");
+    header.classList.toggle("sort-desc", active && sortState.dir === "desc");
+    header.setAttribute(
+      "aria-sort",
+      active ? (sortState.dir === "asc" ? "ascending" : "descending") : "none",
+    );
+    header.querySelector(".sort-icon").textContent = active
+      ? sortState.dir === "asc"
+        ? "▲"
+        : "▼"
+      : "";
+  });
+  const select = document.getElementById("expense-detail-sort");
+  if (select) select.value = `${sortState.key}:${sortState.dir}`;
 }
 
 async function fetchDetailExpenses() {

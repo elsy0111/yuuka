@@ -14,6 +14,11 @@ function getContainer() {
 
 function createToast(message, type = "default", duration = 4000) {
   const c = getContainer();
+  if (type === "success") {
+    c.querySelectorAll(".toast-success").forEach((previous) => {
+      previous.remove();
+    });
+  }
   const li = document.createElement("li");
   li.className = `toast toast-${type}`;
 

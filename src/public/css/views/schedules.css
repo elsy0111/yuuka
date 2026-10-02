@@ -2,3 +2,9 @@
    3. SCHEDULES VIEW
    (Schedule cards share card-item / list-container styles from tasks.css)
    ============================================================================== */
+
+.list-card-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--accent-cyan);
+}

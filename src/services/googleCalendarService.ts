@@ -223,6 +223,40 @@ export async function createCalendarEvent(
 /**
  * Googleカレンダーのイベントを削除
  */
+export async function updateCalendarEvent(
+  userId: string,
+  eventId: string,
+  title: string,
+  startAt: string,
+  endAt?: string | null,
+  description?: string | null,
+  calendarId?: string,
+): Promise<boolean> {
+  const calendar = getCalendarClient(userId);
+  if (!calendar) return false;
+  const start = formatToISOString(startAt);
+  try {
+    await calendar.events.patch({
+      calendarId: calendarId || getUserGoogleConfig(userId)?.calendarId || "",
+      eventId,
+      requestBody: {
+        summary: title,
+        description: description ?? "",
+        start: { dateTime: start },
+        end: {
+          dateTime: endAt
+            ? formatToISOString(endAt)
+            : new Date(Date.parse(start) + 3_600_000).toISOString(),
+        },
+      },
+    });
+    return true;
+  } catch (error) {
+    console.error("Googleカレンダーのイベント更新に失敗しました:", errorMessage(error));
+    return false;
+  }
+}
+
 export async function deleteCalendarEvent(
   userId: string,
   eventId: string,

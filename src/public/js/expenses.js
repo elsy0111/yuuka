@@ -172,15 +172,15 @@ function renderBudgetBar(total, budget, remaining) {
 
   if (pct >= 100) {
     iconEl.textContent = "warning";
-    textEl.textContent = " 先生！完全に予算上限を突破しています！";
+    textEl.textContent = " 予算を超えています";
     statusEl.style.color = "var(--text-error)";
   } else if (pct > 70) {
     iconEl.textContent = "lightbulb";
-    textEl.textContent = " ちょっと今月は出費のペースが早い気がします。";
+    textEl.textContent = " 予算の70%以上を使用";
     statusEl.style.color = "#f59e0b";
   } else {
     iconEl.textContent = "check_circle";
-    textEl.textContent = " 健全な支出状況をキープしています！素晴らしい！";
+    textEl.textContent = " 予算内に収まっています";
     statusEl.style.color = "var(--text-success)";
   }
   statusEl.append(iconEl, textEl);

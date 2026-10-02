@@ -39,6 +39,14 @@ export function runMigrations(): void {
       monthly_budget INTEGER NOT NULL DEFAULT 50000
     );
   `);
+  try {
+    db.exec("ALTER TABLE user_preferences ADD COLUMN hourly_rate INTEGER");
+  } catch {}
+  db.exec(`CREATE TABLE IF NOT EXISTS work_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, date TEXT NOT NULL,
+    minutes INTEGER NOT NULL, hourly_rate INTEGER NOT NULL, amount INTEGER NOT NULL,
+    description TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  ); CREATE INDEX IF NOT EXISTS idx_work_entries_user_date ON work_entries(user_id,date);`);
 
   try {
     db.exec("DROP INDEX IF EXISTS idx_users_username;");

@@ -13,6 +13,8 @@ import * as memoryFn from "./memoryFunctions.js";
 import * as playbookFn from "./playbookFunctions.js";
 import * as scheduleFn from "./scheduleFunctions.js";
 import * as taskFn from "./taskFunctions.js";
+import * as workFn from "./workFunctions.js";
+import { workDeclarations } from "./declarations/work.js";
 
 type FunctionArgs = Record<string, unknown>;
 
@@ -44,6 +46,7 @@ export function getAllFunctionDeclarations(): FunctionDeclaration[] {
     ...taskDeclarations,
     ...scheduleDeclarations,
     ...expenseDeclarations,
+    ...workDeclarations,
     ...systemDeclarations,
   ];
 
@@ -180,6 +183,27 @@ export async function dispatchFunction(
   }
 
   switch (functionName) {
+    case "update_work_entry":
+      return workFn.updateWorkEntry(userId, args as Parameters<typeof workFn.updateWorkEntry>[1]);
+    case "set_hourly_rate":
+      return workFn.setHourlyRate(userId, args as Parameters<typeof workFn.setHourlyRate>[1]);
+    case "add_work_entry":
+      return workFn.addWorkEntry(userId, args as Parameters<typeof workFn.addWorkEntry>[1]);
+    case "get_work_summary":
+      return workFn.getWorkSummary(userId);
+    case "delete_work_entry":
+      return workFn.deleteWorkEntry(userId, args as Parameters<typeof workFn.deleteWorkEntry>[1]);
+    case "updateSchedule":
+      return scheduleFn.updateSchedule(
+        userId,
+        args as Parameters<typeof scheduleFn.updateSchedule>[1],
+      );
+    case "deleteExpense":
+      return expenseFn.deleteExpense(userId, args as Parameters<typeof expenseFn.deleteExpense>[1]);
+    case "updateTask":
+      return taskFn.updateTask(userId, args as Parameters<typeof taskFn.updateTask>[1]);
+    case "updateExpense":
+      return expenseFn.updateExpense(userId, args as Parameters<typeof expenseFn.updateExpense>[1]);
     // タスク
     case "addTask":
       return taskFn.addTask(userId, args as Parameters<typeof taskFn.addTask>[1]);

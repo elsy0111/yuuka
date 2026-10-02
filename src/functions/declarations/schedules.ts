@@ -3,6 +3,34 @@ import { SchemaType } from "@google/generative-ai";
 
 export const scheduleDeclarations: FunctionDeclaration[] = [
   {
+    name: "updateSchedule",
+    description: "既存の予定を部分的に編集する（指定した項目だけ変更）",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        schedule_id: {
+          type: SchemaType.NUMBER,
+          description: "編集する予定のID（listSchedulesのID）",
+        },
+        title: { type: SchemaType.STRING, description: "変更後のタイトル（任意）" },
+        start_at: { type: SchemaType.STRING, description: "変更後の開始日時 ISO 8601（任意）" },
+        end_at: {
+          type: SchemaType.STRING,
+          nullable: true,
+          description: "変更後の終了日時 ISO 8601。nullで終了日時を解除",
+        },
+        remind_before_minutes: { type: SchemaType.NUMBER, description: "変更後の通知分数（任意）" },
+        description: {
+          type: SchemaType.STRING,
+          nullable: true,
+          description: "変更後の詳細。nullで削除",
+        },
+        local_only: { type: SchemaType.BOOLEAN, description: "Google同期を行わない" },
+      },
+      required: ["schedule_id"],
+    },
+  },
+  {
     name: "addSchedule",
     description: "新しい予定・スケジュールを登録する",
     parameters: {

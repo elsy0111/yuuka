@@ -72,3 +72,46 @@ export function deleteTask(userId: string, args: { task_id: number }): string {
     message: `タスク #${args.task_id} を削除しました🗑️`,
   });
 }
+
+export function updateTask(
+  userId: string,
+  args: {
+    task_id: number;
+    title?: string;
+    description?: string | null;
+    due_date?: string | null;
+    priority?: number;
+  },
+): string {
+  const validDate =
+    args.due_date === undefined ||
+    args.due_date === null ||
+    (typeof args.due_date === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(args.due_date) &&
+      Number.isFinite(Date.parse(`${args.due_date}T00:00:00Z`)) &&
+      new Date(`${args.due_date}T00:00:00Z`).toISOString().slice(0, 10) === args.due_date);
+  if (
+    !Number.isSafeInteger(args.task_id) ||
+    args.task_id < 1 ||
+    !validDate ||
+    (args.title !== undefined && (typeof args.title !== "string" || !args.title.trim())) ||
+    (args.description !== undefined &&
+      args.description !== null &&
+      typeof args.description !== "string") ||
+    (args.priority !== undefined &&
+      (!Number.isInteger(args.priority) || args.priority < 0 || args.priority > 2))
+  ) {
+    return JSON.stringify({ success: false, message: "タスクの入力が不正です。" });
+  }
+  const task = taskRepo.updateTask(args.task_id, userId, {
+    title: args.title?.trim(),
+    description: args.description,
+    dueDate: args.due_date,
+    priority: args.priority,
+  });
+  return JSON.stringify(
+    task
+      ? { success: true, message: `タスク「${task.title}」を更新しました。`, task }
+      : { success: false, message: "タスクが見つかりません。" },
+  );
+}

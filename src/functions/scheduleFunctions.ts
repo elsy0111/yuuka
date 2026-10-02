@@ -1,6 +1,7 @@
 import * as scheduleRepo from "../db/scheduleRepo.js";
 import {
   createCalendarEvent,
+  updateCalendarEvent,
   deleteCalendarEvent,
   isCalendarEnabled,
   syncGoogleCalendarToLocal,
@@ -100,6 +101,111 @@ export async function listSchedules(userId: string, args: { days?: number }): Pr
     success: true,
     message: `今後${days}日間の予定 (${schedules.length}件):\n${lines.join("\n")}`,
     schedules,
+  });
+}
+
+export async function updateSchedule(
+  userId: string,
+  args: {
+    schedule_id: number;
+    title?: string;
+    start_at?: string;
+    end_at?: string | null;
+    remind_before_minutes?: number;
+    description?: string | null;
+    local_only?: boolean;
+  },
+): Promise<string> {
+  if (
+    !Number.isSafeInteger(args.schedule_id) ||
+    args.schedule_id < 1 ||
+    (args.title !== undefined && typeof args.title !== "string") ||
+    (args.start_at !== undefined && typeof args.start_at !== "string") ||
+    (args.end_at !== undefined && args.end_at !== null && typeof args.end_at !== "string") ||
+    (args.description !== undefined &&
+      args.description !== null &&
+      typeof args.description !== "string")
+  ) {
+    return JSON.stringify({ success: false, message: "予定の入力が不正です。" });
+  }
+  const existing = scheduleRepo.getScheduleById(args.schedule_id);
+  if (!existing || existing.user_id !== userId) {
+    return JSON.stringify({
+      success: false,
+      message: `予定 #${args.schedule_id} が見つかりません。`,
+    });
+  }
+  const startAt = args.start_at ?? existing.start_at;
+  const endAt = args.end_at === undefined ? existing.end_at : args.end_at;
+  if (args.title !== undefined && !args.title.trim()) {
+    return JSON.stringify({ success: false, message: "タイトルは空にできません。" });
+  }
+  if (
+    Number.isNaN(Date.parse(startAt)) ||
+    (endAt && (Number.isNaN(Date.parse(endAt)) || Date.parse(endAt) < Date.parse(startAt)))
+  ) {
+    return JSON.stringify({ success: false, message: "日時の指定が不正です。" });
+  }
+  if (
+    args.remind_before_minutes !== undefined &&
+    (!Number.isInteger(args.remind_before_minutes) || args.remind_before_minutes < 0)
+  ) {
+    return JSON.stringify({ success: false, message: "通知分数は0以上の整数で指定してください。" });
+  }
+  const changed =
+    args.title !== undefined ||
+    args.start_at !== undefined ||
+    args.end_at !== undefined ||
+    args.description !== undefined ||
+    args.remind_before_minutes !== undefined;
+  if (!changed)
+    return JSON.stringify({
+      success: true,
+      message: "変更する項目がありません。",
+      schedule: existing,
+    });
+
+  const needsSync =
+    args.title !== undefined ||
+    args.start_at !== undefined ||
+    args.end_at !== undefined ||
+    args.description !== undefined;
+  let syncWarning = "";
+  if (existing.google_event_id && needsSync && !args.local_only) {
+    if (!isCalendarEnabled(userId)) {
+      syncWarning = " Googleカレンダーは未接続のため同期できていません。";
+    } else {
+      const synced = await updateCalendarEvent(
+        userId,
+        existing.google_event_id,
+        args.title ?? existing.title,
+        startAt,
+        endAt,
+        args.description === undefined ? existing.description : args.description,
+        existing.google_calendar_id ?? undefined,
+      );
+      if (!synced)
+        return JSON.stringify({
+          success: false,
+          message:
+            "Googleカレンダーの更新に失敗したため、予定は変更していません。再試行してください。",
+        });
+    }
+  }
+
+  const updated = scheduleRepo.updateSchedule(args.schedule_id, userId, {
+    title: args.title,
+    description: args.description,
+    startAt: args.start_at,
+    endAt: args.end_at,
+    remindBeforeMinutes: args.remind_before_minutes,
+  });
+  return JSON.stringify({
+    success: Boolean(updated),
+    message: updated
+      ? `予定「${updated.title}」を更新しました。${syncWarning}`
+      : "予定の更新に失敗しました。",
+    schedule: updated,
   });
 }
 

@@ -35,7 +35,7 @@ function makeCredentialRow(cred) {
 
   const mkTd = (text, styles = {}) => {
     const td = document.createElement("td");
-    td.style.padding = "12px 10px";
+    td.className = "credential-cell";
     td.style.fontSize = "0.85rem";
     Object.assign(td.style, styles);
     td.textContent = text;
@@ -53,8 +53,8 @@ function makeCredentialRow(cred) {
   );
 
   const tdAction = document.createElement("td");
-  tdAction.style.cssText =
-    "padding:12px 10px;text-align:right;display:flex;gap:6px;justify-content:flex-end;";
+  tdAction.className = "credential-cell";
+  tdAction.style.cssText = "text-align:right;display:flex;gap:6px;justify-content:flex-end;";
 
   const btnEdit = document.createElement("button");
   btnEdit.className = "btn-credential-delete";

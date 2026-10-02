@@ -3,6 +3,31 @@ import { SchemaType } from "@google/generative-ai";
 
 export const expenseDeclarations: FunctionDeclaration[] = [
   {
+    name: "deleteExpense",
+    description: "記録済みの支出を削除する。listRecentExpensesで対象IDを確認してから使う。",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: { id: { type: SchemaType.NUMBER, description: "支出ID" } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "updateExpense",
+    description: "既存支出を部分更新する",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        id: { type: SchemaType.NUMBER },
+        amount: { type: SchemaType.NUMBER },
+        category: { type: SchemaType.STRING },
+        description: { type: SchemaType.STRING, nullable: true, description: "メモ。nullで削除" },
+        date: { type: SchemaType.STRING },
+        purchase_source: { type: SchemaType.STRING },
+      },
+      required: ["id"],
+    },
+  },
+  {
     name: "addExpense",
     description:
       "支出を家計簿に記録する。カテゴリは: 食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他。" +

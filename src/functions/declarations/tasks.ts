@@ -3,6 +3,25 @@ import { SchemaType } from "@google/generative-ai";
 
 export const taskDeclarations: FunctionDeclaration[] = [
   {
+    name: "updateTask",
+    description: "既存タスクを部分更新する",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        task_id: { type: SchemaType.NUMBER },
+        title: { type: SchemaType.STRING },
+        description: { type: SchemaType.STRING, nullable: true, description: "詳細。nullで削除" },
+        due_date: {
+          type: SchemaType.STRING,
+          nullable: true,
+          description: "期限日 YYYY-MM-DD。nullで期限を解除",
+        },
+        priority: { type: SchemaType.NUMBER },
+      },
+      required: ["task_id"],
+    },
+  },
+  {
     name: "addTask",
     description: "新しいタスク（ToDo）を追加する",
     parameters: {

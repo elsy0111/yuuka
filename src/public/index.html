@@ -26,11 +26,13 @@
   <link rel="stylesheet" href="css/views/tasks.css">
   <link rel="stylesheet" href="css/views/schedules.css">
   <link rel="stylesheet" href="css/views/expenses.css">
+  <link rel="stylesheet" href="css/views/work.css">
   <link rel="stylesheet" href="css/views/config.css">
   <link rel="stylesheet" href="css/modals.css">
   <link rel="stylesheet" href="css/responsive.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/themes/ba-light.css">
+  <link rel="stylesheet" href="css/readability.css">
 </head>
 <body>
 
@@ -213,9 +215,9 @@
             
             <!-- Card 1: Tasks -->
             <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="stat-tasks-badge-trend">ACTIVE</div>
+              <div class="stat-card-badge-trend" id="stat-tasks-badge-trend">未完了</div>
               <div class="stat-card-header">
-                <span class="stat-label">ACTIVE TASKS</span>
+                <span class="stat-label">未完了タスク</span>
               </div>
               <div class="stat-value" id="stat-pending-tasks">0</div>
               <div class="stat-sparkline" id="tasks-priority-bar-chart" style="display: flex; align-items: flex-end; gap: 8px; height: 28px; margin-bottom: 8px;">
@@ -226,9 +228,9 @@
 
             <!-- Card 2: Schedules -->
             <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="stat-schedules-badge-trend">7 DAYS</div>
+              <div class="stat-card-badge-trend" id="stat-schedules-badge-trend">7日間</div>
               <div class="stat-card-header">
-                <span class="stat-label">UPCOMING EVENTS</span>
+                <span class="stat-label">今後7日の予定</span>
               </div>
               <div class="stat-value" id="stat-upcoming-schedules">0</div>
               <div class="stat-sparkline">
@@ -243,7 +245,7 @@
             <div class="stat-card card">
               <div class="stat-card-badge-trend" id="expense-trend-badge">今月</div>
               <div class="stat-card-header">
-                <span class="stat-label">SEMINAR BUDGET</span>
+                <span class="stat-label">今月の支出</span>
               </div>
               <div class="stat-value" id="stat-expenses-total">¥0</div>
               <div class="stat-sparkline">
@@ -263,7 +265,7 @@
             <!-- Cryptographic Price Chart Style Line Chart (Matte Style) -->
             <div class="dashboard-column card">
               <div class="column-header">
-                <h3><span class="material-symbols-outlined header-icon-symbol">trending_up</span>経費支出推移</h3>
+                <h3><span class="material-symbols-outlined header-icon-symbol">trending_up</span>支出の推移</h3>
                 <span class="hud-tag">LIVE</span>
               </div>
               <div class="chart-main-wrapper">
@@ -321,7 +323,7 @@
             <!-- Category Breakdown with Matte Rings -->
             <div class="dashboard-column card">
               <div class="column-header">
-                <h3><span class="material-symbols-outlined header-icon-symbol">pie_chart</span>財務カテゴリ別監査</h3>
+                <h3><span class="material-symbols-outlined header-icon-symbol">pie_chart</span>カテゴリ別の支出</h3>
               </div>
               <div class="chart-container-flex">
                 <div class="pie-chart-wrapper">
@@ -349,7 +351,7 @@
           <!-- Urgent Schedules & ToDos HUD Column -->
           <div class="full-width-urgent-row card">
             <div class="column-header">
-              <h3><span class="material-symbols-outlined header-icon-symbol">bolt</span>今日の緊急予定 ＆ 滞留タスク</h3>
+              <h3><span class="material-symbols-outlined header-icon-symbol">bolt</span>今日の予定と未完了タスク</h3>
               <span class="hud-pulse-dot"></span>
             </div>
             <div class="dashboard-list" id="dashboard-urgent-list">
@@ -364,12 +366,18 @@
              ========================================== -->
         <section id="tab-tasks" class="tab-view">
           <div class="view-actions-card card">
-            <div class="filters-group">
-              <button class="btn btn-filter active" data-filter="all">全て</button>
-              <button class="btn btn-filter" data-filter="pending">未完了</button>
-              <button class="btn btn-filter" data-filter="done">完了済み</button>
+            <div class="task-toolbar-top">
+              <label class="task-search-wrap" for="task-search">
+                <input id="task-search" type="search" placeholder="タイトル・説明を検索" aria-label="タスクを検索">
+              </label>
+              <button id="btn-new-task" class="btn btn-primary">＋ タスク追加</button>
             </div>
-            <button id="btn-new-task" class="btn btn-primary">＋ タスク追加</button>
+            <div class="filters-group" role="group" aria-label="タスクの状態">
+              <button class="btn btn-filter active" data-filter="all" aria-pressed="true">全て</button>
+              <button class="btn btn-filter" data-filter="pending" aria-pressed="false">未完了</button>
+              <button class="btn btn-filter" data-filter="done" aria-pressed="false">完了済み</button>
+              <span id="tasks-count" class="tasks-count" aria-live="polite">0件</span>
+            </div>
           </div>
           
           <div class="list-container" id="tasks-list">
@@ -455,6 +463,26 @@
             </div>
           </div>
 
+          <section id="work-card" class="card work-card" aria-labelledby="work-title">
+            <div class="column-header"><h3 id="work-title">働いた分</h3><span class="hud-tag">控除前</span></div>
+            <p class="work-hint">時給を保存すると、働いた時間だけで収入を計算できます。</p>
+            <p id="work-summary" class="work-summary" aria-live="polite">読み込み中…</p>
+            <form id="work-rate-form" class="work-form">
+              <div class="form-group"><label for="work-hourly-rate">時給（円）</label><input id="work-hourly-rate" type="number" min="1" max="10000000" step="1" required placeholder="1200"></div>
+              <button type="submit" class="btn btn-secondary">時給を保存</button>
+            </form>
+            <p id="work-rate-hint" class="work-hint"></p>
+            <form id="work-entry-form" class="work-form">
+              <div class="form-group"><label for="work-hours">働いた時間</label><input id="work-hours" type="number" min="0.01" max="24" step="any" required placeholder="3.5"></div>
+              <div class="form-group"><label for="work-date">日付</label><input id="work-date" type="date" required></div>
+              <div class="form-group work-description-group"><label for="work-description">メモ（任意）</label><input id="work-description" type="text" maxlength="500" placeholder="アルバイトなど"></div>
+              <p id="work-preview" class="work-preview" aria-live="polite"></p>
+              <button id="work-entry-submit" type="submit" class="btn btn-primary" disabled>働いた時間を記録</button>
+            </form>
+            <div id="work-error" class="work-hint" role="status"></div>
+            <button id="work-retry" type="button" class="btn btn-secondary btn-sm" hidden>再試行</button>
+            <div id="work-entry-list" class="work-entry-list"></div>
+          </section>
           <div class="expense-daily-card card">
             <div class="column-header">
               <h3><span class="material-symbols-outlined header-icon-symbol">monitoring</span>日単位の消費量</h3>
@@ -551,7 +579,7 @@
               </button>
             </div>
             <div class="table-responsive">
-              <table class="expense-table">
+              <table class="expense-table mobile-card-table">
                 <thead>
                   <tr>
                     <th>日付</th>
@@ -631,11 +659,9 @@
               <div class="form-group" style="margin-bottom: 12px;">
                 <label for="gemini-model-select">Gemini モデル</label>
                 <select id="gemini-model-select" required>
-                  <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (推奨・最速)</option>
+                  <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite（現在の標準）</option>
                   <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                   <option value="gemini-2.5-pro">Gemini 2.5 Pro (高度な推論)</option>
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                 </select>
               </div>
               <button type="submit" class="btn btn-primary">Gemini 設定を保存</button>
@@ -723,7 +749,7 @@
             
             <!-- Credentials List Table -->
             <div class="table-responsive" style="margin-top: 16px;">
-              <table class="expense-table" style="width: 100%; border-collapse: collapse;">
+              <table class="expense-table mobile-card-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
                   <tr style="border-bottom: 1px solid #27272a;">
                     <th style="text-align: left; padding: 10px; font-weight: 500; font-size: 0.85rem; color: #a1a1aa;">対象サービス名</th>
@@ -768,8 +794,8 @@
               <!-- Generated dynamically -->
             </div>
 
-            <form id="memory-add-form" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-              <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" style="flex-grow:1;min-width:200px;">
+            <form id="memory-add-form" style="gap:8px;margin-top:8px;flex-wrap:wrap;">
+              <input type="text" id="memory-new-content" required placeholder="例: 大学片道バス330円" style="flex-grow:1;min-width:0;">
               <select id="memory-new-module" class="filter-select">
                 <option value="general">汎用</option>
                 <option value="expenses">家計</option>
@@ -1263,7 +1289,7 @@
       <!-- フィルターパネル -->
       <div class="modal-filters">
         <div class="filter-row">
-          <label>期間</label>
+          <label>期間（開始日 → 終了日）</label>
           <input type="date" id="filter-date-from" aria-label="開始日" class="filter-input">
           <span style="color:var(--color-zinc-muted);">〜</span>
           <input type="date" id="filter-date-to" aria-label="終了日" class="filter-input">
@@ -1307,9 +1333,19 @@
         </div>
       </div>
 
+      <label class="mobile-expense-sort" for="expense-detail-sort">並べ替え
+        <select id="expense-detail-sort">
+          <option value="date:desc">日付が新しい順</option>
+          <option value="date:asc">日付が古い順</option>
+          <option value="amount:desc">金額が高い順</option>
+          <option value="amount:asc">金額が低い順</option>
+          <option value="category:asc">カテゴリ順</option>
+          <option value="created_at:desc">登録が新しい順</option>
+        </select>
+      </label>
       <!-- 結果テーブル -->
       <div class="modal-table-wrap">
-        <table class="expense-table">
+        <table class="expense-table mobile-card-table">
           <thead>
             <tr>
               <th class="sortable-th sort-desc" data-sort="date">日付 <span class="sort-icon">▼</span></th>

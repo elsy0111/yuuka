@@ -33,6 +33,7 @@ import { initRouter } from "./router.js";
 import { initSchedules } from "./schedules.js";
 import { initTasks } from "./tasks.js";
 import { initTheme } from "./theme.js";
+import { initWork } from "./work.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTasks();
   initSchedules();
   initExpenses();
+  initWork();
   initBudgetEdit();
   initGeminiQuotaEdit();
   initExpenseDetail();
