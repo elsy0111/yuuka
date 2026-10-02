@@ -15,6 +15,53 @@
   align-items: center;
 }
 
+.task-search-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 220px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-matte);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+}
+
+.task-search-wrap input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.task-search-wrap:focus-within {
+  border-color: var(--border-focus);
+  outline: 2px solid color-mix(in srgb, var(--accent-cyan) 35%, transparent);
+  outline-offset: 1px;
+}
+
+.task-clear-search {
+  margin: 12px auto 0;
+  display: block;
+}
+
+.task-empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .task-search-wrap {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .filters-group {
+    flex-wrap: wrap;
+  }
+}
+
 .label-text {
   font-size: 0.8rem;
   color: var(--text-secondary);

@@ -531,3 +531,20 @@
   font-weight: 700;
   pointer-events: none;
 }
+
+.dashboard-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+@media (max-width: 768px) {
+  .dashboard-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .dashboard-quick-actions .btn {
+    padding-inline: 4px;
+    font-size: 0.75rem;
+  }
+}

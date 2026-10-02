@@ -5,6 +5,7 @@ import { fetchExpensesList } from "./expenses.js";
 import { fetchMemories } from "./memories.js";
 import { fetchSchedulesList } from "./schedules.js";
 import { state } from "./state.js";
+import { getModal, openModal } from "./modal.js";
 import { fetchTasksList } from "./tasks.js";
 
 const TAB_TITLES = {
@@ -73,6 +74,20 @@ export function switchTab(tabId, recordHistory = false) {
 }
 
 export function initRouter() {
+  document.querySelectorAll("[data-quick-add]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const kind = button.dataset.quickAdd;
+      if (kind === "expense") {
+        switchTab("expenses", true);
+        const input = document.getElementById("exp-amount");
+        input?.scrollIntoView({ block: "center" });
+        input?.focus({ preventScroll: true });
+      } else {
+        switchTab(kind === "task" ? "tasks" : "schedules", true);
+        openModal(getModal(kind));
+      }
+    });
+  });
   window.addEventListener("hashchange", () => switchTab(location.hash.slice(1)));
   document.querySelectorAll(".menu-item").forEach((item) => {
     item.addEventListener("click", (e) => {

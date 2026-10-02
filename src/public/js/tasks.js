@@ -9,26 +9,86 @@ export async function fetchTasksList(
   const list = document.getElementById("tasks-list");
   const requestId = (list._requestId || 0) + 1;
   list._requestId = requestId;
+  list._tasks = null;
+  const count = document.getElementById("tasks-count");
+  if (count) count.textContent = "読み込み中…";
   showListState(list, "読み込み中…");
   try {
     const params = new URLSearchParams({ userId: state.activeUserId, status: filter });
     const data = await apiRequest(`/api/tasks?${params}`);
     if (list._requestId !== requestId) return;
-    list.replaceChildren();
-    if (data.tasks.length > 0) {
-      data.tasks.forEach((task) => {
-        list.appendChild(makeTaskCard(task));
-      });
-    } else {
-      const empty = document.createElement("div");
-      empty.className = "glass";
-      empty.textContent = "登録されているタスクがありません。";
-      list.appendChild(empty);
-    }
+    list._tasks = data.tasks;
+    renderTasks(list);
   } catch (e) {
     if (list._requestId !== requestId) return;
+    if (count) count.textContent = "取得に失敗しました";
     showListState(list, e.message || "読み込みに失敗しました。", () => fetchTasksList(filter));
   }
+}
+
+function renderTasks(list) {
+  if (list._tasks === null) return;
+  const query = (list._searchQuery || "").trim().toLocaleLowerCase();
+  const tasks = (list._tasks || []).filter((task) => {
+    if (!query) return true;
+    return `${task.title}\n${task.description || ""}`.toLocaleLowerCase().includes(query);
+  });
+  list.replaceChildren();
+  const status = list._tasks?.length ? `${tasks.length}件` : "登録されているタスクがありません。";
+  const count = document.getElementById("tasks-count");
+  if (count) count.textContent = status;
+  if (tasks.length) {
+    tasks.forEach((task) => {
+      list.appendChild(makeTaskCard(task));
+    });
+    return;
+  }
+  const empty = document.createElement("div");
+  empty.className = "glass task-empty-state";
+  empty.textContent = query ? "検索条件に一致するタスクがありません。" : status;
+  if (query) {
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "btn-filter task-clear-search";
+    clear.textContent = "検索をクリア";
+    clear.addEventListener("click", () => {
+      const input = document.getElementById("task-search");
+      if (input) input.value = "";
+      list._searchQuery = "";
+      renderTasks(list);
+      input?.focus();
+    });
+    empty.appendChild(clear);
+  }
+  list.appendChild(empty);
+}
+
+function setupTaskSearch() {
+  const list = document.getElementById("tasks-list");
+  const filterGroup = document.querySelector("[data-filter]")?.parentElement;
+  if (!list || !filterGroup || document.getElementById("task-search")) return;
+  const label = document.createElement("label");
+  label.className = "task-search-wrap";
+  label.htmlFor = "task-search";
+  const icon = document.createElement("span");
+  icon.className = "material-symbols-outlined";
+  icon.textContent = "search";
+  const input = document.createElement("input");
+  input.id = "task-search";
+  input.type = "search";
+  input.placeholder = "タイトル・説明を検索";
+  input.setAttribute("aria-label", "タスクを検索");
+  input.addEventListener("input", () => {
+    list._searchQuery = input.value;
+    renderTasks(list);
+  });
+  label.append(icon, input);
+  filterGroup.appendChild(label);
+  const count = document.createElement("span");
+  count.id = "tasks-count";
+  count.className = "tasks-count";
+  count.setAttribute("aria-live", "polite");
+  filterGroup.appendChild(count);
 }
 
 function makeTaskCard(task) {
@@ -183,6 +243,7 @@ async function handleEditTaskSubmit(e) {
 }
 
 export function initTasks() {
+  setupTaskSearch();
   document.querySelectorAll("[data-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-filter]").forEach((b) => {
