@@ -1,49 +1,59 @@
-const CACHE = "yuuka-v2";
+const CACHE = "yuuka-v3";
 const PRECACHE = [
   "/",
-  "/styles.css",
-  "/js/main.js",
   "/manifest.json",
   "/icons/icon-192x192.png",
   "/icons/icon-512x512.png",
   "/materials/yuka.webp",
 ];
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(
+self.addEventListener("install", (event) => {
+  event.waitUntil(
     caches
       .open(CACHE)
-      .then((c) => c.addAll(PRECACHE))
+      .then((cache) => cache.addAll(PRECACHE))
       .then(() => self.skipWaiting()),
   );
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith("yuuka-") && key !== CACHE)
+            .map((key) => caches.delete(key)),
+        ),
+      )
       .then(() => self.clients.claim()),
   );
 });
 
-self.addEventListener("fetch", (e) => {
-  // API・認証・外部リクエストはキャッシュしない
-  const url = new URL(e.request.url);
-  if (e.request.method !== "GET") return;
-  if (url.origin !== location.origin) return;
-  if (url.pathname.includes("/api/")) return;
-
-  e.respondWith(
-    caches.match(e.request).then((cached) => {
-      const network = fetch(e.request).then((res) => {
-        if (res.ok) {
-          const copy = res.clone();
-          e.waitUntil(caches.open(CACHE).then((c) => c.put(e.request, copy)));
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.startsWith("/api/")) return;
+  // Prefer deployed HTML, modules and styles; cached assets are an offline fallback.
+  event.respondWith(
+    (async () => {
+      try {
+        const response = await fetch(event.request);
+        if (response.ok) {
+          const copy = response.clone();
+          event.waitUntil(caches.open(CACHE).then((cache) => cache.put(event.request, copy)));
         }
-        return res;
-      });
-      return cached || network;
-    }),
+        return response;
+      } catch {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        if (event.request.mode === "navigate") {
+          const shell = await caches.match("/");
+          if (shell) return shell;
+        }
+        return new Response("オフラインです。接続を確認して再試行してください。", { status: 503 });
+      }
+    })(),
   );
 });

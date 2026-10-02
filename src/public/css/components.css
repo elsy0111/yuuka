@@ -377,3 +377,58 @@ a:not(.menu-item):not(.btn) {
 a:not(.menu-item):not(.btn):hover {
   color: var(--accent-cyan);
 }
+
+/* Clear feedback and keyboard navigation across views. */
+:focus-visible {
+  outline: 3px solid var(--accent-blue, #60a5fa);
+  outline-offset: 3px;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.list-state {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.list-state p {
+  margin-bottom: 12px;
+}
+.card-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+body.modal-open {
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .btn-trash,
+  .btn-icon-sm,
+  .toast-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+  }
+  .expense-table {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Respect the user preference across animated components. */
+    scroll-behavior: auto !important;
+  }
+}

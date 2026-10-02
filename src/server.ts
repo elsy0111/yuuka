@@ -42,38 +42,50 @@ const privateRoutes: RouteHandler[] = [
 ];
 
 export async function serverHandler(req: http.IncomingMessage, res: http.ServerResponse) {
-  const { method, url } = req;
-  const parsedUrl = new URL(url || "/", `http://${req.headers.host || "localhost"}`);
-  const ctx: RouteContext = {
-    req,
-    res,
-    parsedUrl,
-    pathname: parsedUrl.pathname,
-    method,
-  };
+  try {
+    const { method, url } = req;
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url || "/", `http://${req.headers.host || "localhost"}`);
+    } catch {
+      sendError(res, 400, "リクエストURLが不正です。");
+      return;
+    }
+    const ctx: RouteContext = {
+      req,
+      res,
+      parsedUrl,
+      pathname: parsedUrl.pathname,
+      method,
+    };
 
-  res.setHeader("Access-Control-Allow-Origin", "null");
+    res.setHeader("Access-Control-Allow-Origin", "null");
 
-  if (!ctx.pathname.startsWith("/api/")) {
-    serveStaticFile(req, res);
-    return;
+    if (!ctx.pathname.startsWith("/api/")) {
+      serveStaticFile(req, res);
+      return;
+    }
+
+    for (const route of publicRoutes) {
+      if (await route(ctx)) return;
+    }
+
+    if (!isAuthenticated(req)) {
+      sendError(res, 401, "認証されていません。ログインし直してください。");
+      return;
+    }
+
+    for (const route of privateRoutes) {
+      if (await route(ctx)) return;
+    }
+
+    console.warn(`[404] 未マッチルート: ${ctx.method} ${ctx.pathname}`);
+    sendError(res, 404, "APIエンドポイントが見つかりません。");
+  } catch (err) {
+    console.error("[http] リクエスト処理エラー:", err);
+    if (!res.headersSent) sendError(res, 500, "サーバー内部エラーが発生しました。");
+    else if (!res.writableEnded) res.end();
   }
-
-  for (const route of publicRoutes) {
-    if (await route(ctx)) return;
-  }
-
-  if (!isAuthenticated(req)) {
-    sendError(res, 401, "認証されていません。ログインし直してください。");
-    return;
-  }
-
-  for (const route of privateRoutes) {
-    if (await route(ctx)) return;
-  }
-
-  console.warn(`[404] 未マッチルート: ${ctx.method} ${ctx.pathname}`);
-  sendError(res, 404, "APIエンドポイントが見つかりません。");
 }
 
 let server: http.Server | null = null;

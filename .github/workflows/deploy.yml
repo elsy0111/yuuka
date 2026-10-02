@@ -1,0 +1,150 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  deploy:
+    name: Deploy to VPS (PM2)
+    needs: checks
+    runs-on: ubuntu-22.04
+    environment: production
+    timeout-minutes: 15
+    env:
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_SERVICE: ${{ secrets.DEPLOY_SERVICE }}
+      DEPLOY_NODE_BIN: ${{ secrets.DEPLOY_NODE_BIN }}
+      DEPLOY_PM2_BIN: ${{ secrets.DEPLOY_PM2_BIN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Download verified build
+        uses: actions/download-artifact@v4
+        with:
+          name: yuuka-dist-${{ github.sha }}
+          path: dist
+
+      - name: Restore crawler executable permission
+        run: chmod +x dist/bin/yuuka-crawler
+
+      - name: Configure SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/ssh/id_ed25519"
+          chmod 600 "$RUNNER_TEMP/ssh/id_ed25519"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$RUNNER_TEMP/ssh/known_hosts"
+          chmod 644 "$RUNNER_TEMP/ssh/known_hosts"
+
+      - name: Upload release
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          test -n "$DEPLOY_PATH" || { echo 'DEPLOY_PATH is required'; exit 1; }
+          test -n "$DEPLOY_SERVICE" || { echo 'DEPLOY_SERVICE is required'; exit 1; }
+          test -n "$GITHUB_SHA" || { echo 'GITHUB_SHA is required'; exit 1; }
+          [[ "$DEPLOY_PATH" =~ ^/[a-zA-Z0-9_./-]+$ && "$DEPLOY_PATH" != "/" ]] || { echo 'DEPLOY_PATH must be a dedicated absolute path without spaces'; exit 1; }
+          [[ "$DEPLOY_SERVICE" =~ ^[a-zA-Z0-9_.@-]+$ ]] || { echo 'Invalid service name'; exit 1; }
+          ssh -i "$RUNNER_TEMP/ssh/id_ed25519" -o "UserKnownHostsFile=$RUNNER_TEMP/ssh/known_hosts" -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "test -d '$DEPLOY_PATH' && mkdir -p '$DEPLOY_PATH/.deploy-staging/$GITHUB_SHA'"
+          tar --exclude='./.git' --exclude='./node_modules' --exclude='./.env' --exclude='./config.yaml' --exclude='./data' \
+            --exclude='./.yarn/cache' --exclude='./.deploy-backups' --exclude='./.deploy-staging' \
+            -czf "$RUNNER_TEMP/yuuka-release.tar.gz" .
+          scp -i "$RUNNER_TEMP/ssh/id_ed25519" -o "UserKnownHostsFile=$RUNNER_TEMP/ssh/known_hosts" -o StrictHostKeyChecking=yes \
+            "$RUNNER_TEMP/yuuka-release.tar.gz" "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/.deploy-staging/$GITHUB_SHA/release.tar.gz"
+          ssh -i "$RUNNER_TEMP/ssh/id_ed25519" -o "UserKnownHostsFile=$RUNNER_TEMP/ssh/known_hosts" -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "tar -xzf '$DEPLOY_PATH/.deploy-staging/$GITHUB_SHA/release.tar.gz' -C '$DEPLOY_PATH/.deploy-staging/$GITHUB_SHA' && rm '$DEPLOY_PATH/.deploy-staging/$GITHUB_SHA/release.tar.gz'"
+
+      - name: Restart and verify service
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_OPTS: -i ${{ runner.temp }}/ssh/id_ed25519 -o UserKnownHostsFile=${{ runner.temp }}/ssh/known_hosts -o StrictHostKeyChecking=yes
+        run: |
+          ssh $SSH_OPTS "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_SERVICE='$DEPLOY_SERVICE' NODE_BIN='$DEPLOY_NODE_BIN' PM2_BIN='$DEPLOY_PM2_BIN' RELEASE_SHA='$GITHUB_SHA' bash -s" <<'REMOTE'
+          set -Eeuo pipefail
+          umask 077
+          export PATH="$(dirname "$NODE_BIN"):$(dirname "$PM2_BIN"):$PATH"
+          export PUPPETEER_SKIP_DOWNLOAD=true
+          cd "$DEPLOY_PATH"
+          test -x "$NODE_BIN"
+          test -x "$PM2_BIN"
+          git diff --quiet
+          git diff --cached --quiet
+          previous_commit="$(git rev-parse HEAD)"
+          git fetch origin "$RELEASE_SHA"
+          staging="$DEPLOY_PATH/.deploy-staging/$RELEASE_SHA"
+          test -d "$staging/dist"
+          backup="$DEPLOY_PATH/.deploy-backups/$(date -u +%Y%m%d%H%M%S)-$RELEASE_SHA"
+          mkdir -p "$backup"
+          [ ! -e .yarn/install-state.gz ] || cp -a .yarn/install-state.gz "$backup/install-state.gz"
+          [ ! -e dist ] || cp -a dist "$backup/dist"
+          [ ! -e src/public ] || cp -a src/public "$backup/public"
+          [ ! -e package.json ] || cp -a package.json "$backup/package.json"
+          [ ! -e yarn.lock ] || cp -a yarn.lock "$backup/yarn.lock"
+          if [ -d node_modules ]; then tar -C . -czf "$backup/node_modules.tgz" node_modules; fi
+          "$PM2_BIN" jlist | "$NODE_BIN" -e 'const fs=require("node:fs");let input="";process.stdin.on("data",c=>input+=c);process.stdin.on("end",()=>{const p=JSON.parse(input).find(p=>p.name===process.argv[2]);if(!p)process.exit(1);fs.writeFileSync(process.argv[1],JSON.stringify({apps:[{name:p.name,cwd:p.pm2_env.pm_cwd,script:p.pm2_env.pm_exec_path,interpreter:fs.readlinkSync("/proc/"+p.pid+"/exe")}]}));});' "$backup/previous-ecosystem.json" "$DEPLOY_SERVICE"
+          rollback() {
+            trap - ERR
+            echo 'Health check failed; restoring previous build.' >&2
+            if [ -d "$backup/dist" ]; then
+              git reset --hard "$previous_commit"
+              rm -rf dist
+              cp -a "$backup/dist" dist
+              if [ -d "$backup/public" ]; then rm -rf src/public; cp -a "$backup/public" src/public; fi
+              [ ! -e "$backup/package.json" ] || cp -a "$backup/package.json" package.json
+              [ ! -e "$backup/yarn.lock" ] || cp -a "$backup/yarn.lock" yarn.lock
+              if [ -f "$backup/node_modules.tgz" ]; then rm -rf node_modules; tar -xzf "$backup/node_modules.tgz"; fi
+              mkdir -p .yarn
+              [ ! -e "$backup/install-state.gz" ] || cp -a "$backup/install-state.gz" .yarn/install-state.gz
+              "$PM2_BIN" startOrReload "$backup/previous-ecosystem.json" --update-env || true
+            fi
+            exit 1
+          }
+          health_log="$backup/health.log"
+          trap rollback ERR
+          git reset --hard "$RELEASE_SHA"
+          rm -rf dist src/public
+          tar -C "$staging" -cf - dist src/public package.json yarn.lock .yarnrc.yml .yarn/releases scripts/checkhealth.mjs | tar -xf -
+          yarn install --immutable
+          "$NODE_BIN" -e 'require("node:fs").writeFileSync(process.argv[1],JSON.stringify({apps:[{name:process.argv[2],cwd:process.argv[3],script:process.argv[3]+"/dist/index.js",interpreter:process.argv[4],env:{NODE_ENV:"production"}}]}))' "$backup/next-ecosystem.json" "$DEPLOY_SERVICE" "$DEPLOY_PATH" "$NODE_BIN"
+          "$PM2_BIN" startOrReload "$backup/next-ecosystem.json" --update-env
+          for attempt in $(seq 1 20); do
+            if "$PM2_BIN" jlist | "$NODE_BIN" -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>process.exit(JSON.parse(s).some(p=>p.name===process.argv[1]&&p.pm2_env.status==="online")?0:1));' "$DEPLOY_SERVICE"; then
+              if node scripts/checkhealth.mjs --runtime >"$health_log" 2>&1; then
+                cat "$health_log"
+                "$PM2_BIN" save
+                rm -rf "$backup" "$staging"
+                exit 0
+              fi
+            fi
+            sleep 3
+          done
+          cat "$health_log" || true
+          rollback
+          REMOTE

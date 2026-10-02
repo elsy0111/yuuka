@@ -1,4 +1,5 @@
 import { openEditExpenseModal } from "./expenses.js";
+import { closeExternalModal, openExternalModal } from "./modal.js";
 import { state } from "./state.js";
 
 let currentExpenses = [];
@@ -18,13 +19,15 @@ export function initExpenseDetail() {
 
   const openModal = () => {
     modal.classList.remove("hidden");
+    openExternalModal(modal, performClose);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => modal.classList.add("modal-visible"));
     });
   };
 
-  const closeModal = () => {
+  const performClose = () => {
     modal.classList.remove("modal-visible");
+    closeExternalModal(modal);
     modal.addEventListener("transitionend", () => modal.classList.add("hidden"), { once: true });
   };
 
@@ -34,14 +37,10 @@ export function initExpenseDetail() {
     fetchDetailExpenses();
   });
 
-  btnClose?.addEventListener("click", closeModal);
+  btnClose?.addEventListener("click", performClose);
 
   modal?.addEventListener("click", (e) => {
-    if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal?.classList.contains("hidden")) closeModal();
+    if (e.target === modal) performClose();
   });
 
   document.getElementById("btn-filter-apply")?.addEventListener("click", fetchDetailExpenses);

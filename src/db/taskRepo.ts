@@ -58,7 +58,9 @@ export function completeTask(id: number, userId: string): Task | undefined {
   db.prepare(
     "UPDATE tasks SET status = 'done', updated_at = datetime('now', 'localtime') WHERE id = ? AND user_id = ?",
   ).run(id, userId);
-  return getTaskById(id);
+  return db.prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?").get(id, userId) as
+    | Task
+    | undefined;
 }
 
 export function reopenTask(id: number, userId: string): Task | undefined {
@@ -88,11 +90,11 @@ export function updateTask(
     sets.push("title = ?");
     params.push(fields.title);
   }
-  if ("description" in fields) {
+  if (fields.description !== undefined) {
     sets.push("description = ?");
     params.push(fields.description ?? null);
   }
-  if ("dueDate" in fields) {
+  if (fields.dueDate !== undefined) {
     sets.push("due_date = ?");
     params.push(fields.dueDate ?? null);
   }
@@ -102,7 +104,9 @@ export function updateTask(
   }
   params.push(id, userId);
   db.prepare(`UPDATE tasks SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
-  return getTaskById(id);
+  return db.prepare("SELECT * FROM tasks WHERE id = ? AND user_id = ?").get(id, userId) as
+    | Task
+    | undefined;
 }
 
 export function deleteTask(id: number, userId: string): boolean {

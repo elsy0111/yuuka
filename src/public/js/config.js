@@ -1,3 +1,4 @@
+import { guardSubmit } from "./ui.js";
 import { renderProfileDropdown } from "./auth.js";
 import { state } from "./state.js";
 import { initCalendarForm, renderCalendarsList } from "./config-calendars.js";
@@ -163,51 +164,57 @@ export function initConfig() {
     }
   });
 
-  document.getElementById("gemini-config-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const apiKey = document.getElementById("gemini-api-key").value;
-    const model = document.getElementById("gemini-model-select").value;
-    try {
-      const res = await fetch("/api/config/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey, model }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById("gemini-api-key").value = "";
-        await loadGeminiForm();
-        toast.success("Gemini設定を保存しました。");
-      } else {
-        toast.error(data.message || "保存に失敗しました。");
+  document.getElementById("gemini-config-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const apiKey = document.getElementById("gemini-api-key").value;
+      const model = document.getElementById("gemini-model-select").value;
+      try {
+        const res = await fetch("/api/config/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ apiKey, model }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById("gemini-api-key").value = "";
+          await loadGeminiForm();
+          toast.success("Gemini設定を保存しました。");
+        } else {
+          toast.error(data.message || "保存に失敗しました。");
+        }
+      } catch {
+        toast.error("サーバー接続に失敗しました。");
       }
-    } catch {
-      toast.error("サーバー接続に失敗しました。");
-    }
-  });
+    }),
+  );
 
-  document.getElementById("profile-config-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const username = document.getElementById("config-profile-username").value.trim();
-    if (!username) return;
+  document.getElementById("profile-config-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("config-profile-username").value.trim();
+      if (!username) return;
 
-    try {
-      const res = await fetch("/api/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        renderProfileDropdown(data.username);
-        toast.success(`表示名を「${data.username}」に変更しました。`);
-      } else {
-        toast.error(data.message || "保存に失敗しました。");
+      try {
+        const res = await fetch("/api/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          renderProfileDropdown(data.username);
+          toast.success(`表示名を「${data.username}」に変更しました。`);
+        } else {
+          toast.error(data.message || "保存に失敗しました。");
+        }
+      } catch {
+        toast.error("サーバー接続に失敗しました。");
       }
-    } catch {
-      toast.error("サーバー接続に失敗しました。");
-    }
-  });
+    }),
+  );
 }
 
 function renderConfigEntries(grid, config) {

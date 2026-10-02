@@ -42,10 +42,15 @@ export function loadDataForActiveTab() {
 }
 
 export function switchTab(tabId) {
+  if (!Object.hasOwn(TAB_TITLES, tabId)) return;
   state.activeTab = tabId;
+  history.replaceState(null, "", `#${tabId}`);
 
   document.querySelectorAll(".menu-item").forEach((item) => {
-    item.classList.toggle("active", item.getAttribute("data-tab") === tabId);
+    const active = item.getAttribute("data-tab") === tabId;
+    item.classList.toggle("active", active);
+    if (active) item.setAttribute("aria-current", "page");
+    else item.removeAttribute("aria-current");
   });
 
   document.querySelectorAll(".tab-view").forEach((view) => {
@@ -59,6 +64,7 @@ export function switchTab(tabId) {
 }
 
 export function initRouter() {
+  window.addEventListener("hashchange", () => switchTab(location.hash.slice(1)));
   document.querySelectorAll(".menu-item").forEach((item) => {
     item.addEventListener("click", (e) => {
       e.preventDefault();

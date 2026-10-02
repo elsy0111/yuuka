@@ -1,14 +1,16 @@
+import { apiRequest, localDate, reportError, guardSubmit } from "./ui.js";
 import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
 import { toast } from "./toast.js";
 
 export async function fetchExpensesList() {
   const tbody = document.getElementById("expenses-table-body");
+  const requestId = (tbody._requestId || 0) + 1;
+  tbody._requestId = requestId;
   tbody.replaceChildren();
   try {
-    const res = await fetch(`/api/expenses?userId=${state.activeUserId}`);
-    const data = await res.json();
-    if (!data.success) return;
+    const data = await apiRequest(`/api/expenses?userId=${state.activeUserId}`);
+    if (tbody._requestId !== requestId) return;
 
     document.getElementById("expense-month-total").textContent = `¥${data.total.toLocaleString()}`;
     renderBudgetBar(data.total, data.budget ?? 50000, data.remaining ?? data.budget - data.total);
@@ -22,13 +24,26 @@ export async function fetchExpensesList() {
     } else {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 5;
+      td.colSpan = 4;
       td.textContent = "まだ支出記録がありません。上のスキャナーか手動登録をご利用ください。";
       tr.appendChild(td);
       tbody.appendChild(tr);
     }
   } catch (e) {
-    console.error(e);
+    if (tbody._requestId !== requestId) return;
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 4;
+    cell.textContent = "家計データを読み込めませんでした。";
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.className = "btn btn-secondary";
+    retry.textContent = "再試行";
+    retry.addEventListener("click", fetchExpensesList);
+    cell.appendChild(retry);
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    reportError(e);
   }
 }
 
@@ -64,7 +79,16 @@ function renderExpenseStats(stats) {
     (stats.topCategories ?? []).forEach((cat, i) => {
       const li = document.createElement("li");
       li.className = "stat-ranking-item";
-      li.innerHTML = `<span class="stat-rank-num">${i + 1}</span><span class="stat-rank-cat">${cat.category}</span><span class="stat-rank-amt">¥${cat.total.toLocaleString()}</span>`;
+      for (const [className, value] of [
+        ["stat-rank-num", i + 1],
+        ["stat-rank-cat", cat.category],
+        ["stat-rank-amt", `¥${cat.total.toLocaleString()}`],
+      ]) {
+        const span = document.createElement("span");
+        span.className = className;
+        span.textContent = value;
+        li.appendChild(span);
+      }
       rankEl.appendChild(li);
     });
     if ((stats.topCategories ?? []).length === 0) {
@@ -184,21 +208,23 @@ export function initBudgetEdit() {
 
   saveBtn?.addEventListener("click", async () => {
     const budget = Number(input.value);
-    if (!budget || budget < 0) return;
+    if (!Number.isFinite(budget) || budget <= 0) {
+      toast.error("予算は0より大きい金額を入力してください。");
+      return;
+    }
     try {
-      const res = await fetch("/api/expenses/budget", {
+      const data = await apiRequest("/api/expenses/budget", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: state.activeUserId, budget }),
       });
-      const data = await res.json();
       if (data.success) {
         form.style.display = "none";
         editBtn.style.display = "";
         fetchExpensesList();
       }
     } catch (e) {
-      console.error(e);
+      reportError(e);
     }
   });
 }
@@ -220,6 +246,14 @@ export function makeExpenseRow(exp) {
   tdAmt.textContent = `¥${exp.amount.toLocaleString()}`;
 
   tr.style.cursor = "pointer";
+  tr.tabIndex = 0;
+  tr.setAttribute("aria-label", `${exp.date} ${exp.category} ${exp.amount}円を編集`);
+  tr.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openEditExpenseModal(exp);
+    }
+  });
   tr.addEventListener("click", () => openEditExpenseModal(exp));
   tr.append(tdDate, tdCat, tdDesc, tdAmt);
   return tr;
@@ -238,7 +272,7 @@ export function openEditExpenseModal(exp) {
 export async function handleDeleteExpense(id) {
   if (!(await confirmModal("この支出記録を削除しますか？"))) return;
   try {
-    await fetch("/api/expenses/delete", {
+    await apiRequest("/api/expenses/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),
@@ -246,7 +280,7 @@ export async function handleDeleteExpense(id) {
     closeModal(getModal("expense-edit"));
     fetchExpensesList();
   } catch (e) {
-    console.error(e);
+    reportError(e);
   }
 }
 
@@ -259,7 +293,7 @@ async function handleEditExpenseSubmit(e) {
   const description = document.getElementById("exp-edit-description").value.trim();
   const purchase_source = document.getElementById("exp-edit-purchase-source").value.trim();
   try {
-    const res = await fetch("/api/expenses/update", {
+    const data = await apiRequest("/api/expenses/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -272,52 +306,56 @@ async function handleEditExpenseSubmit(e) {
         purchase_source,
       }),
     });
-    const data = await res.json();
     if (data.success) {
       closeModal(getModal("expense-edit"));
       fetchExpensesList();
     }
   } catch (err) {
-    console.error(err);
+    reportError(err);
   }
 }
 
 export function initExpenses() {
   const expDateInput = document.getElementById("exp-date");
-  if (expDateInput) expDateInput.value = new Date().toISOString().slice(0, 10);
+  if (expDateInput) expDateInput.value = localDate();
 
-  document.getElementById("expense-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const amount = parseInt(document.getElementById("exp-amount").value, 10);
-    const category = document.getElementById("exp-category").value;
-    const desc = document.getElementById("exp-description").value.trim();
-    const date = document.getElementById("exp-date").value;
-    const purchaseSrc = document.getElementById("exp-purchase-source")?.value.trim() || "不明";
-    try {
-      const res = await fetch("/api/expenses/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: state.activeUserId,
-          amount,
-          category,
-          description: desc,
-          date,
-          purchase_source: purchaseSrc,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById("expense-form").reset();
-        document.getElementById("exp-date").value = new Date().toISOString().slice(0, 10);
-        fetchExpensesList();
+  document.getElementById("expense-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById("exp-amount").value, 10);
+      const category = document.getElementById("exp-category").value;
+      const desc = document.getElementById("exp-description").value.trim();
+      const date = document.getElementById("exp-date").value;
+      const purchaseSrc = document.getElementById("exp-purchase-source")?.value.trim() || "不明";
+      try {
+        const data = await apiRequest("/api/expenses/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: state.activeUserId,
+            amount,
+            category,
+            description: desc,
+            date,
+            purchase_source: purchaseSrc,
+          }),
+        });
+        if (data.success) {
+          toast.success("支出を記録しました。");
+          document.getElementById("expense-form").reset();
+          document.getElementById("exp-date").value = localDate();
+          fetchExpensesList();
+        }
+      } catch (e) {
+        reportError(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  });
+    }),
+  );
 
-  document.getElementById("expense-edit-form")?.addEventListener("submit", handleEditExpenseSubmit);
+  document
+    .getElementById("expense-edit-form")
+    ?.addEventListener("submit", guardSubmit(handleEditExpenseSubmit));
 
   document.getElementById("btn-expense-delete")?.addEventListener("click", () => {
     const id = parseInt(document.getElementById("exp-edit-id")?.value, 10);
@@ -342,13 +380,32 @@ function initReceiptDropzone() {
     dropzone.classList.remove("dragover");
     if (e.dataTransfer.files.length > 0) processReceiptFile(e.dataTransfer.files[0]);
   });
+  dropzone.tabIndex = 0;
+  dropzone.setAttribute("role", "button");
+  dropzone.setAttribute("aria-label", "レシート画像を選択");
+  dropzone.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fileInput.click();
+    }
+  });
   dropzone.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", (e) => {
     if (e.target.files.length > 0) processReceiptFile(e.target.files[0]);
   });
 }
 
+let receiptBusy = false;
+
 function processReceiptFile(file) {
+  if (receiptBusy) {
+    toast.info("レシートを解析中です。完了までお待ちください。");
+    return;
+  }
+  if (file.size > 7 * 1024 * 1024) {
+    toast.error("画像は7MB以下にしてください。");
+    return;
+  }
   if (!file.type.startsWith("image/")) {
     toast.error("画像ファイル（PNG, JPEG等）のみ対応しています。");
     return;
@@ -357,12 +414,23 @@ function processReceiptFile(file) {
   const scanStatusTxt = document.getElementById("scan-status-text");
   const reader = new FileReader();
 
+  receiptBusy = true;
+  const reset = () => {
+    receiptBusy = false;
+    scanStatus.classList.add("hidden");
+    document.getElementById("receipt-file-input").value = "";
+  };
+  reader.onerror = () => {
+    reset();
+    toast.error("画像を読み込めませんでした。");
+  };
+  reader.onabort = reset;
   reader.onload = async (e) => {
     const base64Data = e.target.result.split(",")[1];
     scanStatus.classList.remove("hidden");
     scanStatusTxt.textContent = "レシート画像をユウカが確認中... (Gemini API解析を起動しています)";
     try {
-      const res = await fetch("/api/expenses/upload-receipt", {
+      const data = await apiRequest("/api/expenses/upload-receipt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -372,7 +440,6 @@ function processReceiptFile(file) {
           additionalText: "WEB管理画面からアップロードされたレシートの解析結果です。",
         }),
       });
-      const data = await res.json();
       if (data.success) {
         scanStatus.classList.add("hidden");
         document.getElementById("receipt-ai-response").textContent = data.response;
@@ -384,6 +451,8 @@ function processReceiptFile(file) {
     } catch (err) {
       scanStatus.classList.add("hidden");
       toast.error(`解析エラー: ${err.message}`);
+    } finally {
+      reset();
     }
   };
   reader.readAsDataURL(file);

@@ -1,8 +1,9 @@
+import { storage } from "./storage.js";
 // スプラッシュスクリーン制御（DOMContentLoaded 前に実行）
 (() => {
   const splash = document.getElementById("splash-screen");
   if (!splash) return;
-  const theme = localStorage.getItem("yuuka-theme") || "dark";
+  const theme = storage.getItem("yuuka-theme") || "dark";
   const isBa = theme === "blue-archive";
   splash.style.backgroundColor = isBa ? "#FBFCFF" : "#09090b";
   const title = document.getElementById("splash-title");

@@ -1,3 +1,4 @@
+import { guardSubmit } from "./ui.js";
 import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { toast } from "./toast.js";
 
@@ -114,28 +115,31 @@ export function initCredentials() {
     document.getElementById("cred-password").required = true;
   });
 
-  document.getElementById("credential-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const serviceName = document.getElementById("cred-service-name").value.trim().toLowerCase();
-    const username = document.getElementById("cred-username").value.trim();
-    const password = document.getElementById("cred-password").value;
-    try {
-      const res = await fetch("/api/credentials/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serviceName, username, password }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        closeModal(getModal("credential"));
-        document.getElementById("credential-form").reset();
-        fetchCredentialsSettings();
-      } else {
-        toast.error(`登録に失敗しました: ${data.message}`);
+  document.getElementById("credential-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const serviceName = document.getElementById("cred-service-name").value.trim().toLowerCase();
+      const username = document.getElementById("cred-username").value.trim();
+      const password = document.getElementById("cred-password").value;
+      try {
+        const res = await fetch("/api/credentials/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ serviceName, username, password }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal(getModal("credential"));
+          document.getElementById("credential-form").reset();
+          fetchCredentialsSettings();
+        } else {
+          toast.error(`登録に失敗しました: ${data.message}`);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("通信エラーが発生しました。");
       }
-    } catch (err) {
-      console.error(err);
-      toast.error("通信エラーが発生しました。");
-    }
-  });
+    }),
+  );
 }

@@ -26,7 +26,13 @@ function parseCookies(cookieHeader?: string): Record<string, string> {
     const parts = cookie.split("=");
     const name = parts[0].trim();
     const value = parts.slice(1).join("=").trim();
-    if (name) list[name] = decodeURIComponent(value);
+    if (name) {
+      try {
+        list[name] = decodeURIComponent(value);
+      } catch {
+        // Ignore malformed cookie values rather than failing the request.
+      }
+    }
   });
 
   return list;
@@ -92,6 +98,7 @@ export function getSessionDiscordId(req: http.IncomingMessage): string | undefin
 export function deleteSessionToken(sessionToken?: string): void {
   if (!sessionToken) return;
   activeSessions.delete(hashSessionToken(sessionToken));
+  persistSessions();
 }
 
 export function getCookieSessionToken(req: http.IncomingMessage): string | undefined {

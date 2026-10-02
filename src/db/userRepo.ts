@@ -63,6 +63,8 @@ export function hashPassword(password: string): string {
 export function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, hash] = storedHash.split(":");
   if (!salt || !hash) return false;
+  // Reject malformed stored hashes instead of letting timingSafeEqual throw.
+  if (!/^[0-9a-f]+$/i.test(hash) || hash.length !== SCRYPT_KEYLEN * 2) return false;
   const derived = crypto
     .scryptSync(password, salt, SCRYPT_KEYLEN, {
       N: SCRYPT_COST,

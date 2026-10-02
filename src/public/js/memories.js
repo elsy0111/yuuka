@@ -1,36 +1,47 @@
 import { confirmModal } from "./modal.js";
 import { state } from "./state.js";
 import { toast } from "./toast.js";
+import { guardSubmit } from "./ui.js";
+
+let initialized = false;
 
 export function initMemories() {
+  if (initialized) {
+    fetchMemories();
+    return;
+  }
+  initialized = true;
   fetchMemories();
   document.getElementById("memory-filter-module")?.addEventListener("change", fetchMemories);
   document.getElementById("btn-memory-reload")?.addEventListener("click", fetchMemories);
-  document.getElementById("memory-add-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const content = document.getElementById("memory-new-content")?.value.trim();
-    const module = document.getElementById("memory-new-module")?.value || "general";
-    if (!content) return;
+  document.getElementById("memory-add-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const content = document.getElementById("memory-new-content")?.value.trim();
+      const module = document.getElementById("memory-new-module")?.value || "general";
+      if (!content) return;
 
-    try {
-      const res = await fetch("/api/memories/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: state.activeUserId, content, module }),
-      });
-      const data = await res.json();
-      if (!data.success) {
-        toast.error(`追加失敗: ${data.message}`);
-        return;
+      try {
+        const res = await fetch("/api/memories/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: state.activeUserId, content, module }),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          toast.error(`追加失敗: ${data.message}`);
+          return;
+        }
+
+        document.getElementById("memory-new-content").value = "";
+        fetchMemories();
+      } catch (e) {
+        console.error(e);
+        toast.error("通信エラーが発生しました。");
       }
-
-      document.getElementById("memory-new-content").value = "";
-      fetchMemories();
-    } catch (e) {
-      console.error(e);
-      toast.error("通信エラーが発生しました。");
-    }
-  });
+    }),
+  );
 }
 
 export async function fetchMemories() {

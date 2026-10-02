@@ -1,7 +1,8 @@
+import { storage } from "./storage.js";
 const THEME_KEY = "yuuka-theme";
 
 export function currentTheme() {
-  return localStorage.getItem(THEME_KEY) || "dark";
+  return storage.getItem(THEME_KEY) || "dark";
 }
 
 export function applyTheme(theme) {
@@ -10,7 +11,7 @@ export function applyTheme(theme) {
   } else {
     document.documentElement.removeAttribute("data-theme");
   }
-  localStorage.setItem(THEME_KEY, theme);
+  storage.setItem(THEME_KEY, theme);
   document.querySelectorAll(".theme-option").forEach((btn) => {
     btn.classList.toggle("active", btn.getAttribute("data-theme") === theme);
   });

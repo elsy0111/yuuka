@@ -1,13 +1,20 @@
+import { guardSubmit, apiRequest, reportError, showListState } from "./ui.js";
+import { toast } from "./toast.js";
 import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
 
-export async function fetchSchedulesList(days = 7) {
+export async function fetchSchedulesList(
+  days = Number(document.querySelector("[data-days].active")?.dataset.days || 7),
+) {
   const list = document.getElementById("schedules-list");
-  list.replaceChildren();
+  const requestId = (list._requestId || 0) + 1;
+  list._requestId = requestId;
+  showListState(list, "読み込み中…");
   try {
-    const res = await fetch(`/api/schedules?userId=${state.activeUserId}&days=${days}`);
-    const data = await res.json();
-    if (data.success && data.schedules.length > 0) {
+    const data = await apiRequest(`/api/schedules?userId=${state.activeUserId}&days=${days}`);
+    if (list._requestId !== requestId) return;
+    list.replaceChildren();
+    if (data.schedules.length > 0) {
       data.schedules.forEach((sched) => {
         list.appendChild(makeScheduleCard(sched));
       });
@@ -18,7 +25,8 @@ export async function fetchSchedulesList(days = 7) {
       list.appendChild(empty);
     }
   } catch (e) {
-    console.error(e);
+    if (list._requestId !== requestId) return;
+    showListState(list, e.message || "読み込みに失敗しました。", () => fetchSchedulesList(days));
   }
 }
 
@@ -70,6 +78,7 @@ function makeScheduleCard(sched) {
   right.className = "card-actions-right";
 
   const btnEdit = document.createElement("button");
+  btnEdit.setAttribute("aria-label", "予定を編集");
   btnEdit.className = "btn-trash";
   const editIcon = document.createElement("span");
   editIcon.className = "material-symbols-outlined";
@@ -79,6 +88,7 @@ function makeScheduleCard(sched) {
   right.appendChild(btnEdit);
 
   const btnTrash = document.createElement("button");
+  btnTrash.setAttribute("aria-label", "予定を削除");
   btnTrash.className = "btn-trash";
   const trashIcon = document.createElement("span");
   trashIcon.className = "material-symbols-outlined";
@@ -112,7 +122,7 @@ async function handleEditScheduleSubmit(e) {
   const endAt = document.getElementById("sched-edit-end").value || null;
   const remind = parseInt(document.getElementById("sched-edit-remind").value, 10);
   try {
-    const res = await fetch("/api/schedules/update", {
+    const data = await apiRequest("/api/schedules/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -125,7 +135,6 @@ async function handleEditScheduleSubmit(e) {
         remindBeforeMinutes: remind,
       }),
     });
-    const data = await res.json();
     if (data.success) {
       closeModal(getModal("schedule-edit"));
       const d = parseInt(
@@ -135,7 +144,7 @@ async function handleEditScheduleSubmit(e) {
       fetchSchedulesList(d);
     }
   } catch (err) {
-    console.error(err);
+    reportError(err);
   }
 }
 
@@ -148,7 +157,7 @@ async function handleDeleteSchedule(id) {
     return;
   }
   try {
-    await fetch("/api/schedules/delete", {
+    await apiRequest("/api/schedules/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),
@@ -159,7 +168,7 @@ async function handleDeleteSchedule(id) {
     );
     fetchSchedulesList(d);
   } catch (e) {
-    console.error(e);
+    reportError(e);
   }
 }
 
@@ -176,40 +185,43 @@ export function initSchedules() {
 
   document
     .getElementById("schedule-edit-form")
-    ?.addEventListener("submit", handleEditScheduleSubmit);
+    ?.addEventListener("submit", guardSubmit(handleEditScheduleSubmit));
 
-  document.getElementById("schedule-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const title = document.getElementById("sched-title").value.trim();
-    const desc = document.getElementById("sched-description").value.trim();
-    const startAt = document.getElementById("sched-start").value;
-    const endAt = document.getElementById("sched-end").value;
-    const remind = parseInt(document.getElementById("sched-remind").value, 10);
-    try {
-      const res = await fetch("/api/schedules/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: state.activeUserId,
-          title,
-          description: desc,
-          startAt,
-          endAt: endAt || undefined,
-          remindBeforeMinutes: remind,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        closeModal(getModal("schedule"));
-        document.getElementById("schedule-form").reset();
-        const d = parseInt(
-          document.querySelector("[data-days].active")?.getAttribute("data-days") || "7",
-          10,
-        );
-        fetchSchedulesList(d);
+  document.getElementById("schedule-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("sched-title").value.trim();
+      const desc = document.getElementById("sched-description").value.trim();
+      const startAt = document.getElementById("sched-start").value;
+      const endAt = document.getElementById("sched-end").value;
+      const remind = parseInt(document.getElementById("sched-remind").value, 10);
+      try {
+        const data = await apiRequest("/api/schedules/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: state.activeUserId,
+            title,
+            description: desc,
+            startAt,
+            endAt: endAt || undefined,
+            remindBeforeMinutes: remind,
+          }),
+        });
+        if (data.success) {
+          toast.success("予定を追加しました。");
+          closeModal(getModal("schedule"));
+          document.getElementById("schedule-form").reset();
+          const d = parseInt(
+            document.querySelector("[data-days].active")?.getAttribute("data-days") || "7",
+            10,
+          );
+          fetchSchedulesList(d);
+        }
+      } catch (e) {
+        reportError(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  });
+    }),
+  );
 }

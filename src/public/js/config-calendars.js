@@ -1,5 +1,6 @@
 import { confirmModal } from "./modal.js";
 import { toast } from "./toast.js";
+import { guardSubmit } from "./ui.js";
 export function renderCalendarsList(calendars, onChanged) {
   const list = document.getElementById("config-calendars-list");
   if (!list) return;
@@ -19,30 +20,33 @@ export function renderCalendarsList(calendars, onChanged) {
 }
 
 export function initCalendarForm(onChanged) {
-  document.getElementById("config-calendar-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const input = document.getElementById("config-new-calendar-id");
-    const calendarId = input.value.trim();
-    if (!calendarId) return;
+  document.getElementById("config-calendar-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("config-new-calendar-id");
+      const calendarId = input.value.trim();
+      if (!calendarId) return;
 
-    try {
-      const res = await fetch("/api/config/calendars/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ calendarId }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        input.value = "";
-        onChanged();
-      } else {
-        toast.error(`追加に失敗しました: ${data.message}`);
+      try {
+        const res = await fetch("/api/config/calendars/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ calendarId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          input.value = "";
+          onChanged();
+        } else {
+          toast.error(`追加に失敗しました: ${data.message}`);
+        }
+      } catch (e) {
+        console.error(e);
+        toast.error("通信エラーが発生しました。");
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("通信エラーが発生しました。");
-    }
-  });
+    }),
+  );
 }
 
 function makeCalendarRow(cal, onChanged) {

@@ -16,6 +16,16 @@ import { getRequestBody, sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
+function isValidDate(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0 && !Number.isNaN(Date.parse(value));
+}
+
+function isValidAmount(value: unknown): value is number {
+  return (
+    typeof value === "number" && Number.isFinite(value) && Number.isInteger(value) && value > 0
+  );
+}
+
 export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
   if (pathname === "/api/expenses" && method === "GET") {
     try {
@@ -60,13 +70,22 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
     }
     const numberParam = (name: string) =>
       parsedUrl.searchParams.get(name) ? Number(parsedUrl.searchParams.get(name)) : undefined;
+    const amountMin = numberParam("amountMin");
+    const amountMax = numberParam("amountMax");
+    if (
+      (amountMin !== undefined && !Number.isFinite(amountMin)) ||
+      (amountMax !== undefined && !Number.isFinite(amountMax))
+    ) {
+      sendError(res, 400, "金額フィルターが不正です。");
+      return true;
+    }
     const expenses = listFilteredExpenses(userId, {
       dateFrom: parsedUrl.searchParams.get("dateFrom") || undefined,
       dateTo: parsedUrl.searchParams.get("dateTo") || undefined,
       category: parsedUrl.searchParams.get("category") || undefined,
       source: parsedUrl.searchParams.get("source") || undefined,
-      amountMin: numberParam("amountMin"),
-      amountMax: numberParam("amountMax"),
+      amountMin,
+      amountMax,
       q: parsedUrl.searchParams.get("q") || undefined,
     });
     sendJson(res, 200, { success: true, expenses });
@@ -83,7 +102,12 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const { amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!amount || !category) {
+      if (
+        !isValidAmount(amount) ||
+        typeof category !== "string" ||
+        !category.trim() ||
+        !isValidDate(date)
+      ) {
         sendError(res, 400, "金額とカテゴリは必須です。");
         return true;
       }
@@ -113,8 +137,20 @@ export const handleExpenses: RouteHandler = async ({ req, res, parsedUrl, pathna
       const { id, amount, category, description, date, purchase_source } = JSON.parse(
         await getRequestBody(req),
       );
-      if (!id) {
+      if (!Number.isInteger(id) || id <= 0) {
         sendError(res, 400, "IDが必要です。");
+        return true;
+      }
+      if (amount !== undefined && !isValidAmount(amount)) {
+        sendError(res, 400, "金額は正の整数で入力してください。");
+        return true;
+      }
+      if (category !== undefined && (typeof category !== "string" || !category.trim())) {
+        sendError(res, 400, "カテゴリが不正です。");
+        return true;
+      }
+      if (date !== undefined && !isValidDate(date)) {
+        sendError(res, 400, "日付が不正です。");
         return true;
       }
       const expense = updateExpense(id, userId, {

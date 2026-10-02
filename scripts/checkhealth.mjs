@@ -15,15 +15,15 @@ const RUNTIME_MODE = process.argv.includes("--runtime");
 
 // ANSI colors
 const c = {
-  reset:  "\x1b[0m",
-  bold:   "\x1b[1m",
-  dim:    "\x1b[2m",
-  green:  "\x1b[32m",
+  reset: "\x1b[0m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+  green: "\x1b[32m",
   yellow: "\x1b[33m",
-  red:    "\x1b[31m",
-  cyan:   "\x1b[36m",
-  white:  "\x1b[37m",
-  gray:   "\x1b[90m",
+  red: "\x1b[31m",
+  cyan: "\x1b[36m",
+  white: "\x1b[37m",
+  gray: "\x1b[90m",
 };
 
 const icon = {
@@ -47,26 +47,46 @@ function fail(label, detail = "") {
 }
 
 function which(cmd) {
-  try { return execSync(`command -v ${cmd}`, { stdio: "pipe" }).toString().trim(); } catch { return ""; }
+  try {
+    return execSync(`command -v ${cmd}`, { stdio: "pipe" }).toString().trim();
+  } catch {
+    return "";
+  }
 }
 
 function run(cmd) {
-  try { return execSync(cmd, { stdio: "pipe" }).toString().trim(); } catch { return ""; }
+  try {
+    return execSync(cmd, { stdio: "pipe" }).toString().trim();
+  } catch {
+    return "";
+  }
 }
 
 function configGet(key) {
   try {
     const yaml = readFileSync("config.yaml", "utf-8");
-    const match = yaml.match(new RegExp(`^${key}:\\s*"?([^"\\n]+)"?`, "m"));
-    return match ? match[1].trim() : "";
-  } catch { return ""; }
+    const match = yaml.match(new RegExp(`^${key}:\\s*(.*)$`, "m"));
+    if (!match) return process.env[key] || "";
+    const value = match[1].trim();
+    if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1);
+    if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1);
+    return value.replace(/\s+#.*$/, "").trim() || process.env[key] || "";
+  } catch {
+    return process.env[key] || "";
+  }
 }
 
 function checkPort(host, port) {
   return new Promise((resolve) => {
-    const s = createConnection({ host, port }, () => { s.destroy(); resolve(true); });
+    const s = createConnection({ host, port }, () => {
+      s.destroy();
+      resolve(true);
+    });
     s.on("error", () => resolve(false));
-    s.setTimeout(2000, () => { s.destroy(); resolve(false); });
+    s.setTimeout(2000, () => {
+      s.destroy();
+      resolve(false);
+    });
   });
 }
 
@@ -82,19 +102,25 @@ async function main() {
   const nodeVer = run("node --version");
   nodeVer ? pass("Node.js", nodeVer) : fail("Node.js", "not found");
 
-  // cargo
-  const cargoVer = run("cargo --version");
-  cargoVer ? pass("cargo (Rust)", cargoVer) : fail("cargo", "not found — install Rust: https://rustup.rs");
+  // Build-time dependencies are not required when checking an already-running service.
+  if (!RUNTIME_MODE) {
+    const cargoVer = run("cargo --version");
+    cargoVer
+      ? pass("cargo (Rust)", cargoVer)
+      : fail("cargo", "not found — install Rust: https://rustup.rs");
+  }
 
   // Chromium
-  const chromiumPath =
-    process.env.PUPPETEER_EXECUTABLE_PATH ||
-    which("chromium") ||
-    which("chromium-browser") ||
-    which("google-chrome");
-  chromiumPath
-    ? pass("chromium", chromiumPath)
-    : fail("chromium", "not found — install chromium");
+  if (!RUNTIME_MODE) {
+    const chromiumPath =
+      process.env.PUPPETEER_EXECUTABLE_PATH ||
+      which("chromium") ||
+      which("chromium-browser") ||
+      which("google-chrome");
+    chromiumPath
+      ? pass("chromium", chromiumPath)
+      : fail("chromium", "not found — install chromium");
+  }
 
   // Redis
   const redisPong = run("redis-cli ping");
@@ -108,20 +134,22 @@ async function main() {
   } else {
     pass("config.yaml", "found");
 
-    const discordToken = configGet("DISCORD_TOKEN");
-    !discordToken || discordToken === "YOUR_DISCORD_BOT_TOKEN"
-      ? fail("DISCORD_TOKEN", "not configured")
-      : pass("DISCORD_TOKEN", "configured");
+    if (!RUNTIME_MODE) {
+      const discordToken = configGet("DISCORD_TOKEN");
+      !discordToken || discordToken === "YOUR_DISCORD_BOT_TOKEN"
+        ? fail("DISCORD_TOKEN", "not configured")
+        : pass("DISCORD_TOKEN", "configured");
 
-    const geminiKey = configGet("GEMINI_API_KEY");
-    !geminiKey || geminiKey === "YOUR_GEMINI_API_KEY"
-      ? fail("GEMINI_API_KEY", "not configured")
-      : pass("GEMINI_API_KEY", "configured");
+      const geminiKey = configGet("GEMINI_API_KEY");
+      !geminiKey || geminiKey === "YOUR_GEMINI_API_KEY"
+        ? fail("GEMINI_API_KEY", "not configured")
+        : pass("GEMINI_API_KEY", "configured");
+    } else {
+      pass("config.yaml", "present (runtime secrets not inspected)");
+    }
 
     const adminToken = configGet("ADMIN_TOKEN");
-    adminToken
-      ? pass("ADMIN_TOKEN", "configured")
-      : warn("ADMIN_TOKEN", "not set — using default");
+    adminToken ? pass("ADMIN_TOKEN", "configured") : warn("ADMIN_TOKEN", "not set — using default");
   }
 
   // data/ ディレクトリ
@@ -145,14 +173,18 @@ async function main() {
     console.log();
     console.log(`  ${c.gray}── runtime ─────────────────────────────${c.reset}`);
 
-    // pm2
+    // The deployment workflow manages the Yuuka process with PM2.
     try {
+      if (!which("pm2")) throw new Error("pm2 unavailable");
       const pm2List = JSON.parse(run("pm2 jlist") || "[]");
       const yuuka = pm2List.find((p) => p.name === "yuuka");
       if (!yuuka) {
-        fail("pm2 [yuuka]", "process not found");
+        warn("pm2 [yuuka]", "process not found; deployment checks PM2 status");
       } else if (yuuka.pm2_env?.status === "online") {
-        pass("pm2 [yuuka]", `online  pid=${yuuka.pid}  uptime=${Math.floor((Date.now() - yuuka.pm2_env.pm_uptime) / 60000)}m`);
+        pass(
+          "pm2 [yuuka]",
+          `online  pid=${yuuka.pid}  uptime=${Math.floor((Date.now() - yuuka.pm2_env.pm_uptime) / 60000)}m`,
+        );
       } else {
         fail("pm2 [yuuka]", yuuka.pm2_env?.status ?? "unknown");
       }
@@ -161,11 +193,21 @@ async function main() {
     }
 
     // Web サーバー
-    const hostStr = configGet("HOST") || "127.0.0.1";
-    const webUp = await checkPort(hostStr, port);
-    webUp
-      ? pass("web server", `http://${hostStr}:${port} — responding`)
-      : fail("web server", `http://${hostStr}:${port} — no response`);
+    const configuredHost = configGet("HOST") || "127.0.0.1";
+    const host = ["0.0.0.0", "::"].includes(configuredHost) ? "127.0.0.1" : configuredHost;
+    const baseUrl = `http://${host.includes(":") ? `[${host}]` : host}:${port}`;
+    try {
+      const response = await fetch(`${baseUrl}/api/status`, { signal: AbortSignal.timeout(5000) });
+      const data = await response.json();
+      if (
+        (response.status === 401 && data.success === false) ||
+        (response.ok && data.success === true)
+      ) {
+        pass("web server", `${baseUrl} — HTTP responding`);
+      } else fail("web server", `unexpected HTTP ${response.status}`);
+    } catch {
+      fail("web server", `${baseUrl} — no valid HTTP response`);
+    }
 
     // Redis (再確認)
     const redisPong2 = run("redis-cli ping");
@@ -186,7 +228,9 @@ async function main() {
 
   console.log();
   if (hasError) {
-    console.log(`  ${c.red}${c.bold}✖  Health check failed.${c.reset}  Resolve the errors above before building.\n`);
+    console.log(
+      `  ${c.red}${c.bold}✖  Health check failed.${c.reset}  Resolve the errors above before building.\n`,
+    );
     process.exit(1);
   } else {
     console.log(`  ${c.green}${c.bold}✔  All checks passed.${c.reset}\n`);

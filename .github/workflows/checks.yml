@@ -1,18 +1,16 @@
 name: Checks
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
 
 jobs:
   checks:
-    name: Format and lint
-    runs-on: ubuntu-latest
+    name: Format, lint, typecheck, and build
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -35,3 +33,22 @@ jobs:
 
       - name: Lint
         run: yarn lint
+
+      - name: Typecheck
+        run: yarn tsc --noEmit
+
+      - name: Test
+        run: yarn test
+
+      - name: Build
+        run: yarn build
+
+      - name: Preserve crawler executable bit
+        run: chmod +x dist/bin/yuuka-crawler
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yuuka-dist-${{ github.sha }}
+          path: dist
+          if-no-files-found: error

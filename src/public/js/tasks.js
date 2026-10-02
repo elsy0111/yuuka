@@ -1,13 +1,20 @@
+import { guardSubmit, apiRequest, reportError, showListState } from "./ui.js";
+import { toast } from "./toast.js";
 import { closeModal, confirmModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
 
-export async function fetchTasksList(filter = "all") {
+export async function fetchTasksList(
+  filter = document.querySelector("[data-filter].active")?.dataset.filter || "all",
+) {
   const list = document.getElementById("tasks-list");
-  list.replaceChildren();
+  const requestId = (list._requestId || 0) + 1;
+  list._requestId = requestId;
+  showListState(list, "読み込み中…");
   try {
-    const res = await fetch(`/api/tasks?userId=${state.activeUserId}&status=${filter}`);
-    const data = await res.json();
-    if (data.success && data.tasks.length > 0) {
+    const data = await apiRequest(`/api/tasks?userId=${state.activeUserId}&status=${filter}`);
+    if (list._requestId !== requestId) return;
+    list.replaceChildren();
+    if (data.tasks.length > 0) {
       data.tasks.forEach((task) => {
         list.appendChild(makeTaskCard(task));
       });
@@ -18,7 +25,8 @@ export async function fetchTasksList(filter = "all") {
       list.appendChild(empty);
     }
   } catch (e) {
-    console.error(e);
+    if (list._requestId !== requestId) return;
+    showListState(list, e.message || "読み込みに失敗しました。", () => fetchTasksList(filter));
   }
 }
 
@@ -32,8 +40,9 @@ function makeTaskCard(task) {
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
   checkbox.className = "checkbox-custom";
+  checkbox.setAttribute("aria-label", `${task.title}の完了状態`);
   checkbox.checked = task.status === "done";
-  checkbox.addEventListener("change", () => toggleTaskCompletion(task.id, task.status));
+  checkbox.addEventListener("change", () => toggleTaskCompletion(task.id, task.status, checkbox));
 
   const text = document.createElement("div");
   text.className = "card-text";
@@ -80,6 +89,8 @@ function makeMetaItem(icon, text) {
 function makeIconButton(iconName, onClick) {
   const btn = document.createElement("button");
   btn.className = "btn-trash";
+  btn.type = "button";
+  btn.setAttribute("aria-label", iconName === "edit" ? "タスクを編集" : "タスクを削除");
   const icon = document.createElement("span");
   icon.className = "material-symbols-outlined";
   icon.textContent = iconName;
@@ -101,10 +112,11 @@ function openEditTaskModal(task) {
   openModal(getModal("task-edit"));
 }
 
-async function toggleTaskCompletion(id, currentStatus) {
+async function toggleTaskCompletion(id, currentStatus, checkbox) {
+  checkbox.disabled = true;
   const endpoint = currentStatus === "done" ? "/api/tasks/reopen" : "/api/tasks/complete";
   try {
-    await fetch(endpoint, {
+    await apiRequest(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),
@@ -112,14 +124,17 @@ async function toggleTaskCompletion(id, currentStatus) {
     const f = document.querySelector("[data-filter].active")?.getAttribute("data-filter") || "all";
     fetchTasksList(f);
   } catch (e) {
-    console.error(e);
+    checkbox.checked = currentStatus === "done";
+    reportError(e);
+  } finally {
+    checkbox.disabled = false;
   }
 }
 
 async function handleDeleteTask(id) {
   if (!(await confirmModal("本当にこのタスクを削除しますか？"))) return;
   try {
-    await fetch("/api/tasks/delete", {
+    await apiRequest("/api/tasks/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, userId: state.activeUserId }),
@@ -127,7 +142,7 @@ async function handleDeleteTask(id) {
     const f = document.querySelector("[data-filter].active")?.getAttribute("data-filter") || "all";
     fetchTasksList(f);
   } catch (e) {
-    console.error(e);
+    reportError(e);
   }
 }
 
@@ -139,7 +154,7 @@ async function handleEditTaskSubmit(e) {
   const dueDate = document.getElementById("task-edit-due").value || null;
   const priority = parseInt(document.getElementById("task-edit-priority").value, 10);
   try {
-    const res = await fetch("/api/tasks/update", {
+    const data = await apiRequest("/api/tasks/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -151,7 +166,6 @@ async function handleEditTaskSubmit(e) {
         priority,
       }),
     });
-    const data = await res.json();
     if (data.success) {
       closeModal(getModal("task-edit"));
       const f =
@@ -159,7 +173,7 @@ async function handleEditTaskSubmit(e) {
       fetchTasksList(f);
     }
   } catch (err) {
-    console.error(err);
+    reportError(err);
   }
 }
 
@@ -174,34 +188,39 @@ export function initTasks() {
     });
   });
 
-  document.getElementById("task-edit-form")?.addEventListener("submit", handleEditTaskSubmit);
+  document
+    .getElementById("task-edit-form")
+    ?.addEventListener("submit", guardSubmit(handleEditTaskSubmit));
 
-  document.getElementById("task-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const title = document.getElementById("task-title").value.trim();
-    const desc = document.getElementById("task-description").value.trim();
-    const dueDate = document.getElementById("task-due").value;
-    const priority = parseInt(document.getElementById("task-priority").value, 10);
-    try {
-      const res = await fetch("/api/tasks/add", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: state.activeUserId,
-          title,
-          description: desc,
-          dueDate,
-          priority,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        closeModal(getModal("task"));
-        document.getElementById("task-form").reset();
-        fetchTasksList();
+  document.getElementById("task-form")?.addEventListener(
+    "submit",
+    guardSubmit(async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("task-title").value.trim();
+      const desc = document.getElementById("task-description").value.trim();
+      const dueDate = document.getElementById("task-due").value || null;
+      const priority = parseInt(document.getElementById("task-priority").value, 10);
+      try {
+        const data = await apiRequest("/api/tasks/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: state.activeUserId,
+            title,
+            description: desc,
+            dueDate,
+            priority,
+          }),
+        });
+        if (data.success) {
+          toast.success("タスクを追加しました。");
+          closeModal(getModal("task"));
+          document.getElementById("task-form").reset();
+          fetchTasksList();
+        }
+      } catch (e) {
+        reportError(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  });
+    }),
+  );
 }

@@ -56,7 +56,9 @@ export function updateMemory(
   }
   params.push(id, userId);
   db.prepare(`UPDATE memories SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
-  return db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as Memory | undefined;
+  return db.prepare("SELECT * FROM memories WHERE id = ? AND user_id = ?").get(id, userId) as
+    | Memory
+    | undefined;
 }
 
 export function deleteMemory(id: number, userId: string): boolean {

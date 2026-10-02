@@ -5,6 +5,8 @@ function getContainer() {
   if (!container) {
     container = document.createElement("ol");
     container.id = "toast-container";
+    container.setAttribute("aria-live", "polite");
+    container.setAttribute("aria-relevant", "additions");
     document.body.appendChild(container);
   }
   return container;
@@ -28,6 +30,7 @@ function createToast(message, type = "default", duration = 4000) {
 
   const close = document.createElement("button");
   close.className = "toast-close";
+  close.setAttribute("aria-label", "通知を閉じる");
   close.innerHTML = '<span class="material-symbols-outlined">close</span>';
   close.addEventListener("click", () => dismiss(li));
 
@@ -48,6 +51,7 @@ function dismiss(li) {
   li.classList.remove("toast-active");
   li.classList.add("toast-out");
   li.addEventListener("animationend", () => li.remove(), { once: true });
+  setTimeout(() => li.remove(), 500);
 }
 
 export const toast = {

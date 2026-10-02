@@ -46,7 +46,9 @@ function cleanupOldFiles() {
 
 // 起動時とその後1時間ごとにクリーンアップを実行
 cleanupOldFiles();
-setInterval(cleanupOldFiles, 60 * 60 * 1000);
+// Housekeeping must not keep short-lived CLI commands and test workers alive.
+const cleanupTimer = setInterval(cleanupOldFiles, 60 * 60 * 1000);
+cleanupTimer.unref();
 
 // バイナリパス候補
 const CRAWLER_BIN_PATHS = [

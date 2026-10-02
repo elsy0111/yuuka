@@ -1,5 +1,9 @@
 import { getDb } from "./database.js";
 
+// Compare datetime-local input and offset ISO timestamps on the same local clock.
+const LOCAL_START = `(CASE WHEN start_at GLOB '*Z' OR substr(start_at, -6, 1) IN ('+', '-')
+  THEN datetime(start_at, 'localtime') ELSE datetime(start_at) END)`;
+
 export interface Schedule {
   id: number;
   user_id: string;
@@ -51,9 +55,9 @@ export function listUpcomingSchedules(userId: string, days: number = 7): Schedul
   return db
     .prepare(
       `SELECT * FROM schedules 
-       WHERE user_id = ? AND start_at >= datetime('now', 'localtime')
-       AND start_at <= datetime('now', 'localtime', '+' || ? || ' days')
-       ORDER BY start_at ASC`,
+       WHERE user_id = ? AND ${LOCAL_START} >= datetime('now', 'localtime')
+       AND ${LOCAL_START} <= datetime('now', 'localtime', '+' || ? || ' days')
+       ORDER BY ${LOCAL_START} ASC`,
     )
     .all(userId, days) as Schedule[];
 }
@@ -114,7 +118,7 @@ export function listAllFutureSchedulesWithGoogleId(userId: string): Schedule[] {
   const db = getDb();
   return db
     .prepare(
-      "SELECT * FROM schedules WHERE user_id = ? AND google_event_id IS NOT NULL AND start_at >= datetime('now', 'localtime')",
+      `SELECT * FROM schedules WHERE user_id = ? AND google_event_id IS NOT NULL AND ${LOCAL_START} >= datetime('now', 'localtime')`,
     )
     .all(userId) as Schedule[];
 }
@@ -125,8 +129,8 @@ export function getUnremindedSchedules(): Schedule[] {
     .prepare(
       `SELECT * FROM schedules 
        WHERE reminded = 0 
-       AND datetime(start_at, '-' || remind_before_minutes || ' minutes') <= datetime('now', 'localtime')
-       AND start_at >= datetime('now', 'localtime')`,
+       AND datetime(${LOCAL_START}, '-' || remind_before_minutes || ' minutes') <= datetime('now', 'localtime')
+       AND ${LOCAL_START} >= datetime('now', 'localtime')`,
     )
     .all() as Schedule[];
 }
@@ -154,7 +158,7 @@ export function updateSchedule(
     sets.push("title = ?");
     params.push(fields.title);
   }
-  if ("description" in fields) {
+  if (fields.description !== undefined) {
     sets.push("description = ?");
     params.push(fields.description ?? null);
   }
@@ -162,7 +166,7 @@ export function updateSchedule(
     sets.push("start_at = ?");
     params.push(fields.startAt);
   }
-  if ("endAt" in fields) {
+  if (fields.endAt !== undefined) {
     sets.push("end_at = ?");
     params.push(fields.endAt ?? null);
   }
@@ -172,7 +176,9 @@ export function updateSchedule(
   }
   params.push(id, userId);
   db.prepare(`UPDATE schedules SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
-  return getScheduleById(id);
+  return db.prepare("SELECT * FROM schedules WHERE id = ? AND user_id = ?").get(id, userId) as
+    | Schedule
+    | undefined;
 }
 
 export function deleteSchedule(id: number, userId: string): boolean {

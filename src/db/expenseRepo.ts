@@ -205,7 +205,7 @@ export function updateExpense(
     sets.push("category = ?");
     params.push(fields.category);
   }
-  if ("description" in fields) {
+  if (fields.description !== undefined) {
     sets.push("description = ?");
     params.push(fields.description ?? null);
   }
@@ -217,10 +217,15 @@ export function updateExpense(
     sets.push("purchase_source = ?");
     params.push(fields.purchase_source);
   }
-  if (sets.length === 0) return getExpenseById(id);
+  if (sets.length === 0)
+    return db.prepare("SELECT * FROM expenses WHERE id = ? AND user_id = ?").get(id, userId) as
+      | Expense
+      | undefined;
   params.push(id, userId);
   db.prepare(`UPDATE expenses SET ${sets.join(", ")} WHERE id = ? AND user_id = ?`).run(...params);
-  return getExpenseById(id);
+  return db.prepare("SELECT * FROM expenses WHERE id = ? AND user_id = ?").get(id, userId) as
+    | Expense
+    | undefined;
 }
 
 export function deleteExpense(id: number, userId: string): boolean {
