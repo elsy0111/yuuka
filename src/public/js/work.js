@@ -8,56 +8,75 @@ let initialized = false;
 let requestVersion = 0;
 let rateDirty = false;
 let loadedUser = "";
-
+let editing = null;
+const el = (id) => document.getElementById(`work-${id}`);
 const yen = (value) => `¥${Number(value || 0).toLocaleString()}`;
 const localDate = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
+const month = () => el("month").value || localDate().slice(0, 7);
+const hoursInput = () => Number(el("hours").value) + Number(el("minutes").value) / 60;
+const duration = (minutes) =>
+  `${Math.floor(minutes / 60)}時間${minutes % 60 ? `${minutes % 60}分` : ""}`;
 
-function setBusy(busy) {
-  const card = document.getElementById("work-card");
-  if (busy) card?.setAttribute("aria-busy", "true");
-  else card?.removeAttribute("aria-busy");
+function resetEntry() {
+  editing = null;
+  el("entry-form").reset();
+  el("date").value = month() === localDate().slice(0, 7) ? localDate() : `${month()}-01`;
+  el("form-title").textContent = "勤務を追加";
+  el("edit-cancel").hidden = true;
+  el("entry-submit").textContent = "働いた時間を記録";
+  renderPreview();
 }
-
 function renderSummary(summary) {
-  const el = document.getElementById("work-summary");
-  if (!el) return;
-  el.replaceChildren();
-  const hours = Math.floor(summary.minutes / 60);
-  const minutes = summary.minutes % 60;
+  el("summary").replaceChildren();
   for (const [label, value] of [
-    ["今月の労働時間", `${hours}時間${minutes ? `${minutes}分` : ""}`],
-    ["今月の働いた分", yen(summary.amount)],
+    ["労働時間", duration(summary.minutes)],
+    ["働いた分", yen(summary.amount)],
   ]) {
     const item = document.createElement("div");
     const caption = document.createElement("span");
-    caption.textContent = label;
+    caption.textContent = `${Number(month().slice(5))}月の${label}`;
     const amount = document.createElement("strong");
     amount.textContent = value;
     item.append(caption, amount);
-    el.append(item);
+    el("summary").append(item);
   }
 }
-
 function renderPreview() {
-  const el = document.getElementById("work-preview");
-  const hours = Number(document.getElementById("work-hours")?.value);
-  if (!el) return;
-  const minutes = Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : 0;
-  el.textContent =
-    rate && minutes > 0 && hours <= 24
-      ? `見込み: ${yen(Math.round((minutes * rate) / 60))}（控除前）`
-      : "時給と時間を入力すると見込み額を表示します";
+  const hours = hoursInput();
+  const minutes = Number.isFinite(hours) ? Math.round(hours * 60) : 0;
+  const appliedRate = editing?.hourlyRate ?? rate;
+  el("preview").textContent =
+    appliedRate && minutes > 0 && hours <= 24
+      ? `${duration(minutes)} · ${yen(Math.round((minutes * appliedRate) / 60))}（控除前）${editing ? ` · 記録時の時給 ${yen(appliedRate)}` : ""}`
+      : appliedRate
+        ? "時間を入力すると働いた分を表示します"
+        : "先に時給を保存してください";
 }
-
+function editEntry(entry) {
+  editing = entry;
+  el("hours").value = Math.floor(entry.minutes / 60);
+  el("minutes").value = entry.minutes % 60;
+  el("date").value = entry.date;
+  el("description").value = entry.description || "";
+  el("form-title").textContent = `${entry.date}の勤務を編集`;
+  el("edit-cancel").hidden = false;
+  el("entry-submit").textContent = "変更を保存";
+  el("entry-submit").disabled = false;
+  renderPreview();
+  el("entry-form").scrollIntoView({
+    block: "center",
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+  });
+  el("hours").focus({ preventScroll: true });
+}
 function renderEntries(entries) {
-  const list = document.getElementById("work-entry-list");
-  if (!list) return;
+  const list = el("entry-list");
   list.replaceChildren();
   if (!entries.length) {
-    list.textContent = rate ? "今月の記録はありません。" : "先に時給を設定してください。";
+    list.textContent = `${Number(month().slice(5))}月の勤務記録はありません。`;
     return;
   }
   for (const entry of entries) {
@@ -65,98 +84,157 @@ function renderEntries(entries) {
     row.className = "work-entry-row";
     const text = document.createElement("div");
     text.className = "work-entry-text";
-    text.textContent = `${entry.date} · ${Math.floor(entry.minutes / 60)}時間${entry.minutes % 60}分 · ${yen(entry.amount)}${entry.description ? ` · ${entry.description}` : ""}`;
+    const heading = document.createElement("strong");
+    heading.textContent = `${entry.date} · ${duration(entry.minutes)}`;
+    const value = document.createElement("span");
+    value.textContent = `${yen(entry.amount)} · 時給 ${yen(entry.hourlyRate)}`;
+    text.append(heading, value);
+    if (entry.description) {
+      const note = document.createElement("span");
+      note.textContent = entry.description;
+      text.append(note);
+    }
+    const actions = document.createElement("div");
+    actions.className = "work-entry-actions";
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "btn btn-secondary btn-sm";
+    edit.textContent = "編集";
+    edit.setAttribute("aria-label", `${entry.date}の勤務を編集`);
+    edit.addEventListener("click", () => editEntry(entry));
     const del = document.createElement("button");
     del.type = "button";
     del.className = "btn btn-secondary btn-sm";
     del.textContent = "削除";
+    del.setAttribute("aria-label", `${entry.date}の勤務を削除`);
     del.addEventListener("click", async () => {
-      if (!(await confirmModal("この勤務記録を削除しますか？"))) return;
+      if (
+        !(await confirmModal(
+          `${entry.date}の勤務（${duration(entry.minutes)}・${yen(entry.amount)}）を削除しますか？`,
+        ))
+      )
+        return;
+      const user = state.activeUserId;
       del.disabled = true;
+      edit.disabled = true;
       try {
         await apiRequest("/api/work/delete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: entry.id }),
         });
+        if (user !== state.activeUserId) return;
+        if (editing?.id === entry.id) resetEntry();
+        toast.success("勤務記録を削除しました。");
         await fetchWorkSummary();
       } catch (error) {
         del.disabled = false;
+        edit.disabled = false;
         reportError(error);
       }
     });
-    row.append(text, del);
-    list.appendChild(row);
+    actions.append(edit, del);
+    row.append(text, actions);
+    list.append(row);
   }
 }
-
 export async function fetchWorkSummary() {
-  const card = document.getElementById("work-card");
-  if (!card) return;
+  if (!el("card") || !state.activeUserId) return;
   const user = state.activeUserId;
-  if (!user) return;
   if (loadedUser !== user) {
     rateDirty = false;
-    document.getElementById("work-rate-form").reset();
-    document.getElementById("work-entry-form").reset();
-    document.getElementById("work-date").value = localDate();
+    rate = null;
+    el("rate-hint").textContent = "";
+    el("rate-form").reset();
+    el("month").value = localDate().slice(0, 7);
+    resetEntry();
     loadedUser = user;
   }
-  setBusy(true);
-  document.getElementById("work-summary").textContent = "読み込み中…";
-  document.getElementById("work-entry-list").replaceChildren();
-  document.getElementById("work-rate-hint").textContent = "";
+  const selectedMonth = month();
   const version = ++requestVersion;
-  rate = null;
-  document.getElementById("work-error").textContent = "";
-  document.getElementById("work-retry")?.remove();
-  document.getElementById("work-entry-submit").disabled = true;
+  el("card").setAttribute("aria-busy", "true");
+  el("summary").textContent = "読み込み中…";
+  el("entry-list").replaceChildren();
+  el("error").textContent = "";
+  el("retry")?.remove();
+  el("entry-submit").disabled = true;
   try {
-    const data = await apiRequest(`/api/work?userId=${encodeURIComponent(state.activeUserId)}`);
+    const data = await apiRequest(`/api/work?month=${encodeURIComponent(selectedMonth)}`);
     if (version !== requestVersion || user !== state.activeUserId) return;
     rate = data.hourlyRate;
-    const rateInput = document.getElementById("work-hourly-rate");
-    if (rateInput && !rateDirty) rateInput.value = rate ?? "";
-    document.getElementById("work-rate-hint").textContent = rate
+    if (!rateDirty) el("hourly-rate").value = rate ?? "";
+    el("rate-hint").textContent = rate
       ? `現在の時給: ${yen(rate)}（過去の記録は変更されません）`
       : "時給を設定すると記録できます";
     renderSummary(data.summary);
     renderEntries(data.entries);
     renderPreview();
-    document.getElementById("work-entry-submit").disabled = !rate;
+    el("entry-submit").disabled = !rate && !editing;
   } catch (error) {
     if (version !== requestVersion || user !== state.activeUserId) return;
-    const errorEl = document.getElementById("work-error");
-    if (errorEl) errorEl.textContent = "取得できませんでした。再試行してください。";
+    el("summary").textContent = "合計は未取得です";
+    el("error").textContent = "勤務記録を取得できませんでした。";
     const retry = document.createElement("button");
     retry.id = "work-retry";
     retry.type = "button";
     retry.className = "btn btn-secondary btn-sm";
     retry.textContent = "再試行";
-    retry.addEventListener("click", fetchWorkSummary, { once: true });
-    errorEl?.after(retry);
+    retry.addEventListener("click", fetchWorkSummary);
+    el("error").after(retry);
     reportError(error);
   } finally {
-    if (version === requestVersion) setBusy(false);
+    if (version === requestVersion) el("card").removeAttribute("aria-busy");
   }
 }
-
+function changeMonth(value) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return;
+  el("month").value = value;
+  resetEntry();
+  fetchWorkSummary();
+}
 export function initWork() {
-  if (initialized || !document.getElementById("work-card")) return;
+  if (initialized || !el("card")) return;
   initialized = true;
-  const date = document.getElementById("work-date");
-  if (date) date.value = localDate();
-  document.getElementById("work-hours")?.addEventListener("input", renderPreview);
-  document.getElementById("work-hourly-rate")?.addEventListener("input", () => {
+  el("month").value = localDate().slice(0, 7);
+  resetEntry();
+  for (const id of ["hours", "minutes"]) el(id).addEventListener("input", renderPreview);
+  el("hourly-rate").addEventListener("input", () => {
     rateDirty = true;
   });
-  document.getElementById("work-rate-form")?.addEventListener(
+  el("edit-cancel").addEventListener("click", () => {
+    resetEntry();
+    el("hours").focus();
+  });
+  el("month").addEventListener("change", () => {
+    if (!el("month").value) el("month").value = localDate().slice(0, 7);
+    changeMonth(el("month").value);
+  });
+  el("month-today").addEventListener("click", () => changeMonth(localDate().slice(0, 7)));
+  for (const [id, delta] of [
+    ["month-prev", -1],
+    ["month-next", 1],
+  ])
+    el(id).addEventListener("click", () => {
+      const [year, selectedMonth] = month().split("-").map(Number);
+      const date = new Date(year, selectedMonth - 1 + delta, 1);
+      if (date.getFullYear() < 1000 || date.getFullYear() > 9999) return;
+      changeMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
+    });
+  document.querySelectorAll("[data-work-hours]").forEach((button) => {
+    button.addEventListener("click", () => {
+      el("hours").value = button.dataset.workHours;
+      el("minutes").value = "0";
+      renderPreview();
+    });
+  });
+  el("rate-form").addEventListener(
     "submit",
     guardSubmit(async (event) => {
       event.preventDefault();
-      const hourlyRate = Number(document.getElementById("work-hourly-rate").value);
-      if (!Number.isInteger(hourlyRate) || hourlyRate <= 0) {
-        reportError(new Error("時給は1円以上の整数で入力してください。"));
+      const user = state.activeUserId;
+      const hourlyRate = Number(el("hourly-rate").value);
+      if (!Number.isInteger(hourlyRate) || hourlyRate < 1 || hourlyRate > 10000000) {
+        reportError(new Error("時給は1〜10,000,000円の整数で入力してください。"));
         return;
       }
       try {
@@ -165,6 +243,7 @@ export function initWork() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ hourlyRate }),
         });
+        if (user !== state.activeUserId) return;
         rateDirty = false;
         toast.success("時給を保存しました。");
         await fetchWorkSummary();
@@ -173,34 +252,37 @@ export function initWork() {
       }
     }),
   );
-  document.getElementById("work-entry-form")?.addEventListener(
+  el("entry-form").addEventListener(
     "submit",
     guardSubmit(async (event) => {
-      const form = event.currentTarget;
       event.preventDefault();
-      const hours = Number(document.getElementById("work-hours").value);
-      const description = document.getElementById("work-description").value.trim();
-      if (!Number.isFinite(hours) || hours <= 0 || hours > 24) {
-        reportError(new Error("労働時間は0より大きく24時間以内で入力してください。"));
+      const hours = hoursInput();
+      const minutes = Number(el("minutes").value);
+      if (
+        !Number.isFinite(hours) ||
+        Math.round(hours * 60) < 1 ||
+        hours > 24 ||
+        !Number.isInteger(minutes) ||
+        minutes < 0 ||
+        minutes > 59
+      ) {
+        reportError(new Error("労働時間は1分以上24時間以内、分は0〜59で入力してください。"));
         return;
       }
-      if (description.length > 500) {
-        reportError(new Error("説明は500文字以内で入力してください。"));
-        return;
-      }
+      const date = el("date").value;
+      const description = el("description").value.trim();
+      const editId = editing?.id;
+      const user = state.activeUserId;
       try {
-        await apiRequest("/api/work/entries", {
+        await apiRequest(editId ? "/api/work/update" : "/api/work/entries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            hours,
-            date: date.value || undefined,
-            description: description || undefined,
-          }),
+          body: JSON.stringify({ ...(editId ? { id: editId } : {}), hours, date, description }),
         });
-        form.reset();
-        date.value = localDate();
-        toast.success("勤務記録を追加しました。");
+        if (user !== state.activeUserId) return;
+        el("month").value = date.slice(0, 7);
+        resetEntry();
+        toast.success(editId ? "勤務記録を更新しました。" : "勤務記録を追加しました。");
         await fetchWorkSummary();
       } catch (error) {
         reportError(error);

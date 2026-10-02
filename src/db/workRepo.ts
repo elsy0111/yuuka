@@ -6,6 +6,14 @@ export function localWorkDate(value = new Date()): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
 }
 
+export function workMonthDate(value: unknown = undefined): Date {
+  if (value === undefined) return new Date();
+  if (typeof value !== "string" || !/^[1-9]\d{3}-(0[1-9]|1[0-2])$/.test(value)) {
+    throw new WorkValidationError("月はYYYY-MM形式（1000〜9999年）で指定してください。");
+  }
+  return new Date(`${value}-01T00:00:00`);
+}
+
 export function validateRate(rate: unknown): asserts rate is number {
   if (typeof rate !== "number" || !Number.isInteger(rate) || rate < 1 || rate > 10_000_000) {
     throw new WorkValidationError("時給は1〜10,000,000円の整数で入力してください。");
@@ -109,9 +117,9 @@ export function updateEntry(
     .get(id, userId) as WorkEntry | undefined;
   if (!existing) return undefined;
   const input = validateEntry(
-    fields.hours ?? existing.minutes / 60,
-    fields.date ?? existing.date,
-    fields.description ?? existing.description ?? "",
+    fields.hours !== undefined ? fields.hours : existing.minutes / 60,
+    fields.date !== undefined ? fields.date : existing.date,
+    fields.description !== undefined ? fields.description : (existing.description ?? ""),
   );
   getDb()
     .prepare(

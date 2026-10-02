@@ -5,13 +5,15 @@ import {
   publicEntry,
   setRate,
   validateEntry,
+  updateEntry,
+  workMonthDate,
   WorkValidationError,
 } from "../../db/workRepo.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
 
-export const handleWork: RouteHandler = async ({ req, res, pathname, method }) => {
+export const handleWork: RouteHandler = async ({ req, res, parsedUrl, pathname, method }) => {
   if (pathname !== "/api/work" && !pathname.startsWith("/api/work/")) return false;
   const user = getSessionDiscordId(req);
   if (!user) {
@@ -20,12 +22,20 @@ export const handleWork: RouteHandler = async ({ req, res, pathname, method }) =
   }
   try {
     if (pathname === "/api/work" && method === "GET") {
-      sendJson(res, 200, { success: true, ...monthlyWork(user) });
+      const month = parsedUrl.searchParams.get("month");
+      const now = workMonthDate(month ?? undefined);
+      sendJson(res, 200, {
+        success: true,
+        month: month ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+        ...monthlyWork(user, now),
+      });
       return true;
     }
     if (
       method !== "POST" ||
-      !["/api/work/rate", "/api/work/entries", "/api/work/delete"].includes(pathname)
+      !["/api/work/rate", "/api/work/entries", "/api/work/update", "/api/work/delete"].includes(
+        pathname,
+      )
     ) {
       sendError(res, 404, "APIエンドポイントが見つかりません。");
       return true;
@@ -51,6 +61,20 @@ export const handleWork: RouteHandler = async ({ req, res, pathname, method }) =
         success: true,
         entry: publicEntry(addEntry(user, entry.date, entry.minutes, entry.description)),
       });
+    } else if (pathname === "/api/work/update") {
+      const id = body.id;
+      if (!Number.isSafeInteger(id)) throw new WorkValidationError("記録IDが不正です。");
+      const fields = {
+        hours: body.hours as number | undefined,
+        date: body.date as string | undefined,
+        description: body.description as string | undefined,
+      };
+      const entry = updateEntry(id as number, user, fields);
+      if (!entry) {
+        sendError(res, 404, "記録が見つかりません。");
+        return true;
+      }
+      sendJson(res, 200, { success: true, entry: publicEntry(entry) });
     } else {
       if (!deleteEntry(body.id as number, user)) {
         sendError(res, 404, "記録が見つかりません。");

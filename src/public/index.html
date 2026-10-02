@@ -466,15 +466,23 @@
           <section id="work-card" class="card work-card" aria-labelledby="work-title">
             <div class="column-header"><h3 id="work-title">働いた分</h3><span class="hud-tag">控除前</span></div>
             <p class="work-hint">時給を保存すると、働いた時間だけで収入を計算できます。</p>
+            <div class="work-month-nav" aria-label="勤務記録の月">
+              <button id="work-month-prev" type="button" class="btn btn-secondary" aria-label="前の月">‹</button>
+              <label for="work-month" class="sr-only">表示する月</label><input id="work-month" type="month" min="1000-01" max="9999-12" required>
+              <button id="work-month-next" type="button" class="btn btn-secondary" aria-label="次の月">›</button>
+              <button id="work-month-today" type="button" class="btn btn-secondary">今月</button>
+            </div>
             <p id="work-summary" class="work-summary" aria-live="polite">読み込み中…</p>
             <form id="work-rate-form" class="work-form">
               <div class="form-group"><label for="work-hourly-rate">時給（円）</label><input id="work-hourly-rate" type="number" min="1" max="10000000" step="1" required placeholder="1200"></div>
               <button type="submit" class="btn btn-secondary">時給を保存</button>
             </form>
             <p id="work-rate-hint" class="work-hint"></p>
+            <div class="work-form-heading"><h4 id="work-form-title">勤務を追加</h4><button id="work-edit-cancel" type="button" class="btn btn-secondary btn-sm" hidden>編集をやめる</button></div>
             <form id="work-entry-form" class="work-form">
-              <div class="form-group"><label for="work-hours">働いた時間</label><input id="work-hours" type="number" min="0.01" max="24" step="any" required placeholder="3.5"></div>
+              <div class="form-group"><label for="work-hours">働いた時間</label><div class="work-duration"><input id="work-hours" aria-label="時間" type="number" inputmode="decimal" min="0" max="24" step="any" placeholder="0"><span>時間</span><input id="work-minutes" aria-label="分" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="0"><span>分</span></div></div>
               <div class="form-group"><label for="work-date">日付</label><input id="work-date" type="date" required></div>
+              <div class="work-quick-times" aria-label="労働時間を選択"><button type="button" class="btn btn-secondary btn-sm" data-work-hours="1">1時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="3">3時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="6">6時間</button><button type="button" class="btn btn-secondary btn-sm" data-work-hours="8">8時間</button></div>
               <div class="form-group work-description-group"><label for="work-description">メモ（任意）</label><input id="work-description" type="text" maxlength="500" placeholder="アルバイトなど"></div>
               <p id="work-preview" class="work-preview" aria-live="polite"></p>
               <button id="work-entry-submit" type="submit" class="btn btn-primary" disabled>働いた時間を記録</button>

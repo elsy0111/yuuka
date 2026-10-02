@@ -38,8 +38,14 @@ export function addWorkEntry(
     };
   });
 }
-export function getWorkSummary(userId: string): string {
-  return perform(() => repo.monthlyWork(userId));
+export function getWorkSummary(userId: string, args: { month?: string } = {}): string {
+  return perform(() => {
+    const now = repo.workMonthDate(args.month);
+    return {
+      month: args.month ?? `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
+      ...repo.monthlyWork(userId, now),
+    };
+  });
 }
 export function deleteWorkEntry(userId: string, args: { id: number }): string {
   return perform(() => {

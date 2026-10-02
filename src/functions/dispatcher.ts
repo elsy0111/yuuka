@@ -190,7 +190,7 @@ export async function dispatchFunction(
     case "add_work_entry":
       return workFn.addWorkEntry(userId, args as Parameters<typeof workFn.addWorkEntry>[1]);
     case "get_work_summary":
-      return workFn.getWorkSummary(userId);
+      return workFn.getWorkSummary(userId, args as Parameters<typeof workFn.getWorkSummary>[1]);
     case "delete_work_entry":
       return workFn.deleteWorkEntry(userId, args as Parameters<typeof workFn.deleteWorkEntry>[1]);
     case "updateSchedule":

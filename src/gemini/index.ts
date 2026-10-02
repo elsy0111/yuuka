@@ -1,6 +1,7 @@
 import type { Content, FunctionCall, Part } from "@google/generative-ai";
 import { addChatMessage, getRecentChatHistory } from "../db/chatHistoryRepo.js";
 import { dispatchFunction } from "../functions/index.js";
+import { applyFunctionResult, failureSummary, parseFunctionResult } from "./functionResultState.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
 import type { ChatMessage } from "./types.js";
 
@@ -63,6 +64,7 @@ export async function processMessage(
 
   let browserToolCalled = false;
   let browserToolFailed = false;
+  const operationFailures = new Map<string, string>();
 
   try {
     onStatusChange?.("thinking");
@@ -115,12 +117,9 @@ export async function processMessage(
           }
         }
 
-        let parsedResult: object;
-        try {
-          parsedResult = JSON.parse(functionResult) as object;
-        } catch {
-          parsedResult = { result: functionResult };
-        }
+        const parsedResult = parseFunctionResult(functionResult);
+
+        applyFunctionResult(operationFailures, name, args, parsedResult);
 
         functionResponseParts.push({
           functionResponse: {
@@ -162,6 +161,16 @@ export async function processMessage(
       console.warn("response.text() retrieval failed:", e);
     }
 
+    const pendingFunctionCalls = response.candidates?.[0]?.content.parts.some(
+      (p) => "functionCall" in p,
+    );
+    const failures = failureSummary(operationFailures);
+    if (failures || (iterations >= maxIterations && pendingFunctionCalls)) {
+      const reason = failures || "必要な操作を完了できませんでした。";
+      const failureText = `操作を完了できませんでした。${reason}`;
+      await addChatMessage(userId, "model", failureText);
+      return failureText;
+    }
     if (text?.trim()) {
       await addChatMessage(userId, "model", text);
       return text;
@@ -169,7 +178,7 @@ export async function processMessage(
       if (browserToolCalled || browserToolFailed) {
         return "ブラウザ操作に失敗しました。求めた結果が得られませんでした。";
       }
-      return "処理が完了しました。";
+      return "返答を生成できませんでした。操作結果を確認してから、もう一度お試しください。";
     }
   } catch (error) {
     if (isRateLimitError(error)) {

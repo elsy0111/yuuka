@@ -40,8 +40,11 @@ export const workDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "get_work_summary",
-    description: "今月の労働記録を取得する",
-    parameters: { type: SchemaType.OBJECT, properties: {} },
+    description: "指定月の労働記録と合計を取得する。month省略時は今月",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: { month: { type: SchemaType.STRING, description: "YYYY-MM" } },
+    },
   },
   {
     name: "delete_work_entry",

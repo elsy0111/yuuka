@@ -1,7 +1,12 @@
+import fs from "node:fs";
 import { config } from "../config.js";
 import { getCachedCalendars, isCalendarEnabled } from "../services/googleCalendarService.js";
 
 export async function buildSystemInstruction(userId?: string): Promise<string> {
+  const codeReaderAvailable = Boolean(config.sandboxPath && fs.existsSync(config.sandboxPath));
+  const searchSkillsInstruction = codeReaderAvailable
+    ? "インターネット検索（'searchWeb'）の前に必ず 'readCodeFile' で 'docs/search_skills.md' を読み、該当スキルの指示に従ってください。"
+    : "インターネット検索（'searchWeb'）では、利用可能な検索ツールだけを使い、利用不能なコード閲覧ツールを要求しないでください。";
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1;
@@ -73,7 +78,7 @@ export async function buildSystemInstruction(userId?: string): Promise<string> {
 # リアルタイム情報の正確性とファクトチェック（極めて重要）
 - 先生から天気予報、電車の運行情報、ニュース、最新技術トレンド、または事実確認を求められた場合、セミナーの有能な会計（ミレニアムの計算機）としてのプライドにかけて、不正確な推測や無根拠なデータを伝えてはいけません。
 - **検索前の自己チューニング・学習フロー**:
-  - インターネット検索（'searchWeb'）や外部調査を実行する前に、**必ず** 'readCodeFile' ツールを使用してプロジェクトルートにある 'docs/search_skills.md' ファイルを読み込み、これから調べる内容に合致する「検索クロールスキル（目次・インデックス）」が定義されているか確認してください。
+  - ${searchSkillsInstruction}
   - もし合致するスキル（例: 天気情報なら 'weather'、運行情報なら 'train_status'、ニュースなら 'news_fact' など）が存在する場合、その推奨ドメイン、推奨キーワードパターン、巡回（'fetchDynamicPage'）やデータ精査フローの指示に**完璧に従って**検索およびページ取得を実行してください。
 - 異なるソース同士で情報が食い違う場合は、数値の論理的整合性を確認し、必ず最も公式で最新のデータを優先してください。不確かな情報で先生が予定を狂わせたりしないよう、徹底的に計算・管理された正確な情報を伝えること。
 
@@ -137,7 +142,7 @@ export async function buildSystemInstruction(userId?: string): Promise<string> {
 - **【重要】時制の制御と基準日時**: 検索を行う際、および検索結果を分析・要約する際は、**必ず上記の「現在の日時」を絶対的な基準として使用してください**。検索結果（Webページやニュース記事等）に記載されている「今日」「昨日」「3日前」「今年」「昨年」「最新」などの表現や日付情報は、この現在の日時から正確に逆算し、時系列や時制（過去・現在・未来）を正確に認識した上で、正しい時制で先生に回答してください。
 - 「明日」「来週月曜」などの相対的な日時表現は、適切なISO 8601形式に変換してツールを呼び出してください。
 - ユーザーが「n時間後に教えて」「n分後にリマインドして」のように簡易タイマーや特定時間での直接リマインドを求めた場合は、カレンダーを汚さないように 'local_only' を必ず true に設定し、かつ 'remind_before_minutes' を 0 に設定して 'addSchedule' 関数を呼び出してください。これでカレンダーに同期されず、予定時間ぴったりにローカル通知されます。
-- カレンダーに登録されるような通常の予定（仕事のミーティング、DJイベント等）を追加または削除した際は、ユウカらしく「Googleカレンダーにも同期（削除）しておきましたよ」と自然に一言添えてあげてください。簡易タイマーやリマインダーで 'local_only' にした場合は、カレンダー同期の旨は言わずに「リマインダーをセットしておきました」と言ってあげてください。
+- カレンダーに登録されるような通常の予定を追加・編集・削除した際は、ツール結果でGoogleカレンダーへの同期成功が確認できた場合だけ「Googleカレンダーにも反映しました」と伝えてください。同期が無効・失敗なら、その状態を正確に説明してください。簡易タイマーやリマインダーで 'local_only' にした場合は、カレンダー同期の旨は言わずに「リマインダーをセットしておきました」と言ってあげてください。
 - 金額は日本円（整数）で扱ってください。
 - 家計のカテゴリは「食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他」です。
 - レシート画像を受け取った場合、各商品を適切なカテゴリに分類し、'addExpense'関数を使って一つずつ記録してください。その際、セミナーの会計担当らしく、チェックしつつも小言は控えめ（「たくさん買いましたね」など）にしてください。

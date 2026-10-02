@@ -78,6 +78,23 @@ test("monthly listing excludes the next month", () => {
   );
 });
 
+test("partial update preserves date and historical rate, and enforces ownership", () => {
+  repo.setRate("alice", 1500);
+  const entry = repo.addEntry("alice", "2026-10-31", 60, "original");
+  const updated = repo.updateEntry(entry.id, "alice", { description: "corrected" });
+  assert.equal(updated?.date, "2026-10-31");
+  assert.equal(updated?.hourly_rate, 1500);
+  assert.equal(updated?.description, "corrected");
+  assert.equal(repo.updateEntry(entry.id, "bob", { hours: 2 }), undefined);
+});
+
+test("update rejects invalid hours and nonexistent dates", () => {
+  repo.setRate("alice", 1000);
+  const entry = repo.addEntry("alice", "2026-10-20", 60);
+  assert.throws(() => repo.updateEntry(entry.id, "alice", { hours: 0 }));
+  assert.throws(() => repo.updateEntry(entry.id, "alice", { date: "2026-02-30" }));
+});
+
 test("work tool rejects impossible dates, sub-minute entries and invalid notes", () => {
   for (const args of [
     { hours: 2, date: "2026-02-30" },
@@ -145,6 +162,29 @@ test("authenticated work API validates input and ignores forged owners", async (
   assert.equal((entry.result.entry as { hourlyRate: number }).hourlyRate, 1250);
   const victim = repo.addEntry("bob", "2026-10-02", 60);
   assert.equal((await call("/api/work/delete", { id: victim.id })).status, 404);
+  const october = await call("/api/work?month=2026-10");
+  assert.equal(october.status, 200);
+  assert.equal(october.result.month, "2026-10");
+  assert.equal((await call("/api/work?month=2026-13")).status, 400);
+  const edited = await call("/api/work/update", {
+    id: (entry.result.entry as { id: number }).id,
+    description: "edited",
+  });
+  assert.equal(edited.status, 200);
+  assert.equal((edited.result.entry as { hourlyRate: number }).hourlyRate, 1250);
+  assert.equal((await call("/api/work/update", { id: victim.id, hours: 3 })).status, 404);
+  assert.equal(
+    (await call("/api/work/update", { id: (entry.result.entry as { id: number }).id, hours: null }))
+      .status,
+    400,
+  );
+  const september = await call("/api/work?month=2026-09");
+  assert.deepEqual(september.result.entries, []);
+  for (const invalid of ["", "2026-00", "0999-12", "wrong"])
+    assert.equal((await call(`/api/work?month=${invalid}`)).status, 400);
+  const octoberEntries = october.result.entries as { date: string }[];
+  assert.ok(octoberEntries.every((item) => item.date >= "2026-10-01" && item.date < "2026-11-01"));
+  assert.equal(JSON.parse(functions.getWorkSummary("alice", { month: "2026-13" })).success, false);
   session.deleteSessionToken(token);
 });
 

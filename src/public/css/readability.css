@@ -466,3 +466,8 @@ body {
     border-bottom: 0;
   }
 }
+/* Native hidden must also hide flex/grid buttons and controls. */
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: Native hidden must override flex/grid display rules. */
+  display: none !important;
+}
