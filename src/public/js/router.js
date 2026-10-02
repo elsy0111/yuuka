@@ -41,10 +41,13 @@ export function loadDataForActiveTab() {
   }
 }
 
-export function switchTab(tabId) {
+export function switchTab(tabId, recordHistory = false) {
   if (!Object.hasOwn(TAB_TITLES, tabId)) return;
+  const changed = state.activeTab !== tabId;
   state.activeTab = tabId;
-  history.replaceState(null, "", `#${tabId}`);
+  if (location.hash !== `#${tabId}`) {
+    history[recordHistory ? "pushState" : "replaceState"](null, "", `#${tabId}`);
+  }
 
   document.querySelectorAll(".menu-item").forEach((item) => {
     const active = item.getAttribute("data-tab") === tabId;
@@ -60,6 +63,12 @@ export function switchTab(tabId) {
   const titleEl = document.getElementById("current-tab-title");
   if (titleEl) titleEl.textContent = TAB_TITLES[tabId] || "ユウカの管理室";
 
+  document.title = `${TAB_TITLES[tabId]} | ユウカの管理室`;
+  if (changed) {
+    document.querySelector(".main-content")?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+    titleEl?.focus({ preventScroll: true });
+  }
   loadDataForActiveTab();
 }
 
@@ -68,7 +77,7 @@ export function initRouter() {
   document.querySelectorAll(".menu-item").forEach((item) => {
     item.addEventListener("click", (e) => {
       e.preventDefault();
-      switchTab(item.getAttribute("data-tab"));
+      switchTab(item.getAttribute("data-tab"), true);
     });
   });
 }

@@ -16,6 +16,7 @@ export async function fetchExpensesList() {
     renderBudgetBar(data.total, data.budget ?? 50000, data.remaining ?? data.budget - data.total);
     renderExpenseStats(data.stats || {});
     renderDailyExpenseTotals(data.dailyTotals || []);
+    document.dispatchEvent(new Event("expenses-updated"));
 
     if (data.expenses?.length > 0) {
       data.expenses.forEach((exp) => {

@@ -11,7 +11,8 @@ export async function fetchTasksList(
   list._requestId = requestId;
   showListState(list, "読み込み中…");
   try {
-    const data = await apiRequest(`/api/tasks?userId=${state.activeUserId}&status=${filter}`);
+    const params = new URLSearchParams({ userId: state.activeUserId, status: filter });
+    const data = await apiRequest(`/api/tasks?${params}`);
     if (list._requestId !== requestId) return;
     list.replaceChildren();
     if (data.tasks.length > 0) {
@@ -153,6 +154,10 @@ async function handleEditTaskSubmit(e) {
   const desc = document.getElementById("task-edit-description").value.trim();
   const dueDate = document.getElementById("task-edit-due").value || null;
   const priority = parseInt(document.getElementById("task-edit-priority").value, 10);
+  if (!title) return toast.error("タイトルを入力してください。");
+  if (!Number.isInteger(priority) || priority < 0 || priority > 2) {
+    return toast.error("優先度を選択してください。");
+  }
   try {
     const data = await apiRequest("/api/tasks/update", {
       method: "POST",
@@ -200,6 +205,10 @@ export function initTasks() {
       const desc = document.getElementById("task-description").value.trim();
       const dueDate = document.getElementById("task-due").value || null;
       const priority = parseInt(document.getElementById("task-priority").value, 10);
+      if (!title) return toast.error("タイトルを入力してください。");
+      if (!Number.isInteger(priority) || priority < 0 || priority > 2) {
+        return toast.error("優先度を選択してください。");
+      }
       try {
         const data = await apiRequest("/api/tasks/add", {
           method: "POST",

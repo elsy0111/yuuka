@@ -1,13 +1,18 @@
 import { openEditExpenseModal } from "./expenses.js";
 import { closeExternalModal, openExternalModal } from "./modal.js";
 import { state } from "./state.js";
+import { apiRequest } from "./ui.js";
 
 let currentExpenses = [];
 const sortState = { key: "date", dir: "desc" };
 let fetchTimer = null;
+let activeRequest = null;
+let requestVersion = 0;
 
 function debouncedFetch() {
   clearTimeout(fetchTimer);
+  activeRequest?.abort();
+  requestVersion += 1;
   fetchTimer = setTimeout(fetchDetailExpenses, 400);
 }
 
@@ -26,9 +31,14 @@ export function initExpenseDetail() {
   };
 
   const performClose = () => {
+    clearTimeout(fetchTimer);
+    activeRequest?.abort();
+    requestVersion += 1;
     modal.classList.remove("modal-visible");
     closeExternalModal(modal);
-    modal.addEventListener("transitionend", () => modal.classList.add("hidden"), { once: true });
+    setTimeout(() => {
+      if (!modal.classList.contains("modal-visible")) modal.classList.add("hidden");
+    }, 250);
   };
 
   btnOpen?.addEventListener("click", () => {
@@ -57,7 +67,6 @@ export function initExpenseDetail() {
     "filter-amount-min",
     "filter-amount-max",
     "filter-q",
-    "filter-purchase-source",
   ].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", debouncedFetch);
   });
@@ -65,7 +74,18 @@ export function initExpenseDetail() {
     document.getElementById(id)?.addEventListener("change", fetchDetailExpenses);
   });
 
+  document.addEventListener("expenses-updated", () => {
+    if (!modal.classList.contains("hidden") && !modal.inert) fetchDetailExpenses();
+  });
   document.querySelectorAll("#expense-detail-modal .sortable-th").forEach((th) => {
+    th.tabIndex = 0;
+    th.setAttribute("aria-sort", th.dataset.sort === sortState.key ? "descending" : "none");
+    th.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        th.click();
+      }
+    });
     th.addEventListener("click", () => {
       const key = th.dataset.sort;
       if (key === sortState.key) {
@@ -77,11 +97,13 @@ export function initExpenseDetail() {
 
       document.querySelectorAll("#expense-detail-modal .sortable-th").forEach((el) => {
         el.classList.remove("sort-asc", "sort-desc");
+        el.setAttribute("aria-sort", "none");
         const icon = el.querySelector(".sort-icon");
         if (icon) icon.textContent = "";
       });
 
       th.classList.add(`sort-${sortState.dir}`);
+      th.setAttribute("aria-sort", sortState.dir === "asc" ? "ascending" : "descending");
       const icon = th.querySelector(".sort-icon");
       if (icon) icon.textContent = sortState.dir === "asc" ? "▲" : "▼";
 
@@ -111,22 +133,61 @@ async function fetchDetailExpenses() {
   if (amountMax) params.set("amountMax", amountMax);
   if (q) params.set("q", q);
 
-  const tbody = document.getElementById("detail-expenses-table-body");
-  tbody.replaceChildren();
-  countEl.textContent = "読込中…";
-
-  try {
-    const res = await fetch(`/api/expenses/all?${params}`);
-    const data = await res.json();
-    if (data.success) {
-      currentExpenses = data.expenses;
-      renderTable();
-      countEl.textContent = `${data.expenses.length} 件`;
-    }
-  } catch (e) {
-    console.error(e);
-    countEl.textContent = "取得失敗";
+  clearTimeout(fetchTimer);
+  activeRequest?.abort();
+  const version = ++requestVersion;
+  activeRequest = new AbortController();
+  currentExpenses = [];
+  document.getElementById("detail-expenses-table-body").removeAttribute("aria-busy");
+  if (
+    (dateFrom && dateTo && dateFrom > dateTo) ||
+    (amountMin !== "" && amountMax !== "" && Number(amountMin) > Number(amountMax)) ||
+    [amountMin, amountMax].some(
+      (value) => value !== "" && (!Number.isFinite(Number(value)) || Number(value) < 0),
+    )
+  ) {
+    currentExpenses = [];
+    countEl.textContent = "検索条件を確認してください";
+    showTableState("期間・金額は下限が上限以下になるように指定してください。金額は0以上です。");
+    return;
   }
+  const tbody = document.getElementById("detail-expenses-table-body");
+  tbody.setAttribute("aria-busy", "true");
+  countEl.textContent = "読込中…";
+  showTableState("支出履歴を読み込んでいます…");
+  try {
+    const data = await apiRequest(`/api/expenses/all?${params}`, { signal: activeRequest.signal });
+    if (version !== requestVersion) return;
+    currentExpenses = data.expenses;
+    renderTable();
+    const total = currentExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+    countEl.textContent = `${currentExpenses.length} 件・合計 ¥${total.toLocaleString()}`;
+  } catch (error) {
+    if (version !== requestVersion || error.name === "AbortError") return;
+    currentExpenses = [];
+    countEl.textContent = "読み込みに失敗しました";
+    showTableState("支出履歴を読み込めませんでした。", fetchDetailExpenses);
+  } finally {
+    if (version === requestVersion) tbody.removeAttribute("aria-busy");
+  }
+}
+
+function showTableState(message, retry) {
+  const tbody = document.getElementById("detail-expenses-table-body");
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = 7;
+  cell.textContent = message;
+  if (retry) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-secondary btn-sm";
+    button.textContent = "再試行";
+    button.addEventListener("click", retry);
+    cell.append(" ", button);
+  }
+  row.append(cell);
+  tbody.replaceChildren(row);
 }
 
 function renderTable() {
@@ -146,11 +207,17 @@ function renderTable() {
   });
 
   tbody.replaceChildren();
+  if (!sorted.length) {
+    showTableState("条件に一致する支出がありません。期間や検索語を変えてお試しください。");
+    return;
+  }
   sorted.forEach((exp, i) => {
     const tr = makeDetailRow(exp);
     tr.style.opacity = "0";
     tr.style.transform = "translateY(6px)";
-    tr.style.transition = `opacity 0.18s ease ${i * 18}ms, transform 0.18s ease ${i * 18}ms`;
+    tr.style.transition = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "none"
+      : `opacity 0.18s ease ${Math.min(i, 10) * 18}ms, transform 0.18s ease ${Math.min(i, 10) * 18}ms`;
     tbody.appendChild(tr);
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
@@ -205,6 +272,17 @@ function makeDetailRow(exp) {
   tdCreated.textContent = exp.created_at || "—";
 
   tr.style.cursor = "pointer";
+  tr.tabIndex = 0;
+  tr.setAttribute(
+    "aria-label",
+    `${exp.date} ${exp.category} ${exp.amount.toLocaleString()}円を編集`,
+  );
+  tr.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openEditExpenseModal(exp);
+    }
+  });
   tr.addEventListener("click", () => openEditExpenseModal(exp));
   tr.append(tdDate, tdCategory, tdDescription, tdPurchase, tdSource, tdAmount, tdCreated);
   return tr;

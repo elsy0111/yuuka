@@ -137,19 +137,19 @@
 
       <nav class="sidebar-menu">
         <a href="#dashboard" class="menu-item active" data-tab="dashboard">
-          <span class="material-symbols-outlined menu-icon-symbol">dashboard</span> <span class="menu-text">ダッシュボード</span>
+          <span class="material-symbols-outlined menu-icon-symbol">dashboard</span> <span class="menu-text">ホーム</span>
         </a>
         <a href="#tasks" class="menu-item" data-tab="tasks">
-          <span class="material-symbols-outlined menu-icon-symbol">checklist</span> <span class="menu-text">タスク管理</span>
+          <span class="material-symbols-outlined menu-icon-symbol">checklist</span> <span class="menu-text">タスク</span>
         </a>
         <a href="#schedules" class="menu-item" data-tab="schedules">
-          <span class="material-symbols-outlined menu-icon-symbol">calendar_today</span> <span class="menu-text">予定スケジュール</span>
+          <span class="material-symbols-outlined menu-icon-symbol">calendar_today</span> <span class="menu-text">予定</span>
         </a>
         <a href="#expenses" class="menu-item" data-tab="expenses">
-          <span class="material-symbols-outlined menu-icon-symbol">payments</span> <span class="menu-text">家計管理</span>
+          <span class="material-symbols-outlined menu-icon-symbol">payments</span> <span class="menu-text">家計</span>
         </a>
         <a href="#config" class="menu-item" data-tab="config">
-          <span class="material-symbols-outlined menu-icon-symbol">settings</span> <span class="menu-text">システム設定</span>
+          <span class="material-symbols-outlined menu-icon-symbol">settings</span> <span class="menu-text">設定</span>
         </a>
         <a href="#bot-logs" class="menu-item" data-tab="bot-logs">
           <span class="material-symbols-outlined menu-icon-symbol">terminal</span> <span class="menu-text">開発者</span>
@@ -163,7 +163,7 @@
       <!-- Top Header (Desktop: Row, Mobile: Stacking Column) -->
       <header class="top-header">
         <div class="header-title">
-          <h2 id="current-tab-title">ダッシュボード</h2>
+          <h2 id="current-tab-title" tabindex="-1">ダッシュボード</h2>
           <p id="header-subtitle">ミレニアムの計算機、冷徹な算術師が先生をサポートします。</p>
         </div>
         
@@ -236,7 +236,7 @@
 
             <!-- Card 3: Expenses -->
             <div class="stat-card card">
-              <div class="stat-card-badge-trend" id="expense-trend-badge">30 DAYS</div>
+              <div class="stat-card-badge-trend" id="expense-trend-badge">今月</div>
               <div class="stat-card-header">
                 <span class="stat-label">SEMINAR BUDGET</span>
               </div>
@@ -277,8 +277,8 @@
                     <line x1="0" y1="135" x2="400" y2="135" stroke="#27272a" stroke-width="0.7" stroke-dasharray="3,3"/>
                     
                     <!-- Matte solid lines with no gradient area -->
-                    <path id="trend-area-path" d="M0,130 L80,120 L160,110 L240,90 L320,60 L400,120 L400,130 Z" fill="transparent"/>
-                    <path id="trend-line-path" d="M0,130 L80,120 L160,110 L240,90 L320,60 L400,120" fill="none" stroke="#fafafa" stroke-width="2.2" stroke-linecap="round"/>
+                    <path id="trend-area-path" d="" fill="transparent"/>
+                    <path id="trend-line-path" d="" fill="none" stroke="#fafafa" stroke-width="2.2" stroke-linecap="round"/>
                     
                     <!-- Solid white dots with dark outline -->
                     <circle cx="80" cy="120" r="4.5" fill="#fafafa" stroke="#18181b" stroke-width="1.5"/>
@@ -399,7 +399,7 @@
             <div class="hud-card card">
               <p>当月支出合計</p>
               <h2 id="expense-month-total">¥0</h2>
-              <div class="hud-card-sub">先週比 -8.3%</div>
+              <div class="hud-card-sub">今月の支出記録</div>
             </div>
             <!-- Dynamic Category Progress Bar -->
             <div class="hud-card card col-span-2">
@@ -1259,13 +1259,13 @@
       <div class="modal-filters">
         <div class="filter-row">
           <label>期間</label>
-          <input type="date" id="filter-date-from" class="filter-input">
+          <input type="date" id="filter-date-from" aria-label="開始日" class="filter-input">
           <span style="color:var(--color-zinc-muted);">〜</span>
-          <input type="date" id="filter-date-to" class="filter-input">
+          <input type="date" id="filter-date-to" aria-label="終了日" class="filter-input">
         </div>
         <div class="filter-row">
           <label>カテゴリ</label>
-          <select id="filter-category" class="filter-select">
+          <select id="filter-category" aria-label="カテゴリ" class="filter-select">
             <option value="">すべて</option>
             <option>食費</option>
             <option>日用品</option>
@@ -1278,7 +1278,7 @@
             <option>その他</option>
           </select>
           <label>登録元</label>
-          <select id="filter-source" class="filter-select">
+          <select id="filter-source" aria-label="登録元" class="filter-select">
             <option value="">すべて</option>
             <option value="manual">手動</option>
             <option value="web">Web</option>
@@ -1287,18 +1287,18 @@
         </div>
         <div class="filter-row">
           <label>金額</label>
-          <input type="number" id="filter-amount-min" class="filter-input filter-input-num" placeholder="下限">
+          <input type="number" id="filter-amount-min" aria-label="金額の下限" class="filter-input filter-input-num" placeholder="下限">
           <span style="color:var(--color-zinc-muted);">〜</span>
-          <input type="number" id="filter-amount-max" class="filter-input filter-input-num" placeholder="上限">
+          <input type="number" id="filter-amount-max" aria-label="金額の上限" class="filter-input filter-input-num" placeholder="上限">
         </div>
         <div class="filter-row">
           <label>フリーワード</label>
-          <input type="text" id="filter-q" class="filter-input" placeholder="日付、カテゴリ、詳細、購入元、登録元、金額">
+          <input type="text" id="filter-q" aria-label="フリーワード" class="filter-input" placeholder="日付、カテゴリ、詳細、購入元、登録元、金額">
         </div>
         <div class="filter-row filter-actions">
           <button id="btn-filter-apply" class="btn btn-primary btn-sm">検索</button>
           <button id="btn-filter-reset" class="btn btn-secondary btn-sm">リセット</button>
-          <span id="filter-result-count" class="filter-count"></span>
+          <span id="filter-result-count" class="filter-count" role="status" aria-live="polite"></span>
         </div>
       </div>
 

@@ -4,6 +4,8 @@ import { renderUrgentDashboardList } from "./dashboard-urgent.js";
 import { closeModal, getModal, openModal } from "./modal.js";
 import { state } from "./state.js";
 import { currentTheme } from "./theme.js";
+import { toast } from "./toast.js";
+import { apiRequest, reportError } from "./ui.js";
 
 export function updateYuukaSpeechBubble() {
   const el = document.getElementById("yuuka-bubble-text");
@@ -40,6 +42,8 @@ let _geminiCurrentModel = "";
 let _geminiCurrentQuota = { rpm: 0, rpd: 0, tpm: 0 };
 
 export async function fetchGeminiUsage() {
+  const editButton = document.getElementById("btn-gemini-quota-edit");
+  if (editButton) editButton.hidden = !state.isAdmin;
   try {
     const res = await fetch("/api/gemini-usage");
     const data = await res.json();
@@ -58,43 +62,60 @@ export async function fetchGeminiUsage() {
 }
 
 export function initGeminiQuotaEdit() {
-  document.getElementById("btn-gemini-quota-edit")?.addEventListener("click", () => {
+  const editButton = document.getElementById("btn-gemini-quota-edit");
+  editButton?.addEventListener("click", () => {
+    if (!state.isAdmin) return;
     const label = document.getElementById("gemini-quota-model-label");
     if (label) label.textContent = _geminiCurrentModel || "—";
-    document.getElementById("gemini-quota-rpm").value = _geminiCurrentQuota.rpm || "";
-    document.getElementById("gemini-quota-rpd").value = _geminiCurrentQuota.rpd || "";
-    document.getElementById("gemini-quota-tpm").value = _geminiCurrentQuota.tpm || "";
+    document.getElementById("gemini-quota-rpm").value = _geminiCurrentQuota.rpm ?? "";
+    document.getElementById("gemini-quota-rpd").value = _geminiCurrentQuota.rpd ?? "";
+    document.getElementById("gemini-quota-tpm").value = _geminiCurrentQuota.tpm ?? "";
     openModal(getModal("gemini-quota"));
   });
 
-  document.getElementById("btn-gemini-quota-save")?.addEventListener("click", async () => {
+  document.getElementById("btn-gemini-quota-save")?.addEventListener("click", async (event) => {
+    if (!state.isAdmin) return;
+    const button = event.currentTarget;
     const rpm = Number(document.getElementById("gemini-quota-rpm").value);
     const rpd = Number(document.getElementById("gemini-quota-rpd").value);
     const tpm = Number(document.getElementById("gemini-quota-tpm").value);
+    if (![rpm, rpd, tpm].every((value) => Number.isInteger(value) && value >= 0)) {
+      toast.error("クォータは0以上の整数で入力してください。");
+      return;
+    }
+    button.disabled = true;
     try {
-      await fetch("/api/gemini-usage/quota", {
+      await apiRequest("/api/gemini-usage/quota", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: _geminiCurrentModel, rpm, rpd, tpm }),
       });
       closeModal(getModal("gemini-quota"));
       fetchGeminiUsage();
+      toast.success("Geminiクォータを保存しました。");
     } catch (e) {
-      console.error(e);
+      reportError(e);
+    } finally {
+      button.disabled = false;
     }
   });
 }
 
 export async function fetchDashboardStats() {
+  const dashboard = document.getElementById("tab-dashboard");
+  const bubble = document.getElementById("yuuka-bubble-text");
+  const retryId = "dashboard-retry";
+  dashboard?.setAttribute("aria-busy", "true");
+  ["stat-pending-tasks", "stat-upcoming-schedules", "stat-expenses-total"].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = "—";
+  });
+  document.getElementById(retryId)?.remove();
   try {
-    const [statusRes, expenseRes] = await Promise.all([
-      fetch(`/api/status?userId=${state.activeUserId}`),
-      fetch(`/api/expenses?userId=${state.activeUserId}`),
+    const [statusData, expenseData] = await Promise.all([
+      apiRequest(`/api/status?userId=${state.activeUserId}`),
+      apiRequest(`/api/expenses?userId=${state.activeUserId}`),
     ]);
-    const statusData = await statusRes.json();
-    const expenseData = await expenseRes.json();
-
-    if (!statusData.success || !expenseData.success) return;
 
     state.pendingTasksCount = statusData.stats.pendingTasks;
     state.totalExpensesVal = expenseData.total;
@@ -134,8 +155,18 @@ export async function fetchDashboardStats() {
     );
   } catch (err) {
     console.error("ダッシュボード情報の更新エラー:", err);
-    document.getElementById("yuuka-bubble-text").textContent =
-      "先生、ダッシュボード情報の取得中にエラーが発生しました。データベース接続を確認してください！";
+    if (bubble) {
+      bubble.textContent = "ダッシュボード情報を取得できませんでした。";
+      const retry = document.createElement("button");
+      retry.id = retryId;
+      retry.type = "button";
+      retry.className = "btn btn-secondary btn-sm";
+      retry.textContent = "再試行";
+      retry.addEventListener("click", fetchDashboardStats, { once: true });
+      bubble.parentElement?.appendChild(retry);
+    }
+  } finally {
+    dashboard?.removeAttribute("aria-busy");
   }
 }
 

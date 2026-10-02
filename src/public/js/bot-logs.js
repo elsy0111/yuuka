@@ -1,5 +1,7 @@
 import { confirmModal } from "./modal.js";
 import { state } from "./state.js";
+import { toast } from "./toast.js";
+import { apiRequest, reportError } from "./ui.js";
 
 const levelLabels = { debug: "DEBUG", info: "INFO", warn: "WARN", error: "ERROR" };
 
@@ -8,6 +10,7 @@ const activeLevels = new Set(["debug", "info", "warn", "error"]);
 let searchQuery = "";
 let autoRefreshTimer = null;
 let autoRefreshActive = false;
+let clearBusy = false;
 
 export function initBotLogs() {
   document.querySelectorAll(".btn-log-level").forEach((btn) => {
@@ -40,9 +43,21 @@ export function initBotLogs() {
 
   document.getElementById("btn-bot-logs-clear")?.addEventListener("click", async () => {
     if (!(await confirmModal("すべてのBotログを削除しますか？"))) return;
-    await fetch("/api/bot-logs", { method: "DELETE" });
-    allLogs = [];
-    renderFiltered();
+    if (clearBusy) return;
+    const button = document.getElementById("btn-bot-logs-clear");
+    clearBusy = true;
+    if (button) button.disabled = true;
+    try {
+      await apiRequest("/api/bot-logs", { method: "DELETE" });
+      allLogs = [];
+      renderFiltered();
+      toast.success("Botログを削除しました。");
+    } catch (error) {
+      reportError(error);
+    } finally {
+      clearBusy = false;
+      if (button) button.disabled = false;
+    }
   });
 }
 
@@ -63,7 +78,7 @@ function toggleAutoRefresh() {
 
 export async function fetchBotLogs() {
   const list = document.getElementById("bot-logs-list");
-  if (!list) return;
+  if (!list || state.activeTab !== "bot-logs" || !state.activeUserId) return;
 
   try {
     const limitEl = document.getElementById("bot-log-limit");

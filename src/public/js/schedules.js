@@ -11,7 +11,8 @@ export async function fetchSchedulesList(
   list._requestId = requestId;
   showListState(list, "読み込み中…");
   try {
-    const data = await apiRequest(`/api/schedules?userId=${state.activeUserId}&days=${days}`);
+    const params = new URLSearchParams({ userId: state.activeUserId, days: String(days) });
+    const data = await apiRequest(`/api/schedules?${params}`);
     if (list._requestId !== requestId) return;
     list.replaceChildren();
     if (data.schedules.length > 0) {
@@ -121,6 +122,11 @@ async function handleEditScheduleSubmit(e) {
   const startAt = document.getElementById("sched-edit-start").value;
   const endAt = document.getElementById("sched-edit-end").value || null;
   const remind = parseInt(document.getElementById("sched-edit-remind").value, 10);
+  if (!title || !startAt) return toast.error("タイトルと開始日時を入力してください。");
+  if (endAt && new Date(endAt) < new Date(startAt)) {
+    return toast.error("終了日時は開始日時以降にしてください。");
+  }
+  if (!Number.isInteger(remind) || remind < 0) return toast.error("リマインド時間が不正です。");
   try {
     const data = await apiRequest("/api/schedules/update", {
       method: "POST",
@@ -196,6 +202,11 @@ export function initSchedules() {
       const startAt = document.getElementById("sched-start").value;
       const endAt = document.getElementById("sched-end").value;
       const remind = parseInt(document.getElementById("sched-remind").value, 10);
+      if (!title || !startAt) return toast.error("タイトルと開始日時を入力してください。");
+      if (endAt && new Date(endAt) < new Date(startAt)) {
+        return toast.error("終了日時は開始日時以降にしてください。");
+      }
+      if (!Number.isInteger(remind) || remind < 0) return toast.error("リマインド時間が不正です。");
       try {
         const data = await apiRequest("/api/schedules/add", {
           method: "POST",
