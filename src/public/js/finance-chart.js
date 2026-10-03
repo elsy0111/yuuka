@@ -12,20 +12,35 @@ export function mergeDailyFinance(days, entries, now = new Date()) {
       earned: income.get(day.date) || 0,
     }));
 }
+export function cumulativeFinance(rows) {
+  let spent = 0;
+  let earned = 0;
+  return (rows || []).map((row) => {
+    earned += Number(row.earned || 0);
+    spent += Number(row.spent || 0);
+    return { ...row, earned, spent };
+  });
+}
 function node(tag, attrs, text) {
   const element = document.createElementNS(NS, tag);
   for (const [key, value] of Object.entries(attrs)) element.setAttribute(key, value);
   if (text !== undefined) element.textContent = text;
   return element;
 }
-export function renderFinanceChart(rows) {
+export function renderFinanceChart(rows, mode = "daily") {
+  rows = mode === "cumulative" ? cumulativeFinance(rows) : rows || [];
+  const modeCaption = document.getElementById("finance-mode-caption");
+  if (modeCaption) modeCaption.textContent = `${mode === "cumulative" ? "累積" : "日別"}・円`;
   const svg = document.getElementById("finance-chart");
   const output = document.getElementById("finance-day-summary");
   svg.replaceChildren();
+  svg.onpointerdown = null;
+  svg.onkeydown = null;
   svg.hidden = rows.length === 0;
   if (!rows.length) {
-    svg.setAttribute("aria-label", "表示する日別の収支はありません");
-    output.textContent = "この期間に表示できる日別の収支はありません。";
+    const kind = mode === "cumulative" ? "累積" : "日別";
+    svg.setAttribute("aria-label", `表示する${kind}の収支はありません`);
+    output.textContent = `この期間に表示できる${kind}の収支はありません。`;
     return;
   }
   const left = 60,
@@ -118,7 +133,10 @@ export function renderFinanceChart(rows) {
     cursor.setAttribute("x1", x(selected));
     cursor.setAttribute("x2", x(selected));
     cursor.setAttribute("visibility", "visible");
-    output.textContent = `${row.date}　稼いだ分 ¥${row.earned.toLocaleString()} ／ 使った分 ¥${row.spent.toLocaleString()}`;
+    output.textContent =
+      mode === "cumulative"
+        ? `月初から${row.date}　稼いだ分 ¥${row.earned.toLocaleString()} ／ 使った分 ¥${row.spent.toLocaleString()}`
+        : `${row.date}　稼いだ分 ¥${row.earned.toLocaleString()} ／ 使った分 ¥${row.spent.toLocaleString()}`;
   };
   svg.onpointerdown = (event) => {
     const point = svg.createSVGPoint();
@@ -134,10 +152,17 @@ export function renderFinanceChart(rows) {
     event.preventDefault();
     select(selected < 0 ? 0 : selected + (event.key === "ArrowRight" ? 1 : -1));
   };
-  output.textContent = "グラフを押すと、その日の金額を確認できます。";
+  output.textContent =
+    mode === "cumulative"
+      ? "グラフを押すと、月初からその日までの累積金額を確認できます。"
+      : "グラフを押すと、その日の金額を確認できます。";
+  const totalEarned =
+    mode === "cumulative" ? rows.at(-1).earned : rows.reduce((sum, row) => sum + row.earned, 0);
+  const totalSpent =
+    mode === "cumulative" ? rows.at(-1).spent : rows.reduce((sum, row) => sum + row.spent, 0);
   svg.setAttribute(
     "aria-label",
-    `日別の収支。稼いだ分 ${rows.reduce((sum, row) => sum + row.earned, 0).toLocaleString()}円、使った分 ${rows.reduce((sum, row) => sum + row.spent, 0).toLocaleString()}円。左右キーで日を選択`,
+    `${mode === "cumulative" ? "累積" : "日別"}の収支。稼いだ分 ${totalEarned.toLocaleString()}円、使った分 ${totalSpent.toLocaleString()}円。左右キーで日を選択`,
   );
 }
 

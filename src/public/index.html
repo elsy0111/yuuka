@@ -186,13 +186,13 @@
             </div>
           </div>
           <div class="card finance-overview">
-            <div class="column-header"><h3>収支の比較</h3><label for="finance-month" class="finance-month-label">月 <input id="finance-month" type="month" min="1000-01" max="9999-12" required></label></div>
+            <div class="column-header"><h3>収支の比較</h3><div class="finance-controls"><label for="finance-month" class="finance-month-label">月 <input id="finance-month" type="month" min="1000-01" max="9999-12" required></label><label for="finance-mode" class="finance-mode-label">表示 <select id="finance-mode"><option value="daily">日別</option><option value="cumulative">累積</option></select></label></div></div>
             <div class="finance-summary" aria-live="polite">
               <div><span>稼いだ分（控除前）</span><strong id="stat-earned-total">—</strong></div>
               <div><span>使った分</span><strong id="stat-expenses-total">—</strong></div>
               <div><span>差額</span><strong id="stat-net-total">—</strong></div>
             </div>
-            <div class="finance-legend"><span class="finance-earned">■ 稼いだ分</span><span class="finance-spent">■ 使った分</span><span>日別・円</span></div>
+            <div class="finance-legend"><span class="finance-earned">■ 稼いだ分</span><span class="finance-spent">■ 使った分</span><span id="finance-mode-caption">日別・円</span></div>
             <svg id="finance-chart" viewBox="0 0 600 230" role="img" tabindex="0" aria-label="日別の稼いだ分と使った分。左右キーで日を選択"></svg>
             <output id="finance-day-summary" class="finance-day-summary" aria-live="polite">グラフを押すと、その日の金額を確認できます。</output>
             <p id="finance-error" role="status"></p><button id="finance-retry" class="btn btn-secondary" hidden>再試行</button>

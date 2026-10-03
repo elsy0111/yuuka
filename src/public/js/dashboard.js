@@ -96,6 +96,7 @@ export function initGeminiQuotaEdit() {
 let request = null;
 let requestKey = "";
 let version = 0;
+let financeDailyRows = null;
 function currentMonth() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -103,6 +104,10 @@ function currentMonth() {
 export function initFinanceDashboard() {
   const input = document.getElementById("finance-month");
   input.value = currentMonth();
+  const mode = document.getElementById("finance-mode");
+  mode?.addEventListener("change", () => {
+    if (financeDailyRows) renderFinanceChart(financeDailyRows, mode.value);
+  });
   input.addEventListener("change", () => {
     if (!input.checkValidity() || !input.value) {
       input.value = currentMonth();
@@ -133,6 +138,10 @@ async function loadFinance(user, month, capturedVersion) {
   card.setAttribute("aria-busy", "true");
   error.textContent = "";
   retry.hidden = true;
+  financeDailyRows = null;
+  const chart = document.getElementById("finance-chart");
+  chart.onpointerdown = null;
+  chart.onkeydown = null;
   for (const id of ["stat-earned-total", "stat-expenses-total", "stat-net-total"])
     document.getElementById(id).textContent = "—";
   try {
@@ -155,13 +164,16 @@ async function loadFinance(user, month, capturedVersion) {
     document.getElementById("stat-net-total").textContent =
       `${earned - spent < 0 ? "−" : ""}¥${Math.abs(earned - spent).toLocaleString()}`;
     updateYuukaSpeechBubble();
-    renderFinanceChart(
-      mergeDailyFinance(expenses.monthlyDailyTotals || expenses.dailyTotals, work.entries),
+    financeDailyRows = mergeDailyFinance(
+      expenses.monthlyDailyTotals || expenses.dailyTotals,
+      work.entries,
     );
+    renderFinanceChart(financeDailyRows, document.getElementById("finance-mode")?.value || "daily");
     renderDonutChart(expenses.breakdown, spent);
   } catch (err) {
     if (capturedVersion !== version || user !== state.activeUserId) return;
     document.getElementById("finance-chart").replaceChildren();
+    financeDailyRows = null;
     renderDonutChart([], 0);
     error.textContent = "収支を取得できませんでした。";
     retry.hidden = false;

@@ -23,6 +23,15 @@
     @apply w-[160px];
     @apply p-[7px];
   }
+  .finance-controls {
+    @apply flex flex-wrap items-center gap-3;
+  }
+  .finance-mode-label {
+    @apply flex items-center gap-2 text-xs;
+  }
+  .finance-mode-label select {
+    @apply p-[7px];
+  }
   .finance-summary {
     @apply grid;
     @apply grid-cols-3;
@@ -216,6 +225,12 @@
       @apply grid grid-cols-1;
     }
     .finance-month-label {
+      @apply w-full justify-between;
+    }
+    .finance-controls {
+      @apply w-full items-stretch;
+    }
+    .finance-mode-label {
       @apply w-full justify-between;
     }
   }
