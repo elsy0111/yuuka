@@ -10,6 +10,9 @@
   .finance-header {
     @apply items-center;
   }
+  .finance-overview + .finance-categories {
+    @apply mt-[24px];
+  }
   .finance-month-label {
     @apply flex;
     @apply items-center;
