@@ -27,10 +27,10 @@
     @apply flex flex-wrap items-center gap-3;
   }
   .finance-mode-label {
-    @apply flex items-center gap-2 text-xs;
+    @apply flex shrink-0 items-center gap-2 text-xs whitespace-nowrap;
   }
   .finance-mode-label select {
-    @apply p-[7px];
+    @apply w-auto p-[7px];
   }
   .finance-summary {
     @apply grid;
