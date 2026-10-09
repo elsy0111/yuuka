@@ -278,6 +278,53 @@
     @apply min-h-0;
   }
 
+  #expense-detail-modal .modal-panel {
+    @apply gap-[10px];
+    @apply p-[16px_20px];
+  }
+
+  #expense-detail-modal .modal-header {
+    @apply mb-[0];
+    @apply pb-[8px];
+  }
+
+  #expense-detail-modal .modal-filters {
+    @apply flex-row;
+    @apply flex-wrap;
+    @apply gap-[8px_20px];
+    @apply p-[10px_12px];
+  }
+
+  #expense-detail-modal .filter-row #filter-q {
+    @apply min-w-[240px];
+  }
+
+  #expense-detail-modal .filter-row:has(#filter-q) {
+    flex: 1 1 360px;
+  }
+
+  #expense-detail-modal .filter-select {
+    @apply w-auto;
+  }
+
+  #expense-detail-modal .filter-actions {
+    @apply basis-full;
+    @apply pt-[0];
+  }
+
+  #expense-detail-modal .filter-actions .btn {
+    @apply p-[4px_14px];
+  }
+
+  #expense-detail-modal .expense-table th {
+    @apply p-[6px_10px];
+  }
+
+  #expense-detail-modal .expense-table td {
+    @apply p-[5px_10px];
+    @apply leading-[1.4];
+  }
+
   /* ソート可能テーブルヘッダー */
   .sortable-th {
     @apply cursor-pointer;

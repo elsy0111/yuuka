@@ -135,7 +135,7 @@
       @apply p-[8px_10px];
     }
     .stats-grid {
-      @apply grid-cols-[repeat(3,_minmax(0,_1fr))];
+      @apply grid-cols-[minmax(0,_1fr)_minmax(0,_0.8fr)_minmax(0,_1.3fr)];
       @apply gap-[8px];
     }
     .stats-grid .stat-card {
@@ -300,22 +300,33 @@
       @apply p-[12px];
       @apply max-w-[100%];
       @apply min-h-[calc(100dvh_-_16px)];
-      @apply gap-[12px];
+      @apply gap-[8px];
+    }
+    #expense-detail-modal .modal-filters {
+      @apply flex-col;
+      @apply flex-nowrap;
+      @apply gap-[8px];
+      @apply p-[10px];
+    }
+    #expense-detail-modal .filter-row:has(#filter-q) {
+      flex: 0 0 auto;
+    }
+    #expense-detail-modal .filter-actions {
+      @apply basis-auto;
     }
     .filter-row {
       @apply min-w-0;
     }
     .filter-row label {
-      @apply w-full;
+      @apply shrink-0;
       @apply text-[0.8rem];
     }
     .filter-row :is(input, select) {
       flex: 1 1 0;
       @apply min-w-0;
     }
-    .filter-row #filter-q {
+    #expense-detail-modal .filter-row #filter-q {
       @apply min-w-0;
-      @apply basis-[100%];
     }
     .filter-count {
       @apply w-full;
@@ -369,6 +380,11 @@
       @apply text-[0.7rem];
       @apply mb-[2px];
     }
+    #detail-expenses-table-body tr {
+      @apply grid-cols-[minmax(0,_1fr)_minmax(0,_0.8fr)_minmax(0,_1.3fr)];
+      @apply gap-[4px_10px];
+      @apply p-[8px_0];
+    }
     #detail-expenses-table-body td:nth-child(1)::before {
       content: "日付";
     }
@@ -392,6 +408,10 @@
     }
     #detail-expenses-table-body td:nth-child(7) {
       grid-column: 1 / -1;
+    }
+    #detail-expenses-table-body td:nth-child(7)::before {
+      @apply inline;
+      @apply mr-[6px];
     }
     #config-credentials-list td:nth-child(1)::before {
       content: "サービス";
@@ -431,7 +451,12 @@
   @media (max-width: 768px) {
     .filter-row:has(input[type="date"]) {
       @apply grid;
-      @apply grid-cols-[minmax(0,_1fr)];
+      @apply grid-cols-[auto_minmax(0,_1fr)];
+    }
+    .filter-row:has(input[type="date"]) > label {
+      @apply row-span-2;
+      @apply max-w-[6em];
+      @apply whitespace-normal;
     }
     .filter-row:has(input[type="date"]) > span {
       @apply hidden;

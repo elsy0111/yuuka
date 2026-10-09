@@ -254,6 +254,7 @@ function makeDetailRow(exp) {
   badge.className = `expense-source-badge source-${exp.source}`;
   const badgeIcon = document.createElement("span");
   badgeIcon.className = "material-symbols-outlined source-icon";
+  badgeIcon.style.fontSize = "0.85rem";
   let srcText = "";
   if (exp.source === "web") {
     badgeIcon.textContent = "language";
