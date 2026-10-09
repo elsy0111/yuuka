@@ -4,7 +4,8 @@ import { SchemaType } from "@google/generative-ai";
 export const expenseDeclarations: FunctionDeclaration[] = [
   {
     name: "deleteExpense",
-    description: "記録済みの支出を削除する。listRecentExpensesで対象IDを確認してから使う。",
+    description:
+      "記録済みの支出を削除する。listRecentExpensesで対象IDと登録日時を確認してから使う。IDが大きいほど新しく登録された記録。",
     parameters: {
       type: SchemaType.OBJECT,
       properties: { id: { type: SchemaType.NUMBER, description: "支出ID" } },
@@ -32,7 +33,7 @@ export const expenseDeclarations: FunctionDeclaration[] = [
     description:
       "支出を家計簿に記録する。カテゴリは: 食費, 日用品, 交通費, 光熱費, 通信費, 医療費, 娯楽, 衣服, その他。" +
       "ユーザーが明示していない情報を推測して補いません。purchase_sourceが不明な場合は「不明」で記録します。" +
-      "割引があった場合のみdescriptionに (割引〇〇円引き) を記載します。",
+      "descriptionには必ず商品名を書き、割引があった場合はその後ろに (割引〇〇円引き) を付けます。",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
@@ -47,7 +48,7 @@ export const expenseDeclarations: FunctionDeclaration[] = [
         description: {
           type: SchemaType.STRING,
           description:
-            "支出のメモ・説明（任意）。ユーザーが述べた内容のみ記載。割引がある場合は「(割引〇〇円引き)」を含める",
+            "商品名・内容（レシートや会話に書かれた名称）。割引がある場合は「商品名 (割引〇〇円引き)」の形にする。割引表記だけを書かない",
         },
         date: {
           type: SchemaType.STRING,
@@ -205,7 +206,7 @@ export const expenseDeclarations: FunctionDeclaration[] = [
   },
   {
     name: "listRecentExpenses",
-    description: "直近の支出履歴を取得する",
+    description: "直近の支出履歴を取得する。各行にID・登録日時を含む",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
