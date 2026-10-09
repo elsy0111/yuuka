@@ -46,3 +46,23 @@ test("rejects invalid amount, category, and date without inserting", () => {
   }
   assert.equal(repo.getMonthlyTotal("alice"), before);
 });
+
+test("invalid input reports the offending field and value", () => {
+  const result = JSON.parse(
+    functions.addExpense("alice", {
+      amount: 318,
+      category: "食費",
+      date: "2026-10-08, description:",
+    }),
+  );
+  assert.equal(result.success, false);
+  assert.match(result.message, /date="2026-10-08, description:"/);
+  assert.doesNotMatch(result.message, /amount|category/);
+});
+
+test("recent expenses expose id and registration time", () => {
+  const added = JSON.parse(functions.addExpense("alice", { amount: 120, category: "食費" }));
+  const listed = JSON.parse(functions.listRecentExpenses("alice", { count: 1 }));
+  assert.match(listed.message, new RegExp(`#${added.expense.id} \\|`));
+  assert.match(listed.message, new RegExp(`登録 ${added.expense.created_at}`));
+});

@@ -2,6 +2,16 @@ import * as expenseRepo from "../db/expenseRepo.js";
 import { getMonthlyBudget, updateMonthlyBudget } from "../db/userRepo.js";
 import { currentMonthLabel, formatCurrency, formatDate } from "../utils/formatters.js";
 
+function isValidDate(date: unknown): boolean {
+  return (
+    date === undefined ||
+    (typeof date === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+      Number.isFinite(Date.parse(`${date}T00:00:00Z`)) &&
+      new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date)
+  );
+}
+
 export function addExpense(
   userId: string,
   args: {
@@ -13,25 +23,22 @@ export function addExpense(
     purchase_source?: string;
   },
 ): string {
-  const categories = new Set(expenseRepo.CATEGORIES);
-  const validDate =
-    args.date === undefined ||
-    (typeof args.date === "string" &&
-      /^\d{4}-\d{2}-\d{2}$/.test(args.date) &&
-      Number.isFinite(Date.parse(`${args.date}T00:00:00Z`)) &&
-      new Date(`${args.date}T00:00:00Z`).toISOString().slice(0, 10) === args.date);
-  if (
-    !Number.isSafeInteger(args.amount) ||
-    args.amount <= 0 ||
-    typeof args.category !== "string" ||
-    !categories.has(args.category as expenseRepo.Category) ||
-    !validDate ||
-    (args.description !== undefined && typeof args.description !== "string") ||
-    (args.purchase_source !== undefined && typeof args.purchase_source !== "string")
-  ) {
+  const categories = new Set<string>(expenseRepo.CATEGORIES);
+  const problems: string[] = [];
+  if (!Number.isSafeInteger(args.amount) || args.amount <= 0)
+    problems.push(`amount=${JSON.stringify(args.amount)} は正の整数ではありません`);
+  if (typeof args.category !== "string" || !categories.has(args.category))
+    problems.push(`category=${JSON.stringify(args.category)} は定義済みカテゴリではありません`);
+  if (!isValidDate(args.date))
+    problems.push(`date=${JSON.stringify(args.date)} は YYYY-MM-DD 形式ではありません`);
+  if (args.description !== undefined && typeof args.description !== "string")
+    problems.push("description が文字列ではありません");
+  if (args.purchase_source !== undefined && typeof args.purchase_source !== "string")
+    problems.push("purchase_source が文字列ではありません");
+  if (problems.length > 0) {
     return JSON.stringify({
       success: false,
-      message: "支出の入力が不正です。金額・カテゴリ・日付を確認してください。",
+      message: `支出の入力が不正です（${problems.join("、")}）。`,
     });
   }
   const expense = expenseRepo.addExpense(
@@ -45,7 +52,7 @@ export function addExpense(
   );
   return JSON.stringify({
     success: true,
-    message: `${formatCurrency(expense.amount)} (${expense.category}) を記録しました${expense.description ? ` — ${expense.description}` : ""}`,
+    message: `#${expense.id} ${formatCurrency(expense.amount)} (${expense.category}) を記録しました${expense.description ? ` — ${expense.description}` : ""}`,
     expense,
   });
 }
@@ -118,7 +125,7 @@ export function listRecentExpenses(userId: string, args: { count?: number }): st
 
   const lines = expenses.map((e) => {
     const desc = e.description ? ` — ${e.description}` : "";
-    return `${formatDate(e.date)} | ${e.category} | ${formatCurrency(e.amount)}${desc}`;
+    return `#${e.id} | ${formatDate(e.date)} | ${e.category} | ${formatCurrency(e.amount)}${desc} | 登録 ${e.created_at}`;
   });
 
   return JSON.stringify({
@@ -139,16 +146,10 @@ export function updateExpense(
     purchase_source?: string;
   },
 ): string {
-  const validDate =
-    args.date === undefined ||
-    (typeof args.date === "string" &&
-      /^\d{4}-\d{2}-\d{2}$/.test(args.date) &&
-      Number.isFinite(Date.parse(`${args.date}T00:00:00Z`)) &&
-      new Date(`${args.date}T00:00:00Z`).toISOString().slice(0, 10) === args.date);
   if (
     !Number.isSafeInteger(args.id) ||
     args.id < 1 ||
-    !validDate ||
+    !isValidDate(args.date) ||
     (args.amount !== undefined && (!Number.isSafeInteger(args.amount) || args.amount <= 0)) ||
     (args.category !== undefined && (typeof args.category !== "string" || !args.category.trim())) ||
     (args.description !== undefined &&
@@ -164,7 +165,11 @@ export function updateExpense(
   });
   return JSON.stringify(
     expense
-      ? { success: true, message: `支出 #${expense.id} を更新しました。`, expense }
+      ? {
+          success: true,
+          message: `#${expense.id} を更新しました — ${formatCurrency(expense.amount)} (${expense.category})${expense.description ? ` ${expense.description}` : ""}`,
+          expense,
+        }
       : { success: false, message: "支出が見つかりません。" },
   );
 }
@@ -172,10 +177,14 @@ export function updateExpense(
 export function deleteExpense(userId: string, args: { id: number }): string {
   if (!Number.isSafeInteger(args.id) || args.id < 1)
     return JSON.stringify({ success: false, message: "記録IDが不正です。" });
+  const target = expenseRepo.getExpenseById(args.id);
   const success = expenseRepo.deleteExpense(args.id, userId);
   return JSON.stringify({
     success,
-    message: success ? "支出を削除しました。" : "支出が見つかりません。",
+    message:
+      success && target
+        ? `#${target.id} を削除しました — ${formatCurrency(target.amount)} (${target.category})${target.description ? ` ${target.description}` : ""}`
+        : "支出が見つかりません。",
   });
 }
 
