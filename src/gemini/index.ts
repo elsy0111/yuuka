@@ -2,6 +2,11 @@ import type { Content, FunctionCall, Part } from "@google/generative-ai";
 import { addChatMessage, getRecentChatHistory } from "../db/chatHistoryRepo.js";
 import { dispatchFunction } from "../functions/index.js";
 import { applyFunctionResult, failureSummary, parseFunctionResult } from "./functionResultState.js";
+import {
+  annotateUnbackedClaim,
+  buildFailureReport,
+  recordCompletedOperation,
+} from "./operationLog.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
 import type { ChatMessage } from "./types.js";
 
@@ -65,6 +70,7 @@ export async function processMessage(
   let browserToolCalled = false;
   let browserToolFailed = false;
   const operationFailures = new Map<string, string>();
+  const completedOperations: string[] = [];
 
   try {
     onStatusChange?.("thinking");
@@ -120,6 +126,7 @@ export async function processMessage(
         const parsedResult = parseFunctionResult(functionResult);
 
         applyFunctionResult(operationFailures, name, args, parsedResult);
+        recordCompletedOperation(completedOperations, name, parsedResult);
 
         functionResponseParts.push({
           functionResponse: {
@@ -166,17 +173,23 @@ export async function processMessage(
     );
     const failures = failureSummary(operationFailures);
     if (failures || (iterations >= maxIterations && pendingFunctionCalls)) {
-      const reason = failures || "必要な操作を完了できませんでした。";
-      const failureText = `操作を完了できませんでした。${reason}`;
+      const failureText = buildFailureReport(
+        failures || "必要な操作を完了できませんでした。",
+        completedOperations,
+      );
       await addChatMessage(userId, "model", failureText);
       return failureText;
     }
     if (text?.trim()) {
+      text = annotateUnbackedClaim(text, completedOperations);
       await addChatMessage(userId, "model", text);
       return text;
     } else {
       if (browserToolCalled || browserToolFailed) {
         return "ブラウザ操作に失敗しました。求めた結果が得られませんでした。";
+      }
+      if (completedOperations.length > 0) {
+        return `返答文を生成できませんでしたが、次の操作は完了しています。\n${completedOperations.map((m) => `- ${m}`).join("\n")}`;
       }
       return "返答を生成できませんでした。操作結果を確認してから、もう一度お試しください。";
     }
