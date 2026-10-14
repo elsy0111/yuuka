@@ -4,6 +4,7 @@ import {
   annotateUnbackedClaim,
   buildFailureReport,
   recordCompletedOperation,
+  withCompletedOperations,
 } from "../src/gemini/operationLog.js";
 
 test("only successful record writes are collected", () => {
@@ -26,4 +27,11 @@ test("claims without executed writes are annotated", () => {
   assert.match(annotateUnbackedClaim("メモを更新しました。", []), /実際には行われていません/);
   assert.equal(annotateUnbackedClaim("メモを更新しました。", ["#1 更新"]), "メモを更新しました。");
   assert.equal(annotateUnbackedClaim("こんにちは", []), "こんにちは");
+});
+
+test("api error message keeps completed writes", () => {
+  const message = withCompletedOperations("⚠️ 混雑", ["#406 ¥25,050 (交通費) を記録しました"]);
+  assert.match(message, /⚠️ 混雑/);
+  assert.match(message, /- #406 ¥25,050 \(交通費\) を記録しました/);
+  assert.equal(withCompletedOperations("⚠️ 混雑", []), "⚠️ 混雑");
 });

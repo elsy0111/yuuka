@@ -6,6 +6,7 @@ import {
   annotateUnbackedClaim,
   buildFailureReport,
   recordCompletedOperation,
+  withCompletedOperations,
 } from "./operationLog.js";
 import { generateWithRetry, isRateLimitError, isServerError, sleep } from "./retry.js";
 import type { ChatMessage } from "./types.js";
@@ -196,11 +197,17 @@ export async function processMessage(
   } catch (error) {
     if (isRateLimitError(error)) {
       console.error("Gemini API レート制限:", error);
-      return "⚠️ 現在APIの利用制限（トークン枯渇など）に達しています。しばらく待ってからもう一度お試しください。";
+      return withCompletedOperations(
+        "⚠️ 現在APIの利用制限（トークン枯渇など）に達しています。しばらく待ってからもう一度お試しください。",
+        completedOperations,
+      );
     }
     if (isServerError(error)) {
       console.error("Gemini API サーバーエラー:", error);
-      return "⚠️ AIサーバーが現在混み合っているか、一時的なエラーが発生しています（503等）。しばらく待ってからもう一度お試しください。";
+      return withCompletedOperations(
+        "⚠️ AIサーバーが現在混み合っているか、一時的なエラーが発生しています（503等）。しばらく待ってからもう一度お試しください。",
+        completedOperations,
+      );
     }
     console.error("Gemini API エラー:", error);
     throw error;

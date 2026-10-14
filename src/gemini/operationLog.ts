@@ -18,6 +18,12 @@ export function buildFailureReport(failures: string, completed: string[]): strin
   return lines.join("\n");
 }
 
+/** API エラーの案内文に、それまでに完了した操作を併記する */
+export function withCompletedOperations(message: string, completed: string[]): string {
+  if (completed.length === 0) return message;
+  return `${message}\n完了済み（再実行すると重複します）:\n${completed.map((m) => `- ${m}`).join("\n")}`;
+}
+
 /** ツールを実行していないのに操作済みと述べている応答へ注記を付ける */
 export function annotateUnbackedClaim(text: string, completed: string[]): string {
   if (completed.length > 0 || !CLAIMED_WRITE.test(text)) return text;
