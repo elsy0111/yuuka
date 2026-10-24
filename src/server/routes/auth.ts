@@ -58,7 +58,7 @@ export const handleLogin: RouteHandler = async ({ req, res, pathname, method }) 
     const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
-      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
+      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL / 1000}`,
     );
     sendJson(res, 200, {
       success: true,
@@ -120,7 +120,7 @@ export const handleRegister: RouteHandler = async ({ req, res, pathname, method 
     const sessionToken = createSession(user.discord_id);
     res.setHeader(
       "Set-Cookie",
-      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
+      `__Host-yuuka-session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL / 1000}`,
     );
     sendJson(res, 200, {
       success: true,

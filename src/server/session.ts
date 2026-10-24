@@ -3,7 +3,7 @@ import fs from "node:fs";
 import type http from "node:http";
 import path from "node:path";
 
-export const SESSION_TTL = 24 * 60 * 60 * 1000;
+export const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
 
 const SESSION_STORE_PATH = path.resolve(process.cwd(), "data", "admin-sessions.json");
 
