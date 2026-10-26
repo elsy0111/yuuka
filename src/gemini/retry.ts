@@ -47,6 +47,8 @@ export function isServerError(error: unknown): boolean {
   return false;
 }
 
+const MAX_RETRY_WAIT_MS = 60000;
+
 /** 指定ミリ秒待機 */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -86,7 +88,7 @@ export async function generateWithRetry(
     } catch (error) {
       if ((isRateLimitError(error) || isServerError(error)) && attempt < maxRetries) {
         // RetryInfo からリトライ待機時間を取得、なければ指数バックオフ
-        let waitMs = Math.min(1000 * 2 ** (attempt + 1), 60000);
+        let waitMs = Math.min(1000 * 2 ** (attempt + 1), MAX_RETRY_WAIT_MS);
 
         const errorDetails = (
           error as { errorDetails?: Array<{ "@type": string; retryDelay?: string }> }
@@ -102,6 +104,8 @@ export async function generateWithRetry(
             }
           }
         }
+
+        if (waitMs > MAX_RETRY_WAIT_MS) throw error;
 
         const errorType = isRateLimitError(error) ? "レート制限(枯渇)" : "サーバー高負荷";
         console.log(
