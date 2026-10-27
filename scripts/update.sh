@@ -3,6 +3,12 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+if ! command -v pm2 >/dev/null && [ -s "$HOME/.nvm/nvm.sh" ]; then
+  set +u
+  . "$HOME/.nvm/nvm.sh"
+  set -u
+fi
+
 echo "=== Yuuka 更新スクリプト ==="
 
 git pull
