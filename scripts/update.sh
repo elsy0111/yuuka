@@ -9,6 +9,12 @@ if ! command -v pm2 >/dev/null && [ -s "$HOME/.nvm/nvm.sh" ]; then
   set -u
 fi
 
+app_node="$(pm2 jlist | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>{const p=JSON.parse(s).find(p=>p.name==="yuuka");process.stdout.write(p?.pm2_env.exec_interpreter??"")})')"
+if [ -x "$app_node" ]; then
+  export PATH="$(dirname "$app_node"):$PATH"
+fi
+echo "Node: $(node -v)"
+
 echo "=== Yuuka 更新スクリプト ==="
 
 git pull
