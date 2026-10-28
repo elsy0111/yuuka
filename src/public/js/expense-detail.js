@@ -262,6 +262,9 @@ function makeDetailRow(exp) {
   } else if (exp.source === "manual") {
     badgeIcon.textContent = "edit";
     srcText = " 手動";
+  } else if (exp.source === "subscription") {
+    badgeIcon.textContent = "autorenew";
+    srcText = " サブスク";
   } else {
     badgeIcon.textContent = "chat";
     srcText = " Discord";

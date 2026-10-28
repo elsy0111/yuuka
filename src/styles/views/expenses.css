@@ -413,7 +413,8 @@
 
   .source-web,
   .source-manual,
-  .source-discord {
+  .source-discord,
+  .source-subscription {
     @apply text-[var(--text-secondary)];
   }
 
@@ -427,6 +428,10 @@
 
   .source-discord {
     @apply text-[var(--accent-lavender)];
+  }
+
+  .source-subscription {
+    @apply text-[var(--color-green)];
   }
 
   .expense-amount-val {
