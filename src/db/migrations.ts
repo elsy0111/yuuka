@@ -47,6 +47,11 @@ export function runMigrations(): void {
     minutes INTEGER NOT NULL, hourly_rate INTEGER NOT NULL, amount INTEGER NOT NULL,
     description TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
   ); CREATE INDEX IF NOT EXISTS idx_work_entries_user_date ON work_entries(user_id,date);`);
+  db.exec(`CREATE TABLE IF NOT EXISTS subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, name TEXT NOT NULL,
+    amount INTEGER NOT NULL, billing_cycle TEXT NOT NULL, start_date TEXT NOT NULL,
+    description TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  ); CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);`);
 
   try {
     db.exec("DROP INDEX IF EXISTS idx_users_username;");

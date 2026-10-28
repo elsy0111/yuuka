@@ -77,6 +77,7 @@ function exportSingleUserDb(userId: string, tempDbPath: string): void {
         "chat_history",
         "credentials",
         "playbooks",
+        "subscriptions",
       ];
       for (const table of userSpecificTables) {
         const rows = srcDb.prepare(`SELECT * FROM ${table} WHERE user_id = ?`).all(userId);

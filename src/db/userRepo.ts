@@ -330,7 +330,7 @@ export function updateMonthlyBudget(discordId: string, budget: number): boolean 
 export function migrateUserId(fromId: string, toId: string): { migrated: number } {
   const db = getDb();
   let total = 0;
-  const tables = ["tasks", "schedules", "expenses", "memories"];
+  const tables = ["tasks", "schedules", "expenses", "memories", "subscriptions"];
   for (const table of tables) {
     try {
       const result = db
