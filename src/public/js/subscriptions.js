@@ -1,3 +1,4 @@
+import { fetchExpensesList } from "./expenses.js";
 import { confirmModal } from "./modal.js";
 import { state } from "./state.js";
 import { toast } from "./toast.js";
@@ -15,6 +16,7 @@ function resetForm() {
   editing = null;
   el("form").reset();
   el("start-date").value = localDate();
+  el("category").value = "その他";
   el("form-title").textContent = "サブスクを追加";
   el("edit-cancel").hidden = true;
   el("submit").textContent = "サブスクを登録";
@@ -40,6 +42,7 @@ function editSubscription(subscription) {
   el("name").value = subscription.name;
   el("amount").value = subscription.amount;
   el("cycle").value = subscription.billingCycle;
+  el("category").value = subscription.category || "その他";
   el("start-date").value = subscription.startDate;
   el("description").value = subscription.description || "";
   el("form-title").textContent = `${subscription.name}を編集`;
@@ -69,10 +72,12 @@ function renderSubscriptions(subscriptions) {
     const value = document.createElement("span");
     value.textContent = [
       `${yen(subscription.amount)} / ${CYCLE_UNITS[subscription.billingCycle] ?? ""}`,
+      subscription.category || "その他",
       `次回 ${subscription.nextBillingDate}`,
       ...(subscription.billingCycle === "yearly"
         ? [`月換算 ${yen(subscription.monthlyAmount)}`]
         : []),
+      ...(subscription.lastChargedDate ? [`最終記録 ${subscription.lastChargedDate}`] : []),
     ].join(" · ");
     text.append(heading, value);
     if (subscription.description) {
@@ -194,6 +199,7 @@ export function initSubscriptions() {
             name,
             amount,
             billingCycle: el("cycle").value,
+            category: el("category").value,
             startDate: el("start-date").value,
             description: el("description").value.trim(),
           }),
@@ -201,6 +207,7 @@ export function initSubscriptions() {
         if (user !== state.activeUserId) return;
         resetForm();
         toast.success(editId ? "サブスクを更新しました。" : "サブスクを登録しました。");
+        fetchExpensesList();
         await fetchSubscriptions();
       } catch (error) {
         reportError(error);

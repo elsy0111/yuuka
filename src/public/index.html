@@ -409,11 +409,13 @@
           <section id="subscription-card" class="card subscription-card" aria-labelledby="subscription-title">
             <div class="column-header"><h3 id="subscription-title"><span class="material-symbols-outlined header-icon-symbol">autorenew</span>サブスク</h3><span class="hud-tag">定期</span></div>
             <p id="subscription-summary" class="work-summary subscription-summary" aria-live="polite">読み込み中…</p>
+            <p class="work-hint">支払日になると家計簿へ自動で記録されます（登録日以降の支払日のみ）</p>
             <div class="work-form-heading"><h4 id="subscription-form-title">サブスクを追加</h4><button id="subscription-edit-cancel" type="button" class="btn btn-secondary btn-sm" hidden>編集をやめる</button></div>
             <form id="subscription-form" class="work-form">
               <div class="form-group"><label for="subscription-name">サービス名</label><input id="subscription-name" type="text" maxlength="100" required placeholder="Netflix など"></div>
               <div class="form-group"><label for="subscription-amount">金額（円）</label><input id="subscription-amount" type="number" inputmode="numeric" min="1" max="10000000" step="1" required placeholder="1490"></div>
               <div class="form-group"><label for="subscription-cycle">支払い周期</label><select id="subscription-cycle" required><option value="monthly">月払い</option><option value="yearly">年払い</option></select></div>
+              <div class="form-group"><label for="subscription-category">カテゴリー</label><select id="subscription-category" required><option value="食費">食費</option><option value="日用品">日用品</option><option value="交通費">交通費</option><option value="光熱費">光熱費</option><option value="通信費">通信費</option><option value="医療費">医療費</option><option value="娯楽">娯楽</option><option value="衣服">衣服</option><option value="その他" selected>その他</option></select></div>
               <div class="form-group"><label for="subscription-start-date">支払い開始日</label><input id="subscription-start-date" type="date" required aria-describedby="subscription-start-hint"><p id="subscription-start-hint" class="work-hint">初回または直近の支払日</p></div>
               <div class="form-group work-description-group"><label for="subscription-description">メモ（任意）</label><input id="subscription-description" type="text" maxlength="500" placeholder="家族プランなど"></div>
               <button id="subscription-submit" type="submit" class="btn btn-primary" disabled>サブスクを登録</button>
@@ -1012,6 +1014,7 @@
             <option value="manual">手動</option>
             <option value="web">Web</option>
             <option value="discord">Discord</option>
+            <option value="subscription">サブスク</option>
           </select>
         </div>
         <div class="filter-row">
