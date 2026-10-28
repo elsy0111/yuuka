@@ -10,6 +10,7 @@ import { handleExpenses } from "./server/routes/expenses.js";
 import { handleInviteCodes } from "./server/routes/inviteCodes.js";
 import { handleMemories } from "./server/routes/memories.js";
 import { handleStatus, handleUsers } from "./server/routes/status.js";
+import { handleSubscriptions } from "./server/routes/subscriptions.js";
 import { handleUserMigrate } from "./server/routes/userMigrate.js";
 import { handleWork } from "./server/routes/work.js";
 import { isAuthenticated } from "./server/session.js";
@@ -25,6 +26,7 @@ const privateRoutes: RouteHandler[] = [
   handleUsers,
   handleCredentials,
   handleWork,
+  handleSubscriptions,
   handleExpenses,
   handleMemories,
   handleBotLogs,
