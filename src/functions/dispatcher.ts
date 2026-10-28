@@ -5,11 +5,13 @@ import { config } from "../config.js";
 import * as browserFn from "./browserFunctions.js";
 import * as credentialFn from "./credentialFunctions.js";
 import { expenseDeclarations } from "./declarations/expenses.js";
+import { subscriptionDeclarations } from "./declarations/subscriptions.js";
 import { systemDeclarations } from "./declarations/system.js";
 import { workDeclarations } from "./declarations/work.js";
 import * as expenseFn from "./expenseFunctions.js";
 import * as memoryFn from "./memoryFunctions.js";
 import * as playbookFn from "./playbookFunctions.js";
+import * as subscriptionFn from "./subscriptionFunctions.js";
 import * as workFn from "./workFunctions.js";
 
 type FunctionArgs = Record<string, unknown>;
@@ -38,7 +40,12 @@ export function isSandboxEnabled(): boolean {
  * 全ての関数定義（静的＋動的ロードされたもの）を返す
  */
 export function getAllFunctionDeclarations(): FunctionDeclaration[] {
-  const allStatic = [...expenseDeclarations, ...workDeclarations, ...systemDeclarations];
+  const allStatic = [
+    ...expenseDeclarations,
+    ...workDeclarations,
+    ...subscriptionDeclarations,
+    ...systemDeclarations,
+  ];
 
   if (!isSandboxEnabled()) {
     // 自己拡張機能が無効な場合、自己拡張関連ツールを除外して返す
@@ -183,6 +190,23 @@ export async function dispatchFunction(
       return workFn.getWorkSummary(userId, args as Parameters<typeof workFn.getWorkSummary>[1]);
     case "delete_work_entry":
       return workFn.deleteWorkEntry(userId, args as Parameters<typeof workFn.deleteWorkEntry>[1]);
+    case "add_subscription":
+      return subscriptionFn.addSubscription(
+        userId,
+        args as Parameters<typeof subscriptionFn.addSubscription>[1],
+      );
+    case "list_subscriptions":
+      return subscriptionFn.listSubscriptions(userId);
+    case "update_subscription":
+      return subscriptionFn.updateSubscription(
+        userId,
+        args as Parameters<typeof subscriptionFn.updateSubscription>[1],
+      );
+    case "delete_subscription":
+      return subscriptionFn.deleteSubscription(
+        userId,
+        args as Parameters<typeof subscriptionFn.deleteSubscription>[1],
+      );
     case "deleteExpense":
       return expenseFn.deleteExpense(userId, args as Parameters<typeof expenseFn.deleteExpense>[1]);
     case "updateExpense":
