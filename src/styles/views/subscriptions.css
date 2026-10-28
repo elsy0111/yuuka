@@ -1,0 +1,29 @@
+@layer components {
+  .subscription-card {
+    @apply mb-[24px];
+    @apply min-w-0;
+  }
+  .subscription-summary {
+    @apply grid-cols-[repeat(3,_minmax(0,_1fr))];
+  }
+  .subscription-card .form-group .work-hint {
+    @apply mt-[4px];
+    @apply mb-[0];
+  }
+  #subscription-submit {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 768px) {
+    .subscription-card {
+      @apply mb-[16px];
+    }
+  }
+  @media (max-width: 480px) {
+    .subscription-summary {
+      @apply gap-[6px];
+    }
+    .subscription-summary > div {
+      @apply p-[10px];
+    }
+  }
+}

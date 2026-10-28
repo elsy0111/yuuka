@@ -4,6 +4,7 @@ import { fetchDashboardStats, fetchGeminiUsage } from "./dashboard.js";
 import { fetchExpensesList } from "./expenses.js";
 import { fetchMemories } from "./memories.js";
 import { state } from "./state.js";
+import { fetchSubscriptions } from "./subscriptions.js";
 import { fetchWorkSummary } from "./work.js";
 
 const TAB_TITLES = {
@@ -24,6 +25,7 @@ export function loadDataForActiveTab() {
       break;
     case "expenses":
       fetchExpensesList();
+      fetchSubscriptions();
       break;
     case "config":
       fetchConfigSettings();

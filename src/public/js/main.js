@@ -25,6 +25,7 @@ import { initExpenseDetail } from "./expense-detail.js";
 import { initBudgetEdit, initExpenses } from "./expenses.js";
 import { initModals } from "./modal.js";
 import { initRouter } from "./router.js";
+import { initSubscriptions } from "./subscriptions.js";
 import { initTheme } from "./theme.js";
 import { initWork } from "./work.js";
 
@@ -35,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuth();
   initExpenses();
   initWork();
+  initSubscriptions();
   initBudgetEdit();
   initGeminiQuotaEdit();
   initFinanceDashboard();

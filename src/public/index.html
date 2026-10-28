@@ -406,6 +406,22 @@
             </div>
           </div>
 
+          <section id="subscription-card" class="card subscription-card" aria-labelledby="subscription-title">
+            <div class="column-header"><h3 id="subscription-title"><span class="material-symbols-outlined header-icon-symbol">autorenew</span>サブスク</h3><span class="hud-tag">定期</span></div>
+            <p id="subscription-summary" class="work-summary subscription-summary" aria-live="polite">読み込み中…</p>
+            <div class="work-form-heading"><h4 id="subscription-form-title">サブスクを追加</h4><button id="subscription-edit-cancel" type="button" class="btn btn-secondary btn-sm" hidden>編集をやめる</button></div>
+            <form id="subscription-form" class="work-form">
+              <div class="form-group"><label for="subscription-name">サービス名</label><input id="subscription-name" type="text" maxlength="100" required placeholder="Netflix など"></div>
+              <div class="form-group"><label for="subscription-amount">金額（円）</label><input id="subscription-amount" type="number" inputmode="numeric" min="1" max="10000000" step="1" required placeholder="1490"></div>
+              <div class="form-group"><label for="subscription-cycle">支払い周期</label><select id="subscription-cycle" required><option value="monthly">月払い</option><option value="yearly">年払い</option></select></div>
+              <div class="form-group"><label for="subscription-start-date">支払い開始日</label><input id="subscription-start-date" type="date" required aria-describedby="subscription-start-hint"><p id="subscription-start-hint" class="work-hint">初回または直近の支払日</p></div>
+              <div class="form-group work-description-group"><label for="subscription-description">メモ（任意）</label><input id="subscription-description" type="text" maxlength="500" placeholder="家族プランなど"></div>
+              <button id="subscription-submit" type="submit" class="btn btn-primary" disabled>サブスクを登録</button>
+            </form>
+            <div id="subscription-error" class="work-hint" role="status"></div>
+            <div id="subscription-list" class="work-entry-list"></div>
+          </section>
+
         </section>
 
         <!-- ==========================================
