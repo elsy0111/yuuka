@@ -1,9 +1,18 @@
-import type { FunctionDeclaration } from "@google/generative-ai";
+import type { EnumStringSchema, FunctionDeclaration } from "@google/generative-ai";
 import { SchemaType } from "@google/generative-ai";
+import { CATEGORIES } from "../../db/expenseRepo.js";
+
+const categoryParam: EnumStringSchema = {
+  type: SchemaType.STRING,
+  format: "enum",
+  enum: [...CATEGORIES],
+  description: "家計簿に記録する際のカテゴリ。省略時はその他",
+};
 export const subscriptionDeclarations: FunctionDeclaration[] = [
   {
     name: "add_subscription",
-    description: "サブスク（月払い・年払いの定期支払い）を登録する",
+    description:
+      "サブスク（月払い・年払いの定期支払い）を登録する。登録日以降の各支払日に家計簿へ自動で支出として記録されるため、別途addExpenseは呼ばない",
     parameters: {
       type: SchemaType.OBJECT,
       properties: {
@@ -20,6 +29,7 @@ export const subscriptionDeclarations: FunctionDeclaration[] = [
           description: "初回または直近の支払日（YYYY-MM-DD）。省略時は今日",
         },
         description: { type: SchemaType.STRING },
+        category: categoryParam,
       },
       required: ["name", "amount", "billing_cycle"],
     },
@@ -47,6 +57,7 @@ export const subscriptionDeclarations: FunctionDeclaration[] = [
         },
         start_date: { type: SchemaType.STRING, description: "YYYY-MM-DD" },
         description: { type: SchemaType.STRING },
+        category: categoryParam,
       },
       required: ["id"],
     },

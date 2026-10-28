@@ -168,11 +168,30 @@ test("authenticated subscription API validates input and ignores forged owners",
     amount: 5900,
     billingCycle: "yearly",
     startDate: "2026-01-15",
+    category: "娯楽",
     userId: "bob",
   });
   assert.equal(created.status, 200);
-  const subscription = created.result.subscription as { id: number; monthlyAmount: number };
+  const subscription = created.result.subscription as {
+    id: number;
+    monthlyAmount: number;
+    category: string;
+    lastChargedDate: string | null;
+  };
   assert.equal(subscription.monthlyAmount, 492);
+  assert.equal(subscription.category, "娯楽");
+  assert.ok("lastChargedDate" in subscription);
+  assert.equal(
+    (
+      await call("/api/subscriptions/create", {
+        name: "A",
+        amount: 100,
+        billingCycle: "monthly",
+        category: "ゲーム",
+      })
+    ).status,
+    400,
+  );
   assert.equal(repo.getSubscription(subscription.id, "alice")?.name, "Prime");
   const victim = repo.addSubscription("bob", {
     name: "Victim",

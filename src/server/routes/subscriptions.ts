@@ -1,11 +1,13 @@
 import {
   addSubscription,
   deleteSubscription,
+  getSubscription,
   publicSubscription,
   SubscriptionValidationError,
   subscriptionOverview,
   updateSubscription,
 } from "../../db/subscriptionRepo.js";
+import { tryChargeDueSubscriptions } from "../../services/subscriptionChargeService.js";
 import { getRequestBody, sendError, sendJson } from "../http.js";
 import { getSessionDiscordId } from "../session.js";
 import type { RouteHandler } from "../types.js";
@@ -50,11 +52,14 @@ export const handleSubscriptions: RouteHandler = async ({ req, res, pathname, me
       billingCycle: body.billingCycle,
       startDate: body.startDate,
       description: body.description,
+      category: body.category,
     };
     if (pathname === "/api/subscriptions/create") {
+      const created = addSubscription(user, fields);
+      tryChargeDueSubscriptions({ userId: user });
       sendJson(res, 200, {
         success: true,
-        subscription: publicSubscription(addSubscription(user, fields)),
+        subscription: publicSubscription(getSubscription(created.id, user) ?? created),
       });
     } else if (pathname === "/api/subscriptions/update") {
       const subscription = updateSubscription(body.id as number, user, fields);
@@ -62,7 +67,11 @@ export const handleSubscriptions: RouteHandler = async ({ req, res, pathname, me
         sendError(res, 404, "サブスクが見つかりません。");
         return true;
       }
-      sendJson(res, 200, { success: true, subscription: publicSubscription(subscription) });
+      tryChargeDueSubscriptions({ userId: user });
+      sendJson(res, 200, {
+        success: true,
+        subscription: publicSubscription(getSubscription(subscription.id, user) ?? subscription),
+      });
     } else {
       if (!deleteSubscription(body.id as number, user)) {
         sendError(res, 404, "サブスクが見つかりません。");

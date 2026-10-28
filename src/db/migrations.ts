@@ -52,6 +52,16 @@ export function runMigrations(): void {
     amount INTEGER NOT NULL, billing_cycle TEXT NOT NULL, start_date TEXT NOT NULL,
     description TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
   ); CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);`);
+  for (const column of [
+    "category TEXT NOT NULL DEFAULT 'その他'",
+    "charge_from TEXT",
+    "last_charged_date TEXT",
+  ]) {
+    try {
+      db.exec(`ALTER TABLE subscriptions ADD COLUMN ${column}`);
+    } catch {}
+  }
+  db.exec("UPDATE subscriptions SET charge_from = date(created_at) WHERE charge_from IS NULL");
 
   try {
     db.exec("DROP INDEX IF EXISTS idx_users_username;");

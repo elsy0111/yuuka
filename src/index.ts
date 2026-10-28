@@ -5,6 +5,10 @@ import { seedInitialCodes } from "./db/inviteRepo.js";
 import { runMigrations } from "./db/migrations.js";
 import { closeRedis, initRedis } from "./db/redis.js";
 import { startWebServer, stopWebServer } from "./server.js";
+import {
+  startSubscriptionChargeService,
+  stopSubscriptionChargeService,
+} from "./services/subscriptionChargeService.js";
 
 async function main() {
   console.log("🚀 Yuuka 起動中...");
@@ -27,6 +31,8 @@ async function main() {
   // Bot起動
   await startBot();
 
+  startSubscriptionChargeService();
+
   console.log("✨ Yuuka が起動しました！");
 }
 
@@ -35,6 +41,7 @@ process.on("SIGINT", async () => {
   console.log("\n👋 シャットダウン中...");
   stopWebServer();
   stopBot();
+  stopSubscriptionChargeService();
   closeDb();
   await closeRedis();
   process.exit(0);
@@ -44,6 +51,7 @@ process.on("SIGTERM", async () => {
   console.log("\n👋 シャットダウン中...");
   stopWebServer();
   stopBot();
+  stopSubscriptionChargeService();
   closeDb();
   await closeRedis();
   process.exit(0);

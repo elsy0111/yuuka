@@ -1,4 +1,5 @@
 import { getDb } from "./database.js";
+import { CATEGORIES, type Category } from "./expenseRepo.js";
 import { localWorkDate } from "./workRepo.js";
 
 export class SubscriptionValidationError extends Error {}
@@ -7,6 +8,10 @@ export const BILLING_CYCLES = ["monthly", "yearly"] as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[number];
 
 const MONTHS_PER_CYCLE: Record<BillingCycle, number> = { monthly: 1, yearly: 12 };
+export const BILLING_CYCLE_LABELS: Record<BillingCycle, string> = {
+  monthly: "月払い",
+  yearly: "年払い",
+};
 
 export interface Subscription {
   id: number;
@@ -16,6 +21,9 @@ export interface Subscription {
   billing_cycle: BillingCycle;
   start_date: string;
   description: string | null;
+  category: Category;
+  charge_from: string;
+  last_charged_date: string | null;
 }
 
 export interface SubscriptionInput {
@@ -24,6 +32,7 @@ export interface SubscriptionInput {
   billingCycle?: unknown;
   startDate?: unknown;
   description?: unknown;
+  category?: unknown;
 }
 
 function isCalendarDate(value: unknown): value is string {
@@ -39,7 +48,14 @@ function validateId(id: unknown): asserts id is number {
 }
 
 export function validateSubscription(input: SubscriptionInput) {
-  const { name, amount, billingCycle, startDate = localWorkDate(), description } = input;
+  const {
+    name,
+    amount,
+    billingCycle,
+    startDate = localWorkDate(),
+    description,
+    category = "その他",
+  } = input;
   const trimmedName = typeof name === "string" ? name.trim() : "";
   if (trimmedName.length < 1 || trimmedName.length > 100) {
     throw new SubscriptionValidationError("サービス名は1〜100文字で入力してください。");
@@ -67,12 +83,16 @@ export function validateSubscription(input: SubscriptionInput) {
   if (trimmedDescription.length > 500) {
     throw new SubscriptionValidationError("メモは500文字以内で入力してください。");
   }
+  if (!CATEGORIES.includes(category as Category)) {
+    throw new SubscriptionValidationError("カテゴリが不正です。");
+  }
   return {
     name: trimmedName,
     amount,
     billingCycle: billingCycle as BillingCycle,
     startDate,
     description: trimmedDescription || null,
+    category: category as Category,
   };
 }
 
@@ -80,7 +100,7 @@ export function addSubscription(userId: string, input: SubscriptionInput): Subsc
   const values = validateSubscription(input);
   const r = getDb()
     .prepare(
-      "INSERT INTO subscriptions(user_id,name,amount,billing_cycle,start_date,description) VALUES(?,?,?,?,?,?)",
+      "INSERT INTO subscriptions(user_id,name,amount,billing_cycle,start_date,description,category,charge_from) VALUES(?,?,?,?,?,?,?,?)",
     )
     .run(
       userId,
@@ -89,6 +109,8 @@ export function addSubscription(userId: string, input: SubscriptionInput): Subsc
       values.billingCycle,
       values.startDate,
       values.description,
+      values.category,
+      localWorkDate(),
     );
   return getDb()
     .prepare("SELECT * FROM subscriptions WHERE id=?")
@@ -99,6 +121,14 @@ export function listSubscriptions(userId: string): Subscription[] {
   return getDb()
     .prepare("SELECT * FROM subscriptions WHERE user_id=? ORDER BY id")
     .all(userId) as Subscription[];
+}
+
+export function listAllSubscriptions(): Subscription[] {
+  return getDb().prepare("SELECT * FROM subscriptions ORDER BY id").all() as Subscription[];
+}
+
+export function markSubscriptionCharged(id: number, date: string): void {
+  getDb().prepare("UPDATE subscriptions SET last_charged_date=? WHERE id=?").run(date, id);
 }
 
 export function getSubscription(id: number, userId: string): Subscription | undefined {
@@ -121,10 +151,11 @@ export function updateSubscription(
     billingCycle: fields.billingCycle !== undefined ? fields.billingCycle : existing.billing_cycle,
     startDate: fields.startDate !== undefined ? fields.startDate : existing.start_date,
     description: fields.description !== undefined ? fields.description : existing.description,
+    category: fields.category !== undefined ? fields.category : existing.category,
   });
   getDb()
     .prepare(
-      "UPDATE subscriptions SET name=?,amount=?,billing_cycle=?,start_date=?,description=? WHERE id=? AND user_id=?",
+      "UPDATE subscriptions SET name=?,amount=?,billing_cycle=?,start_date=?,description=?,category=? WHERE id=? AND user_id=?",
     )
     .run(
       values.name,
@@ -132,6 +163,7 @@ export function updateSubscription(
       values.billingCycle,
       values.startDate,
       values.description,
+      values.category,
       id,
       userId,
     );
@@ -168,6 +200,35 @@ export function nextBillingDate(startDate: string, cycle: BillingCycle, today: s
   return candidate;
 }
 
+export function dueBillingDates(
+  startDate: string,
+  cycle: BillingCycle,
+  chargeFrom: string,
+  lastChargedDate: string | null,
+  today: string,
+): string[] {
+  const [sy, sm, sd] = startDate.split("-").map(Number);
+  const [fy, fm] = chargeFrom.split("-").map(Number);
+  const step = MONTHS_PER_CYCLE[cycle];
+  const period = (date: string) => date.slice(0, cycle === "monthly" ? 7 : 4);
+  const dates: string[] = [];
+  let lastPeriod = lastChargedDate === null ? null : period(lastChargedDate);
+  let k = Math.max(0, Math.floor(((fy - sy) * 12 + (fm - sm)) / step));
+  for (let date = shiftMonths(sy, sm, sd, k * step); date <= today; ) {
+    if (
+      date >= chargeFrom &&
+      (lastChargedDate === null || date > lastChargedDate) &&
+      period(date) !== lastPeriod
+    ) {
+      dates.push(date);
+      lastPeriod = period(date);
+    }
+    k += 1;
+    date = shiftMonths(sy, sm, sd, k * step);
+  }
+  return dates;
+}
+
 function monthlyAmount(s: Subscription): number {
   return s.billing_cycle === "monthly" ? s.amount : Math.round(s.amount / 12);
 }
@@ -182,6 +243,8 @@ export function publicSubscription(s: Subscription, today = localWorkDate()) {
     nextBillingDate: nextBillingDate(s.start_date, s.billing_cycle, today),
     monthlyAmount: monthlyAmount(s),
     description: s.description,
+    category: s.category,
+    lastChargedDate: s.last_charged_date,
   };
 }
 
